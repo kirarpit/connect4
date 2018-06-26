@@ -71,18 +71,13 @@ class Game:
         for dpair in directions:
             cnt = 1
             for direction in dpair:
-#                print "checking for direction" + direction
                 (dx, dy) = self.deltas[direction]
                 x = column + dx
                 y = row + dy
                 
-                
                 while x>=0 and x<self.columns and y>=0 and y<self.rows:
-#                    print "trying x,y " + str(x) + "," + str(y)
-
                     if player == self.gameState[y][x]:
                         cnt += 1
-#                        print "count: " + str(cnt)
                     else:
                         break
 
@@ -103,7 +98,7 @@ class Game:
             for y in range(0, self.columns):
                 print str(self.gameState[x][y]) + " ",
             print "\n"
-        print "-" * 20
+        print "-" * 19
     
     def updateArrayForm(self, row, column):
         pos = row * self.columns + column
