@@ -11,13 +11,10 @@ import numpy as np
 class Game:
     
     def __init__(self, rows, columns):
-        self.gameState = np.zeros((rows, columns), dtype=int)
         self.rows = rows
         self.columns = columns
-        self.toPlay = 1
-        self.winner = 0
-        self.turnCnt = 0
-        self.arrayForm = np.zeros((1, rows * columns * 2), dtype=int)
+        self.gameCnt = 0
+        self.newGame()
         self.deltas = {
                 "N":(0, -1),
                 "NE":(1, -1),
@@ -29,6 +26,15 @@ class Game:
                 "S":(0, 1)
                 }
     
+    def newGame(self):
+        self.gameCnt += 1
+        self.toPlay = 1
+        self.winner = 0
+        self.turnCnt = 0
+        self.illMovesCnt = 0
+        self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
+        self.gameState = np.zeros((self.rows, self.columns), dtype=int)
+
     def isOver(self):
         if self.winner != 0:
             return self.winner
@@ -36,7 +42,6 @@ class Game:
             return False
         
     def dropDisc(self, column):
-        
         if self.isOver():
             print "Game's over already."
             return -1
@@ -48,7 +53,7 @@ class Game:
             row += 1
         
         if row == 0:
-#            print "Invalid move. Column " + str(column) + " full."
+            self.illMovesCnt += 1
             return -2
         else:
             self.gameState[row - 1][column] = self.toPlay
