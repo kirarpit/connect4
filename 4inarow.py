@@ -14,7 +14,7 @@ p1 = player.Player(1, game)
 p2 = player.Player(2, game)
 
 stats = {1:0, 2:0, 3:0}
-while True:
+while game.gameCnt < 50000:
     game.newGame()
     
     while not game.isOver():
@@ -25,7 +25,7 @@ while True:
 
     verbosity = 0
     stats[game.winner] += 1
-    if game.gameCnt % 100 == 0:
+    if game.gameCnt % 1000 == 0:
         print "Game " + str(game.gameCnt) + ":"
         game.printGameState()
         print "Winner: " + str(game.winner)
@@ -34,6 +34,8 @@ while True:
         print stats
         verbosity = 2
         stats = {1:0, 2:0, 3:0}
+        p1.saveExp()
+        p2.saveExp()
             
     p1.train(game, verbosity)
     p2.train(game, verbosity)
@@ -47,3 +49,4 @@ y1 = p1.y
 y2 = p2.y
 m1 = p1.moves
 m2 = p2.moves
+game.printGameState()
