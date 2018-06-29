@@ -14,7 +14,7 @@ p1 = player.Player(1, game)
 p2 = player.Player(2, game)
 
 stats = {1:0, 2:0, 3:0}
-while game.gameCnt < 50000:
+while game.gameCnt <= 50000:
     game.newGame()
     
     while not game.isOver():
@@ -40,13 +40,14 @@ while game.gameCnt < 50000:
     p1.train(game, verbosity)
     p2.train(game, verbosity)
     
-p1.saveExp()
-p2.saveExp()
-
-x1 = p1.X_train
-x2 = p2.X_train
-y1 = p1.y
-y2 = p2.y
-m1 = p1.moves
-m2 = p2.moves
+x1 = p1.x_old
+x2 = p2.x_old
+y1o = p1.y_orig
+y2o = p2.y_orig
+y1 = p1.y_old
+y2 = p2.y_old
+m1 = p1.m_old
+m2 = p2.m_old
+w1 = p1.ANN.ann.get_weights()
+w2 = p2.ANN.ann.get_weights()
 game.printGameState()

@@ -21,7 +21,7 @@ class Player:
     
         self.gamerows = game.rows
         self.gamecolumns = game.columns
-        self.resetLogs()
+        self.resetLogs(0)
         
     def play(self, game, move=-1):
         if move != -1:
@@ -65,6 +65,7 @@ class Player:
         else:
             reward = 0
         
+        self.y_orig = np.copy(self.y)
         if game.winner != -3:
             for index, row in enumerate(self.y):
                 if reward == 1:
@@ -78,7 +79,11 @@ class Player:
             
         self.resetLogs()
         
-    def resetLogs(self):
+    def resetLogs(self, oldLog=1):
+        if oldLog != 0:
+            self.x_old = np.copy(self.X_train)
+            self.y_old = np.copy(self.y)
+            self.m_old = np.copy(self.moves)
         self.X_train = np.empty([0, self.gamerows * self.gamecolumns * 2], int)
         self.y = np.empty([0, self.gamecolumns], float)
         self.moves = []
