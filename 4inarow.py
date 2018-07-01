@@ -13,8 +13,8 @@ game = c4game.Game(6, 7)
 p1 = player.Player(1, game)
 p2 = player.Player(2, game)
 
-stats = {1:0, 2:0, 3:0}
-while game.gameCnt <= 50000:
+stats = {0:0, 1:0, 2:0, 3:0}
+while game.gameCnt <= 1:
     game.newGame()
     
     while not game.isOver():
@@ -33,7 +33,7 @@ while game.gameCnt <= 50000:
         print "Illegal moves count: " + str(game.illMovesCnt)
         print stats
         verbosity = 2
-        stats = {1:0, 2:0, 3:0}
+        stats = {0:0, 1:0, 2:0, 3:0}
         p1.saveExp()
         p2.saveExp()
             
@@ -42,8 +42,6 @@ while game.gameCnt <= 50000:
     
 x1 = p1.x_old
 x2 = p2.x_old
-y1o = p1.y_orig
-y2o = p2.y_orig
 y1 = p1.y_old
 y2 = p2.y_old
 m1 = p1.m_old

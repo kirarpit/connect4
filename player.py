@@ -8,12 +8,13 @@ Created on Thu Jun 28 17:52:18 2018
 import ann
 import os.path
 import numpy as np
-import utils
-from sys import exit
 
 class Player:
     
     def __init__(self, name, game):
+        self.epsilon = 0.3
+        self.alpha = 0.1
+        self.gamma = 0.92
         self.name = name
         self.ANN = ann.ANN()
         if os.path.exists(str(name)):
@@ -23,60 +24,56 @@ class Player:
         self.gamecolumns = game.columns
         self.resetLogs(0)
         
-    def play(self, game, move=-1):
-        if move != -1:
-            game.dropDisc(move)
+    def play(self, game, action=-1):
+        if action != -1:
+            game.dropDisc(action)
             game.printGameState()
-            return move
+            return action
         
-        cnt = 0
-        while True:
-            x = np.copy(game.arrayForm)
-            probs = self.ANN.ann.predict(x)
-            move = utils.Utils.sample(probs[0])
-            result = game.dropDisc(move)
-            
-            #incase it's an illegal move
-            if result == -2:
-                if cnt > 100:
-                    print probs
-                
-                probs[0][move] = 0
-                probs[0] = utils.Utils.normalize(probs[0])
-                self.ANN.ann.fit(x, probs, verbose=0, epochs=5, batch_size=1)
-                cnt += 1
-                
-                if cnt > 100:
-                    print "stuck in illegal move loop"
-                    print probs
-                    exit()
-                continue
-            
-            self.X_train = np.vstack([self.X_train, x])
-            self.y = np.vstack([self.y, probs])
-            self.moves.append(move)
-            break
+        actions = self.ANN.ann.predict(game.arrayForm)
         
-        return move
+        if np.size(self.X_train, 0) != 0:
+            lastRow = np.size(self.y, 0) - 1
+#            print self.y[lastRow][self.moves[lastRow]]
+            prevQVal = self.y[lastRow][self.moves[lastRow]]
+
+#            print "(" + str(np.max(actions[0])) + "*" + str(self.gamma) + "-" + str(prevQVal) + ")*" + str(self.alpha)
+            prevQVal += (np.max(actions[0])*self.gamma - prevQVal)*self.alpha
+            
+#            print actions[0]
+#            print prevQVal
+            self.y[lastRow][self.moves[lastRow]] = prevQVal
+        
+        if np.random.uniform() < self.epsilon:
+            action = np.random.choice(self.gamecolumns, 1)
+            action = action[0]
+        else:
+            action = np.argmax(actions[0])
+        
+        self.X_train = np.vstack([self.X_train, game.arrayForm])
+        self.y = np.vstack([self.y, actions])
+        self.moves.append(action)
+    
+        game.dropDisc(action)
+
+        return action
         
     def train(self, game, verbosity):
-        if game.winner == self.name:
-            reward = 1
-        else:
-            reward = 0
-        
-        self.y_orig = np.copy(self.y)
-        if game.winner != -3:
-            for index, row in enumerate(self.y):
-                if reward == 1:
-                    row[True] = 0
-                row[self.moves[index]] = reward
-                
-                if reward == 0:
-                    row = utils.Utils.normalize(row)
-                
-            self.ANN.ann.fit(self.X_train, self.y, verbose=verbosity, batch_size=50)
+        if self.name in game.rewards:
+            reward = game.rewards[self.name]
+            lastRow = np.size(self.y, 0) - 1
             
+            prevQVal = self.y[lastRow][self.moves[lastRow]]
+            
+#            print "(" + str(reward) + "*" + str(self.gamma) + "-" + str(prevQVal) + ")*" + str(self.alpha)
+
+            prevQVal += (reward*self.gamma - prevQVal)*self.alpha
+            self.y[lastRow][self.moves[lastRow]] = prevQVal   
+        else:
+            self.X_train = self.X_train[:-1]
+            self.y = self.y[:-1]
+        
+        self.ANN.ann.fit(self.X_train, self.y, verbose=verbosity, batch_size=50)
         self.resetLogs()
         
     def resetLogs(self, oldLog=1):

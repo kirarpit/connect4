@@ -27,9 +27,11 @@ class Game:
                 }
     
     def newGame(self):
+        self.rewards = {}
         self.gameCnt += 1
         self.toPlay = 1
         self.winner = 0
+        self.loser = 0
         self.turnCnt = 0
         self.illMovesCnt = 0
         self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
@@ -37,7 +39,9 @@ class Game:
 
     def isOver(self):
         if self.winner != 0:
-            return self.winner
+            return {'W':self.winner}
+        elif self.loser != 0:
+            return {'L':self.loser}
         else:
             return False
         
@@ -52,8 +56,10 @@ class Game:
                 break
             row += 1
         
+        #illegal move. row full.
         if row == 0:
             self.illMovesCnt += 1
+            self.setLoser(self.toPlay)
             return -2
         else:
             self.gameState[row - 1][column] = self.toPlay
@@ -64,10 +70,7 @@ class Game:
         
     def switchTurn(self):
         self.turnCnt += 1
-        if self.toPlay == 1:
-            self.toPlay = 2
-        else:
-            self.toPlay = 1
+        self.toPlay = self.getNextPlayer(self.toPlay)
         
     def checkEndStates(self, row, column):
         player = self.gameState[row][column]
@@ -90,11 +93,12 @@ class Game:
                     y += dy
                 
             if cnt >= 4:
-                self.winner = player
+                self.setWinner(player)
+                self.setLoser(self.getNextPlayer(player))
                 break
             
         if self.turnCnt == self.rows * self.columns:
-            self.winner = 3
+            self.setWinner(3)
 
         return
     
@@ -111,6 +115,18 @@ class Game:
             pos += self.rows * self.columns
     
         self.arrayForm[0][pos] = 1
-    
-    
+        
+    def setWinner(self, player):
+        self.winner = player
+        self.rewards[player] = 5
+        
+    def setLoser(self, player):
+        self.loser = player
+        self.rewards[player] = -5
+
+    def getNextPlayer(self, player):
+        if player == 1:
+            return 2
+        else:
+            return 1
     
