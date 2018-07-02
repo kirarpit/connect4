@@ -18,10 +18,10 @@ class ANN:
     def createANN(self):
         ann = Sequential()
 #        ann.add(Dense(units = 42, kernel_regularizer = l2(0.01), kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
-        ann.add(Dense(units = 8, kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
+        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
 #        ann.add(LeakyReLU(alpha=0.3))
 
-        ann.add(Dense(units = 56, kernel_initializer = "he_normal", activation = 'relu'))
+        ann.add(Dense(units = 28, kernel_initializer = "he_normal", activation = 'relu'))
 #        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
 #        ann.add(LeakyReLU(alpha=0.3))
         

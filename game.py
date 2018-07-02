@@ -13,7 +13,7 @@ class Game:
     def __init__(self, rows, columns):
         self.rows = rows
         self.columns = columns
-        self.gameCnt = 0
+        self.gameCnt = -1
         self.newGame()
         self.deltas = {
                 "N":(0, -1),
@@ -60,7 +60,7 @@ class Game:
         #illegal move. row full.
         if row == 0:
             self.illMovesCnt += 1
-            self.setLoser(self.toPlay)
+            self.setLoser(self.toPlay, -100)
             return -2
         else:
             self.gameState[row - 1][column] = self.toPlay
@@ -119,11 +119,11 @@ class Game:
         
     def setWinner(self, player):
         self.winner = player
-        self.rewards[player] = 5
+        self.rewards[player] = 50
         
-    def setLoser(self, player):
+    def setLoser(self, player, reward=-50):
         self.loser = player
-        self.rewards[player] = -5
+        self.rewards[player] = reward
 
     def getNextPlayer(self, player):
         if player == 1:
