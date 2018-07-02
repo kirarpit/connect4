@@ -9,7 +9,7 @@ Created on Thu Jun 28 17:53:30 2018
 from keras.models import Sequential
 from keras.layers import Dense
 #from keras.regularizers import l2, l1
-from keras.layers.advanced_activations import LeakyReLU
+#from keras.layers.advanced_activations import LeakyReLU
 
 class ANN:
     def __init__(self):
@@ -18,11 +18,12 @@ class ANN:
     def createANN(self):
         ann = Sequential()
 #        ann.add(Dense(units = 42, kernel_regularizer = l2(0.01), kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
-        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
-        ann.add(LeakyReLU(alpha=0.3))
+        ann.add(Dense(units = 8, kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
+#        ann.add(LeakyReLU(alpha=0.3))
 
-        ann.add(Dense(units = 21, kernel_initializer = "he_normal", activation = 'relu'))
-        ann.add(LeakyReLU(alpha=0.3))
+        ann.add(Dense(units = 56, kernel_initializer = "he_normal", activation = 'relu'))
+#        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
+#        ann.add(LeakyReLU(alpha=0.3))
         
         ann.add(Dense(units = 7, kernel_initializer = "he_normal", activation = 'linear'))
         ann.compile(optimizer = 'adam', loss = 'mean_squared_error', metrics = ['accuracy'])

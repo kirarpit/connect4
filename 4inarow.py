@@ -42,6 +42,8 @@ while game.gameCnt <= 1:
     
 x1 = p1.x_old
 x2 = p2.x_old
+y1o = p1.yo_old
+y2o = p2.yo_old
 y1 = p1.y_old
 y2 = p2.y_old
 m1 = p1.m_old

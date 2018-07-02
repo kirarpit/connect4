@@ -35,6 +35,7 @@ class Game:
         self.turnCnt = 0
         self.illMovesCnt = 0
         self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
+        self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
 
     def isOver(self):

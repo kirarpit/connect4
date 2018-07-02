@@ -12,8 +12,8 @@ import numpy as np
 class Player:
     
     def __init__(self, name, game):
-        self.epsilon = 0.3
-        self.alpha = 0.1
+        self.epsilon = 0.5 #randomness
+        self.alpha = 0.3
         self.gamma = 0.92
         self.name = name
         self.ANN = ann.ANN()
@@ -51,6 +51,7 @@ class Player:
             action = np.argmax(actions[0])
         
         self.X_train = np.vstack([self.X_train, game.arrayForm])
+        self.yo = np.vstack([self.yo, actions])
         self.y = np.vstack([self.y, actions])
         self.moves.append(action)
     
@@ -65,10 +66,13 @@ class Player:
             
             prevQVal = self.y[lastRow][self.moves[lastRow]]
             
+#            print prevQVal
 #            print "(" + str(reward) + "*" + str(self.gamma) + "-" + str(prevQVal) + ")*" + str(self.alpha)
 
             prevQVal += (reward*self.gamma - prevQVal)*self.alpha
-            self.y[lastRow][self.moves[lastRow]] = prevQVal   
+            self.y[lastRow][self.moves[lastRow]] = prevQVal  
+#            print prevQVal
+
         else:
             self.X_train = self.X_train[:-1]
             self.y = self.y[:-1]
@@ -80,10 +84,12 @@ class Player:
         if oldLog != 0:
             self.x_old = np.copy(self.X_train)
             self.y_old = np.copy(self.y)
+            self.yo_old = np.copy(self.yo)
             self.m_old = np.copy(self.moves)
         self.X_train = np.empty([0, self.gamerows * self.gamecolumns * 2], int)
         self.y = np.empty([0, self.gamecolumns], float)
         self.moves = []
+        self.yo = np.copy(self.y)
 
     def saveExp(self):
         self.ANN.save(str(self.name))
