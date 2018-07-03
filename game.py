@@ -121,7 +121,8 @@ class Game:
         
     def setWinner(self, player):
         self.isOver = player
-        self.rewards[player] = WINNER_R
+        if self.illMovesCnt == 0:
+            self.rewards[player] = WINNER_R
         self.rewards[self.getNextPlayer(player)] = LOSER_R
         self.stats[player] += 1
         

@@ -27,7 +27,7 @@ while True or game.gameCnt < 2:
     p1.play(game)
     p2.play(game)
     
-    if game.gameCnt % 100 == 0:
+    if game.gameCnt % 10 == 0:
         game.printGameState()
             
         if debug == False:
@@ -35,6 +35,13 @@ while True or game.gameCnt < 2:
             p2.saveWeights()
 
 if debug == True:
+    batch = p1.batch
+    s = p1.s
+    s_ = p1.s_
+    p = p1.p
+    p_ = p1.p_
+    fx = p1.fx
+    fy = p1.fy
     x1 = p1.x_old
     x2 = p2.x_old
     y1 = p1.y_old

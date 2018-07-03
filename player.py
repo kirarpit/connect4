@@ -43,8 +43,10 @@ class Player:
             s = self.X[-1:][0]
             a = self.moves[-1:]
             r = game.rewards[self.name] if self.name in game.rewards else 0
-            s_ = game.arrayForm[0] if not game.isOver else None
-            self.memory.add((s, a, r, s_))
+            s_ = np.copy(game.arrayForm[0]) if not game.isOver else None
+           
+            if not game.isOver or r != 0:
+                self.memory.add((s, a, r, s_))
             
             #train with replay
             self.train(game)
@@ -80,6 +82,9 @@ class Player:
 
         p = self.ANN.ann.predict(states)
         p_ = self.ANN.ann.predict(states_)
+        
+        if game.isOver and self.debug:
+            self.p = np.copy(p)
 
         x = np.empty([0, self.stateCnt])
         y = np.empty([0, game.columns])
@@ -99,13 +104,14 @@ class Player:
             
             self.ANN.ann.fit(x, y, verbose=0)
         
-    def qUpdate(self, game):
-        if self.name in game.rewards:
-            reward = game.rewards[self.name]
-            prevQVal = self.y[-1:][0][self.moves[-1:]]
-            prevQVal += (reward - prevQVal)*self.alpha
-            self.y[-1:][0][self.moves[-1:]] = prevQVal
-        
+        if game.isOver and self.debug:
+            self.batch = batch
+            self.s = states
+            self.s_ =  states_
+            self.p_ = p_
+            self.fx = x
+            self.fy = y
+
     def resetLogs(self, game, oldLog=1):
         if self.debug == True:
             if oldLog != 0:
