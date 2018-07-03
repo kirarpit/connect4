@@ -21,12 +21,12 @@ class ANN:
         ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
 #        ann.add(LeakyReLU(alpha=0.3))
 
-        ann.add(Dense(units = 28, kernel_initializer = "he_normal", activation = 'relu'))
+#        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
 #        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
 #        ann.add(LeakyReLU(alpha=0.3))
         
         ann.add(Dense(units = 7, kernel_initializer = "he_normal", activation = 'linear'))
-        ann.compile(optimizer = 'adam', loss = 'mean_squared_error', metrics = ['accuracy'])
+        ann.compile(optimizer = 'rmsprop', loss = 'mean_squared_error', metrics = ['accuracy'])
 #        ann.compile(optimizer = 'adam', loss = 'kullback_leibler_divergence', metrics = ['categorical_accuracy'])
 #        ann.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['categorical_accuracy'])
         

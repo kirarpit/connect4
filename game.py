@@ -8,6 +8,9 @@ Created on Sat Jun 23 19:47:06 2018
 
 import numpy as np
 
+LOSER_R = -1
+WINNER_R = 1
+
 class Game:
     
     def __init__(self, rows, columns):
@@ -25,29 +28,21 @@ class Game:
                 "SW":(-1, 1),
                 "S":(0, 1)
                 }
+        self.clearStats()
     
     def newGame(self):
+        self.isOver = False
         self.rewards = {}
         self.gameCnt += 1
         self.toPlay = 1
-        self.winner = 0
-        self.loser = 0
         self.turnCnt = 0
         self.illMovesCnt = 0
         self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
         self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
 
-    def isOver(self):
-        if self.winner != 0:
-            return {'W':self.winner}
-        elif self.loser != 0:
-            return {'L':self.loser}
-        else:
-            return False
-        
     def dropDisc(self, column):
-        if self.isOver():
+        if self.isOver:
             print "Game's over already."
             return -1
         
@@ -60,7 +55,7 @@ class Game:
         #illegal move. row full.
         if row == 0:
             self.illMovesCnt += 1
-            self.setLoser(self.toPlay, -100)
+            self.setWinner(self.getNextPlayer(self.toPlay))
             return -2
         else:
             self.gameState[row - 1][column] = self.toPlay
@@ -95,19 +90,26 @@ class Game:
                 
             if cnt >= 4:
                 self.setWinner(player)
-                self.setLoser(self.getNextPlayer(player))
                 break
             
         if self.turnCnt == self.rows * self.columns:
-            self.setWinner(3)
+            self.isOver = True
 
         return
     
     def printGameState(self):
+        print "-" * 19
+        print "Total Games Played: " + str(self.gameCnt)
+        print "Winner Stats: " + str(self.stats)
+        print "-" * 19
+        print "Game " + str(self.gameCnt) + ":"
         for x in range(0, self.rows):
             for y in range(0, self.columns):
                 print str(self.gameState[x][y]) + " ",
             print "\n"
+        print "Winner: " + str(self.isOver)
+        print "No. of turns: " + str(self.turnCnt)
+        print "Illegal moves count: " + str(self.illMovesCnt)
         print "-" * 19
     
     def updateArrayForm(self, row, column):
@@ -118,16 +120,23 @@ class Game:
         self.arrayForm[0][pos] = 1
         
     def setWinner(self, player):
-        self.winner = player
-        self.rewards[player] = 50
+        self.isOver = player
+        self.rewards[player] = WINNER_R
+        self.rewards[self.getNextPlayer(player)] = LOSER_R
+        self.stats[player] += 1
         
-    def setLoser(self, player, reward=-50):
-        self.loser = player
-        self.rewards[player] = reward
-
     def getNextPlayer(self, player):
         if player == 1:
             return 2
         else:
             return 1
     
+    def demo(self, moves):
+        self.newGame()
+        for move in moves:
+            self.dropDisc(move)
+            
+        self.printGameState()
+        
+    def clearStats(self):
+        self.stats = {1:0, 2:0}

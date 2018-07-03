@@ -5,91 +5,116 @@ Created on Thu Jun 28 17:52:18 2018
 
 @author: Arpit
 """
-import ann
+import math
+from ann import ANN
 import os.path
 import numpy as np
+from memory import Memory
+
+BATCH_SIZE = 64
+GAMMA = 0.99
+MAX_EPSILON = 1
+MIN_EPSILON = 0.01
+LAMBDA = 0.001# speed of decay
 
 class Player:
     
     def __init__(self, name, game, debug):
         self.debug = debug
-        if self.debug == True:
-            self.epsilon = 0 #randomness
-        else:
-            self.epsilon = 0.5
+        self.epsilon = 0 if self.debug == True else MAX_EPSILON
         self.alpha = 0.5
-        self.gamma = 0.92
         self.name = name
-        self.ANN = ann.ANN()
+        self.memory = Memory(100000)
+        self.stateCnt = game.rows * game.columns * 2
+        self.resetLogs(game, 0)
+
+        self.ANN = ANN()
         if os.path.exists(str(name)):
             self.ANN.load(str(name))
-    
-        self.gamerows = game.rows
-        self.gamecolumns = game.columns
-        self.resetLogs(0)
-        
+
     def play(self, game, action=-1):
         if action != -1:
             game.dropDisc(action)
             game.printGameState()
             return action
         
-        actions = self.ANN.ann.predict(game.arrayForm)
-        if game.turnCnt > 2:
-            prevQVal = self.y[-1:][0][self.moves[-1:]]
-#            print "(" + str(np.max(actions[0])) + "*" + str(self.gamma) + "-" + str(prevQVal) + ")*" + str(self.alpha)
-            prevQVal += (np.max(actions[0])*self.gamma - prevQVal)*self.alpha
-            self.y[-1:][0][self.moves[-1:]] = prevQVal
+        if game.turnCnt >= 2:#first action now taken
+            #observe
+            s = self.X[-1:][0]
+            a = self.moves[-1:]
+            r = game.rewards[self.name] if self.name in game.rewards else 0
+            s_ = game.arrayForm[0] if not game.isOver else None
+            self.memory.add((s, a, r, s_))
+            
+            #train with replay
+            self.train(game)
+                
+        if not game.isOver:
+            #select action for next iteration
+            actions = self.ANN.ann.predict(game.arrayForm)[0]
+            if np.random.uniform() < self.epsilon:
+                action = np.random.choice(game.columns, 1)
+                action = action[0]
+            else:
+                action = np.argmax(actions)
+            
+            #logging
+            self.X = np.vstack([self.X, game.arrayForm])
+            self.y = np.vstack([self.y, actions])
+            self.moves.append(action)
         
-        if np.random.uniform() < self.epsilon:
-            action = np.random.choice(self.gamecolumns, 1)
-            action = action[0]
+            #take action
+            game.dropDisc(action)
+            return action
         else:
-            action = np.argmax(actions[0])
+            if not self.debug:
+                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-LAMBDA * game.gameCnt)
+            self.resetLogs(game)
+            
+    def train(self, game):
+        batch = self.memory.sample(BATCH_SIZE)
+        batchLen = len(batch)
         
-        self.X_train = np.vstack([self.X_train, game.arrayForm])
-        if self.debug == True:
-            self.yo = np.vstack([self.yo, actions])
-        self.y = np.vstack([self.y, actions])
-        self.moves.append(action)
-    
-        game.dropDisc(action)
+        states = np.array([ o[0] for o in batch ])
+        states_ = np.array([ (np.zeros(self.stateCnt) if o[3] is None else o[3]) for o in batch ])
 
-        return action
-        
-    def train(self):
-        verb = 0
-        if self.debug == True:
-            verb = 2
+        p = self.ANN.ann.predict(states)
+        p_ = self.ANN.ann.predict(states_)
 
-        self.ANN.ann.fit(self.X_train, self.y, verbose=0, batch_size=50, epochs=100)
-        self.resetLogs()
+        x = np.empty([0, self.stateCnt])
+        y = np.empty([0, game.columns])
+
+        for i in range(batchLen):
+            o = batch[i]
+            s = o[0]; a = o[1]; r = o[2]; s_ = o[3]
+            
+            t = p[i]
+            if s_ is None:
+                t[a] = r
+            else:
+                t[a] = r + GAMMA * np.amax(p_[i])
+
+            x = np.vstack([x,s])
+            y = np.vstack([y,t])
+            
+            self.ANN.ann.fit(x, y, verbose=0)
         
     def qUpdate(self, game):
         if self.name in game.rewards:
             reward = game.rewards[self.name]
             prevQVal = self.y[-1:][0][self.moves[-1:]]
-#            print "(" + str(reward) + "-" + str(prevQVal) + ")*" + str(self.alpha)
             prevQVal += (reward - prevQVal)*self.alpha
             self.y[-1:][0][self.moves[-1:]] = prevQVal
-        else:
-            self.X_train = self.X_train[:-1]
-            self.y = self.y[:-1]
         
-    def resetLogs(self, oldLog=1):
+    def resetLogs(self, game, oldLog=1):
         if self.debug == True:
             if oldLog != 0:
-                self.x_old = np.copy(self.X_train)
+                self.x_old = np.copy(self.X)
                 self.y_old = np.copy(self.y)
-                self.yo_old = np.copy(self.yo)
                 self.m_old = np.copy(self.moves)
-        self.X_train = np.empty([0, self.gamerows * self.gamecolumns * 2], int)
-        self.y = np.empty([0, self.gamecolumns], float)
+        self.X = np.empty([0, self.stateCnt], int)
+        self.y = np.empty([0, game.columns], float)
         self.moves = []
         
-        if self.debug == True:
-            self.yo = np.copy(self.y)
-
-    def saveExp(self):
+    def saveWeights(self):
         self.ANN.save(str(self.name))
-        
