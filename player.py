@@ -11,24 +11,37 @@ import os.path
 import numpy as np
 from memory import Memory
 
-BATCH_SIZE = 64
+BATCH_SIZE = 100
 GAMMA = 0.99
-MAX_EPSILON = 1
+
+#Exploration Rate
 MIN_EPSILON = 0.01
-LAMBDA = 0.001# speed of decay
+MAX_EPSILON = 1
+E_LAMBDA = 0.0005
+
+#Learning Rate
+MIN_ALPHA = 0.1
+MAX_ALPHA = 1
+A_LAMBDA = 0.0005
+
+#Reward sample ratio
+MIN_SRATIO = 0.3
+MAX_SRATIO = 0.8
+SR_LAMBDA = 0.001
 
 class Player:
     
     def __init__(self, name, game, debug):
         self.debug = debug
         self.epsilon = 0 if self.debug == True else MAX_EPSILON
-        self.alpha = 0.5
+        self.alpha = MAX_ALPHA
+        self.sampleRatio = MAX_SRATIO
         self.name = name
         self.memory = Memory(100000)
         self.stateCnt = game.rows * game.columns * 2
         self.resetLogs(game, 0)
 
-        self.ANN = ANN()
+        self.ANN = ANN(game)
         if os.path.exists(str(name)):
             self.ANN.load(str(name))
 
@@ -70,11 +83,13 @@ class Player:
             return action
         else:
             if not self.debug:
-                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-LAMBDA * game.gameCnt)
+                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * game.gameCnt)
+#            self.alpha = MIN_EPSILON + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * game.gameCnt)
+            self.sampleRatio = MIN_SRATIO + (MAX_SRATIO - MIN_SRATIO) * math.exp(-SR_LAMBDA * game.gameCnt)
             self.resetLogs(game)
             
     def train(self, game):
-        batch = self.memory.sample(BATCH_SIZE)
+        batch = self.memory.sample(BATCH_SIZE, self.sampleRatio)
         batchLen = len(batch)
         
         states = np.array([ o[0] for o in batch ])
@@ -86,8 +101,8 @@ class Player:
         if game.isOver and self.debug:
             self.p = np.copy(p)
 
-        x = np.empty([0, self.stateCnt])
-        y = np.empty([0, game.columns])
+        x = np.zeros((batchLen, self.stateCnt))
+        y = np.zeros((batchLen, game.columns))
 
         for i in range(batchLen):
             o = batch[i]
@@ -95,17 +110,17 @@ class Player:
             
             t = p[i]
             if s_ is None:
-                t[a] = r
+                t[a] += (r - t[a])*self.alpha
             else:
-                t[a] = r + GAMMA * np.amax(p_[i])
+                t[a] += (r + GAMMA * np.amax(p_[i]) - t[a])*self.alpha
 
-            x = np.vstack([x,s])
-            y = np.vstack([y,t])
+            x[i] = s
+            y[i] = t
             
-            self.ANN.ann.fit(x, y, verbose=0)
+            self.ANN.ann.fit(x, y, batch_size=100, verbose=0)
         
+        self.batch = batch
         if game.isOver and self.debug:
-            self.batch = batch
             self.s = states
             self.s_ =  states_
             self.p_ = p_

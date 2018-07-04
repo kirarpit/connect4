@@ -12,13 +12,14 @@ from keras.layers import Dense
 #from keras.layers.advanced_activations import LeakyReLU
 
 class ANN:
-    def __init__(self):
-        self.createANN()
+    def __init__(self, game):
+        self.createANN(game)
     
-    def createANN(self):
+    def createANN(self,game):
         ann = Sequential()
 #        ann.add(Dense(units = 42, kernel_regularizer = l2(0.01), kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
-        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
+        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = game.columns * game.rows * 2))
+        ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
 #        ann.add(LeakyReLU(alpha=0.3))
 
         ann.add(Dense(units = 7, kernel_initializer = "he_normal", activation = 'linear'))

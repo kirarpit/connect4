@@ -8,45 +8,53 @@ Created on Wed Jun 20 18:46:51 2018
 
 import game as c4game
 from player import Player
+import requests
+import yaml
 
-debug = False
+debug = True
 
-game = c4game.Game(6, 7)
+game = c4game.Game(7, 7)
 p1 = Player(1, game, debug)
-p2 = Player(2, game, debug)
 
-while True or game.gameCnt < 2:
+while game.gameCnt < 1:
     game.newGame()
-    
+
     while not game.isOver:
         if game.turnCnt % 2 == 0:
             p1.play(game)
         else:
-            p2.play(game)
+            r = requests.get('http://kevinalbs.com/connect4/back-end/index.php/getMoves?board_data='
+                             + game.toString() + '&player=2')
+            moves = yaml.safe_load(r.text)
+            move = int(max(moves, key=moves.get))
+            game.dropDisc(move)
 
     p1.play(game)
-    p2.play(game)
-    
-    if game.gameCnt % 10 == 0:
-        game.printGameState()
-            
-        if debug == False:
-            p1.saveWeights()
-            p2.saveWeights()
 
+    if game.gameCnt % 1 == 0:
+        game.printGameState()
+        print "Learning Rate: " + str(p1.alpha)
+        print "Exploration Rate: " + str(p1.epsilon)
+        print "Reward Sample Rate: " + str(p1.sampleRatio)
+        
+        cnt=0.0
+        for o in p1.batch:
+            if o[2] != 0:
+                cnt += 1
+                
+        print "Batch reward sample ratio: " + str(cnt/len(p1.batch))
+
+        if debug == False and game.gameCnt % 50 == 0:
+            p1.saveWeights()
+            
 if debug == True:
     batch = p1.batch
     s = p1.s
     s_ = p1.s_
-    p = p1.p
-    p_ = p1.p_
-    fx = p1.fx
-    fy = p1.fy
+    P1 = p1.p
+    fy1 = p1.fy
+    
     x1 = p1.x_old
-    x2 = p2.x_old
     y1 = p1.y_old
-    y2 = p2.y_old
     m1 = p1.m_old
-    m2 = p2.m_old
     w1 = p1.ANN.ann.get_weights()
-    w2 = p2.ANN.ann.get_weights()

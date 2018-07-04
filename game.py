@@ -8,8 +8,8 @@ Created on Sat Jun 23 19:47:06 2018
 
 import numpy as np
 
-LOSER_R = -1
-WINNER_R = 1
+LOSER_R = -10
+WINNER_R = 10
 
 class Game:
     
@@ -38,7 +38,7 @@ class Game:
         self.turnCnt = 0
         self.illMovesCnt = 0
         self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
-        self.arrayForm[True] = -1
+#        self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
 
     def dropDisc(self, column):
@@ -98,7 +98,7 @@ class Game:
         return
     
     def printGameState(self):
-        print "-" * 19
+        print "#" * 19
         print "Total Games Played: " + str(self.gameCnt)
         print "Winner Stats: " + str(self.stats)
         print "-" * 19
@@ -141,3 +141,10 @@ class Game:
         
     def clearStats(self):
         self.stats = {1:0, 2:0}
+        
+    def toString(self):
+        lStr = ""
+        for x in range(0, self.rows):
+            for y in range(0, self.columns):
+                lStr += str(self.gameState[x][y])
+        return lStr
