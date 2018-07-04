@@ -8,8 +8,8 @@ Created on Sat Jun 23 19:47:06 2018
 
 import numpy as np
 
-LOSER_R = -10
-WINNER_R = 10
+LOSER_R = -5
+WINNER_R = 5
 
 class Game:
     
@@ -38,12 +38,12 @@ class Game:
         self.turnCnt = 0
         self.illMovesCnt = 0
         self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
-#        self.arrayForm[True] = -1
+        self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
 
     def dropDisc(self, column):
         if self.isOver:
-            print "Game's over already."
+            print ("Game's over already.")
             return -1
         
         row = 0
@@ -98,19 +98,19 @@ class Game:
         return
     
     def printGameState(self):
-        print "#" * 19
-        print "Total Games Played: " + str(self.gameCnt)
-        print "Winner Stats: " + str(self.stats)
-        print "-" * 19
-        print "Game " + str(self.gameCnt) + ":"
+        print ("#" * 19)
+        print ("Total Games Played: " + str(self.gameCnt))
+        print ("Winner Stats: " + str(self.stats))
+        print ("-" * 19)
+        print ("Game " + str(self.gameCnt) + ":")
         for x in range(0, self.rows):
             for y in range(0, self.columns):
-                print str(self.gameState[x][y]) + " ",
-            print "\n"
-        print "Winner: " + str(self.isOver)
-        print "No. of turns: " + str(self.turnCnt)
-        print "Illegal moves count: " + str(self.illMovesCnt)
-        print "-" * 19
+                print (str(self.gameState[x][y]) + "  ", end='')
+            print ("\n")
+        print ("Winner: " + str(self.isOver))
+        print ("No. of turns: " + str(self.turnCnt))
+        print ("Illegal moves count: " + str(self.illMovesCnt))
+        print ("-" * 19)
     
     def updateArrayForm(self, row, column):
         pos = row * self.columns + column
@@ -146,5 +146,8 @@ class Game:
         lStr = ""
         for x in range(0, self.rows):
             for y in range(0, self.columns):
-                lStr += str(self.gameState[x][y])
+                if self.gameState[x][y] == -1:
+                    lStr += str(0)
+                else:
+                    lStr += str(self.gameState[x][y])
         return lStr
