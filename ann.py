@@ -16,28 +16,22 @@ import os.path
 
 class ANN:
     def __init__(self, name, game):
-        self.filename = str(name) + '.model'
+        self.filename = str(name) + '.h5'
         self.createANN(game)
         self.load()
     
     def createANN(self,game):
         ann = Sequential()
-#        ann.add(Dense(units = 42, kernel_regularizer = l2(0.01), kernel_initializer = "he_normal", activation = 'relu', input_dim = 84))
         ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = game.columns * game.rows * 2))
         ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
-#        ann.add(LeakyReLU(alpha=0.3))
-
-        ann.add(Dense(units = 7, kernel_initializer = "he_normal", activation = 'linear'))
+        ann.add(Dense(units = game.columns, kernel_initializer = "he_normal", activation = 'linear'))
         ann.compile(optimizer = 'rmsprop', loss = 'mean_squared_error', metrics = ['accuracy'])
-#        ann.compile(optimizer = 'adam', loss = 'kullback_leibler_divergence', metrics = ['categorical_accuracy'])
-#        ann.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['categorical_accuracy'])
         self.ann = ann
     
     def save(self):
         self.ann.save(self.filename)
         
     def load(self):
-        print (self.filename)
         if os.path.exists(self.filename):
-            print ("model loaded")
+            print (self.filename + " model loaded")
             self.ann = load_model(self.filename)
