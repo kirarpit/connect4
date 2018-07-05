@@ -18,13 +18,13 @@ def getP2Move(gameString):
                      + gameString + '&player=2')
     moves = yaml.safe_load(r.text)
     return int(max(moves, key=moves.get))
-    
-debug = False
+
+debug = True
 
 game = c4game.Game(7, 7)
 p1 = Player(1, game, debug)
 
-while True or game.gameCnt < 1:
+while game.gameCnt < 1:
     game.newGame()
 
     while not game.isOver:
@@ -35,7 +35,7 @@ while True or game.gameCnt < 1:
 
     p1.play(game)
 
-    if game.gameCnt % 10 == 0:
+    if game.gameCnt % 1 == 0:
         game.printGameState()
         print ("Exploration Rate: " + str(p1.epsilon))
         print (getP2Move.cache_info())

@@ -7,17 +7,16 @@ Created on Thu Jun 28 17:52:18 2018
 """
 import math
 from ann import ANN
-import os.path
 import numpy as np
 from memory import Memory
 
-BATCH_SIZE = 100
+BATCH_SIZE = 64
 GAMMA = 0.99
 
 #Exploration Rate
 MIN_EPSILON = 0.01
-MAX_EPSILON = 1
-E_LAMBDA = 0.001
+MAX_EPSILON = 0.1
+E_LAMBDA = 0.0005
 
 class Player:
     
@@ -29,9 +28,7 @@ class Player:
         self.stateCnt = game.rows * game.columns * 2
         self.nullState = np.zeros(self.stateCnt)
         self.logs = {}
-        self.ANN = ANN(game)
-        if os.path.exists(str(name)):
-            self.ANN.load(str(name))
+        self.ANN = ANN(name, game)
 
     def play(self, game, action=-1):
         if action != -1:
@@ -100,10 +97,12 @@ class Player:
             x[i] = s
             y[i] = t
             
-        self.ANN.ann.fit(x, y, batch_size=BATCH_SIZE, verbose=0)
+        if not self.debug:
+            self.ANN.ann.fit(x, y, batch_size=64, verbose=0)
+            
         if self.debug and game.isOver:
             self.logs['x'] = x
             self.logs['y'] = y
         
     def saveWeights(self):
-        self.ANN.save(str(self.name))
+        self.ANN.save()

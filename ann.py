@@ -8,12 +8,17 @@ Created on Thu Jun 28 17:53:30 2018
 
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.models import load_model
+import os.path
+
 #from keras.regularizers import l2, l1
 #from keras.layers.advanced_activations import LeakyReLU
 
 class ANN:
-    def __init__(self, game):
+    def __init__(self, name, game):
+        self.filename = str(name) + '.model'
         self.createANN(game)
+        self.load()
     
     def createANN(self,game):
         ann = Sequential()
@@ -28,13 +33,11 @@ class ANN:
 #        ann.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['categorical_accuracy'])
         self.ann = ann
     
-    def save(self, filename):
-        self.ann.save_weights(filename + '_weights')
+    def save(self):
+        self.ann.save(self.filename)
         
-        json = self.ann.to_json()
-        file = open(filename + "_config.json", "w")
-        file.write(json)
-        file.close()
-        
-    def load(self, filename):
-        self.ann.load_weights(filename + '_weights', by_name=False)
+    def load(self):
+        print (self.filename)
+        if os.path.exists(self.filename):
+            print ("model loaded")
+            self.ann = load_model(self.filename)
