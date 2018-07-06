@@ -46,7 +46,8 @@ while game.gameCnt < 1:
             p1.play(game)
         else:
 #            p2.play(game)
-            game.dropDisc(random.sample(getP2Move(game.columnString), 1)[0])
+#            game.dropDisc(random.sample(getP2Move(game.columnString), 1)[0])
+            game.dropDisc(getP2Move(game.columnString)[0])
 
     p1.play(game)
 #    p2.play(game)

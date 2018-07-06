@@ -8,8 +8,8 @@ Created on Sat Jun 23 19:47:06 2018
 
 import numpy as np
 
-LOSER_R = -1
-WINNER_R = 1
+LOSER_R = -5
+WINNER_R = 5
 
 class Game:
     

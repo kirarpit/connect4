@@ -10,15 +10,15 @@ from ann import ANN
 import numpy as np
 from pMemory import PMemory
 
-BATCH_SIZE = 100
+BATCH_SIZE = 1000
 GAMMA = 0.99
 
 #Exploration Rate
 MIN_EPSILON = 0.01
 MAX_EPSILON = 1
-E_LAMBDA = 0.0005
+E_LAMBDA = 0.001
 
-MEMORY_CAPACITY = 10000
+MEMORY_CAPACITY = 100000
 
 class Player:
     
@@ -78,7 +78,7 @@ class Player:
             game.dropDisc(self.action)
             return self.action
         else:
-            if game.gameCnt % 10 == 0:
+            if game.gameCnt % 50 == 0:
                 self.updateTargetANN()
                 
             if not self.debug:
@@ -123,8 +123,9 @@ class Player:
         for i in range(len(batch)):
             idx = batch[i][0]
             self.memory.update(idx, errors[i])
-            
-        self.ANN.ann.fit(x, y, batch_size=100, verbose=0)
+        
+        verbosity = 1 if game.gameCnt % 100 == 0 else 0
+        self.ANN.ann.fit(x, y, batch_size=100, verbose=verbosity)
             
         if self.debug and game.isOver:
             self.logs['x'] = x
