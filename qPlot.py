@@ -50,6 +50,9 @@ class QPlot:
         self.states = np.vstack([self.states, g.arrayForm])
         self.actions.append(2)
         
+        self.states = np.vstack([self.states, g.arrayForm])
+        self.actions.append(3)
+
         g.newGame()
         g.dropDisc(5)
         g.dropDisc(2)
@@ -59,17 +62,6 @@ class QPlot:
         g.dropDisc(2)
         self.states = np.vstack([self.states, g.arrayForm])
         self.actions.append(5)
-        
-        g.newGame()
-        g.dropDisc(0)
-        g.dropDisc(5)
-        g.dropDisc(1)
-        g.dropDisc(6)
-        g.dropDisc(2)
-        g.dropDisc(5)
+
         self.states = np.vstack([self.states, g.arrayForm])
-        self.actions.append(3)
-        
-        
-        
-        
+        self.actions.append(2)

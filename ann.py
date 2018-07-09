@@ -25,7 +25,7 @@ class ANN:
         ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu', input_dim = game.columns * game.rows * 2))
         ann.add(Dense(units = 42, kernel_initializer = "he_normal", activation = 'relu'))
         ann.add(Dense(units = game.columns, kernel_initializer = "he_normal", activation = 'linear'))
-        ann.compile(optimizer = 'rmsprop', loss = 'mean_squared_error', metrics = ['accuracy'])
+        ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
         self.ann = ann
     
     def save(self):

@@ -13,28 +13,35 @@ import yaml
 from functools import lru_cache
 
 @lru_cache(maxsize=None)
-def getP2Move(gameColumnString):
-    r = requests.get('http://connect4.gamesolver.org/solve?pos=' + str(gameColumnString))
-    data = yaml.safe_load(r.text)
-    moves = data['score']
-    
-    choices = []
-    maxi = float("-inf")
-    for index, value in enumerate(moves):
-        if value != 100 and maxi <= value:
-            if maxi<value:
-                choices = [index]
-                maxi = value
-            else:
-                choices.append(index)
-        
-    return choices
+def getP2Move(gameString):
+    r = requests.get('http://kevinalbs.com/connect4/back-end/index.php/getMoves?board_data='
+                     + gameString + '&player=2')
+    moves = yaml.safe_load(r.text)
+    return int(max(moves, key=moves.get))
+
+#@lru_cache(maxsize=None)
+#def getP2Move(gameColumnString):
+#    r = requests.get('http://connect4.gamesolver.org/solve?pos=' + str(gameColumnString))
+#    data = yaml.safe_load(r.text)
+#    moves = data['score']
+#    
+#    choices = []
+#    maxi = float("-inf")
+#    for index, value in enumerate(moves):
+#        if value != 100 and maxi <= value:
+#            if maxi<value:
+#                choices = [index]
+#                maxi = value
+#            else:
+#                choices.append(index)
+#        
+#    return choices
 
 debug = False
 
-game = c4game.Game(6, 7)
+game = c4game.Game(7, 7)
 p1 = Player(1, game, debug)
-
+ 
 p1WinCnt = 0
 while True or game.gameCnt < 1:
     game.newGame()
@@ -44,7 +51,8 @@ while True or game.gameCnt < 1:
             p1.play(game)
         else:
 #            game.dropDisc(random.sample(getP2Move(game.columnString), 1)[0])
-            game.dropDisc(getP2Move(game.columnString)[0])
+#            game.dropDisc(getP2Move(game.columnString)[0])
+            game.dropDisc(getP2Move(game.toString()))
 
     p1.play(game)
 
