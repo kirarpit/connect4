@@ -12,10 +12,10 @@ from pMemory import PMemory
 from qPlot import QPlot
 
 BATCH_SIZE = 1000
-T_BATCH_SIZE = 1000
-GAMMA = 0.90
-UPDATE_TARGET_NET = 200
-PLOT_INTERVAL = UPDATE_TARGET_NET/10
+T_BATCH_SIZE = 100
+GAMMA = 0.99
+UPDATE_TARGET_NET = 500
+PLOT_INTERVAL = UPDATE_TARGET_NET/5
 
 #Exploration Rate
 MIN_EPSILON = 0.01
@@ -86,8 +86,9 @@ class Player:
             return self.action
         else:
             if game.gameCnt % PLOT_INTERVAL == 0:
-                self.qPlot.add()
-                self.qPlot.show()
+                self.qPlot.printQValues()
+#                self.qPlot.add()
+#                self.qPlot.show()
                 
             if game.gameCnt % UPDATE_TARGET_NET == 0:
                 self.updateTargetANN()
@@ -135,7 +136,7 @@ class Player:
             idx = batch[i][0]
             self.memory.update(idx, errors[i])
         
-        verbosity = 2 if game.gameCnt % 100 == 0 else 0
+        verbosity = 2 if game.gameCnt % PLOT_INTERVAL == 0 else 0
         self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=verbosity)
             
         if self.debug and game.isOver:

@@ -112,7 +112,6 @@ class Game:
             print ("\n")
         print ("Winner: " + str(self.isOver))
         print ("No. of turns: " + str(self.turnCnt))
-        print ("-" * 19)
     
     def updateArrayForm(self, row, column):
         pos = row * self.columns + column

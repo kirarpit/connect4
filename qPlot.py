@@ -37,6 +37,12 @@ class QPlot:
         plt.draw()
         plt.show()
 
+    def printQValues(self):
+        preds = self.ann.predict(self.states)
+        for index, pred in enumerate(preds):
+            print (str(pred[self.actions[index]]) + ", ", end="")
+        print ("\n")
+
     def getStatesAndActions(self, game):
         g = Game(game.rows, game.columns)
         

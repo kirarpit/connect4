@@ -41,7 +41,7 @@ debug = False
 
 game = c4game.Game(7, 7)
 p1 = Player(1, game, debug)
- 
+
 p1WinCnt = 0
 while True or game.gameCnt < 1:
     game.newGame()
