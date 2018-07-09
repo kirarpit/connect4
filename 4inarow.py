@@ -11,7 +11,6 @@ from player import Player
 import requests
 import yaml
 from functools import lru_cache
-import random
 
 @lru_cache(maxsize=None)
 def getP2Move(gameColumnString):
@@ -31,34 +30,30 @@ def getP2Move(gameColumnString):
         
     return choices
 
-debug = True
+debug = False
 
 game = c4game.Game(6, 7)
 p1 = Player(1, game, debug)
-#p2 = Player(2, game, debug)
 
 p1WinCnt = 0
-while game.gameCnt < 1:
+while True or game.gameCnt < 1:
     game.newGame()
 
     while not game.isOver:
         if game.turnCnt % 2 == 0:
             p1.play(game)
         else:
-#            p2.play(game)
 #            game.dropDisc(random.sample(getP2Move(game.columnString), 1)[0])
             game.dropDisc(getP2Move(game.columnString)[0])
 
     p1.play(game)
-#    p2.play(game)
 
-    if game.gameCnt % 1 == 0:
+    if game.gameCnt % 10 == 0:
         game.printGameState()
         print ("Exploration Rate: " + str(p1.epsilon))
         print (getP2Move.cache_info())
         if not debug and game.gameCnt % 100 == 0:
             p1.saveWeights()
-#            p2.saveWeights()
             
     p1WinCnt = p1WinCnt + 1 if game.isOver == 1 else 0
     if p1WinCnt == 100:
@@ -68,4 +63,3 @@ while game.gameCnt < 1:
 if debug:
     w1 = p1.ANN.ann.get_weights()
     locals().update(p1.logs)
-#    moves2 = p2.logs['moves']
