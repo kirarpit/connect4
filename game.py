@@ -36,12 +36,12 @@ class Game:
         self.gameCnt += 1
         self.toPlay = 1
         self.turnCnt = 0
-        self.illMovesCnt = 0
         self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
         self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         self.columnString = ""
-
+        self.columnFull = {}
+        
     def dropDisc(self, column):
         if self.isOver:
             print ("Game's over already.")
@@ -55,10 +55,12 @@ class Game:
         
         #illegal move. row full.
         if row == 0:
-            self.illMovesCnt += 1
-            self.setWinner(self.getNextPlayer(self.toPlay))
+            print ("Illegal Move!!!!")
             return -2
         else:
+            if row == 1:
+                self.columnFull[column] = True
+            
             self.gameState[row - 1][column] = self.toPlay
             self.updateArrayForm(row - 1, column)
             self.switchTurn()
@@ -95,6 +97,7 @@ class Game:
             
         if self.turnCnt == self.rows * self.columns:
             self.isOver = True
+            self.stats['Draw'] += 1
 
         return
     
@@ -102,31 +105,25 @@ class Game:
         print ("#" * 19)
         print ("Total Games Played: " + str(self.gameCnt))
         print ("Winner Stats: " + str(self.stats))
-        print ("-" * 19)
         print ("Game " + str(self.gameCnt) + ":")
         for x in range(0, self.rows):
             for y in range(0, self.columns):
                 print (str(self.gameState[x][y]) + "  ", end='')
-#                print str(self.gameState[x][y]) + " ",
             print ("\n")
         print ("Winner: " + str(self.isOver))
         print ("No. of turns: " + str(self.turnCnt))
-        print ("Illegal moves count: " + str(self.illMovesCnt))
         print ("-" * 19)
     
     def updateArrayForm(self, row, column):
         pos = row * self.columns + column
         if self.gameState[row][column] == 2:
             pos += self.rows * self.columns
-    
         self.arrayForm[0][pos] = 1
-        
         self.columnString += str(column + 1)
         
     def setWinner(self, player):
         self.isOver = player
-        if self.illMovesCnt == 0:
-            self.rewards[player] = WINNER_R
+        self.rewards[player] = WINNER_R
         self.rewards[self.getNextPlayer(player)] = LOSER_R
         self.stats[player] += 1
         
@@ -135,7 +132,13 @@ class Game:
             return 2
         else:
             return 1
-    
+        
+    def isIllMove(self, column):
+        if column in self.columnFull and self.columnFull[column]:
+            return True
+        else:
+            return False
+
     def demo(self, moves):
         self.newGame()
         for move in moves:
@@ -144,7 +147,7 @@ class Game:
         self.printGameState()
         
     def clearStats(self):
-        self.stats = {1:0, 2:0}
+        self.stats = {1:0, 2:0, 'Draw':0}
         
     def toString(self):
         lStr = ""

@@ -9,9 +9,11 @@ import math
 from ann import ANN
 import numpy as np
 from pMemory import PMemory
+from qPlot import QPlot
 
 BATCH_SIZE = 1000
 GAMMA = 0.99
+PLOT_INTERVAL = 10
 
 #Exploration Rate
 MIN_EPSILON = 0.01
@@ -32,6 +34,7 @@ class Player:
         self.ANN = ANN(name, game)
         self.tANN = ANN(str(name) + "_", game)
         self.updateTargetANN()
+        self.qPlot = QPlot(self.ANN.ann, PLOT_INTERVAL)
         
     def play(self, game, action=-1):
         if action != -1:
@@ -46,11 +49,9 @@ class Player:
             r = game.rewards[self.name] if self.name in game.rewards else 0
             
             #add sample
-            if not game.isOver or r != 0:#illegal move corner case
-                sample = (self.lastState, self.action, r, s_)
-                x, y, errors = self.getTargets(game, [(0, sample)])
-                
-                self.memory.add(errors[0], sample)
+            sample = (self.lastState, self.action, r, s_)
+            x, y, errors = self.getTargets(game, [(0, sample)])
+            self.memory.add(errors[0], sample)
             
             #train
             self.train(game)
@@ -60,10 +61,14 @@ class Player:
         #act
         if not game.isOver:
             if np.random.uniform() < self.epsilon:
-                action = np.random.choice(game.columns, 1)
-                self.action = action[0]
+                while True:
+                    c = np.random.choice(game.columns, 1)[0]
+                    if not game.isIllMove(c):
+                        break
+                self.action = c
             else:
                 actions = self.ANN.ann.predict(game.arrayForm)[0]
+                actions = self.filterIllMoves(game, actions)
                 self.action = np.argmax(actions)
                 
                 if self.debug:
@@ -78,6 +83,10 @@ class Player:
             game.dropDisc(self.action)
             return self.action
         else:
+            if game.gameCnt % PLOT_INTERVAL == 0:
+                self.qPlot.add()
+                self.qPlot.show()
+                
             if game.gameCnt % 50 == 0:
                 self.updateTargetANN()
                 
@@ -134,5 +143,12 @@ class Player:
     def updateTargetANN(self):
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
 
+    def filterIllMoves(self, game, moves):
+        for index, move in enumerate(moves):
+            if game.isIllMove(index):
+                moves[index] = float("-inf")
+        
+        return moves
+    
     def saveWeights(self):
         self.ANN.save()
