@@ -12,10 +12,8 @@ from keras.models import load_model
 import os.path
 import keras
 import tensorflow as tf
+from keras.regularizers import l2
 
-#from keras.regularizers import l2, l1
-#from keras.layers.advanced_activations import LeakyReLU
-            
 def huber_loss(y_true, y_pred, clip_delta=1.0):
   error = y_true - y_pred
   cond  = keras.backend.abs(error) < clip_delta
@@ -25,18 +23,21 @@ def huber_loss(y_true, y_pred, clip_delta=1.0):
 
   loss = tf.where(cond, squared_loss, linear_loss)
   return keras.backend.mean(loss)
-  
+
 class ANN:
-    def __init__(self, name, game):
-        self.filename = str(name) + '_1.h5'
-        self.createANN(game)
+    def __init__(self, name, stateCnt, actionCnt):
+        self.filename = str(name) + '.h5'
+        self.stateCnt = stateCnt
+        self.actionCnt = actionCnt
+        self.createANN()
         self.load()
     
-    def createANN(self,game):
+    def createANN(self):
         ann = Sequential()
-        ann.add(Dense(units = 42, activation = 'relu', input_dim = game.columns * game.rows * 2))
-        ann.add(Dense(units = 42, activation = 'relu'))
-        ann.add(Dense(units = game.columns, activation = 'linear'))
+        ann.add(Dense(units = 42, kernel_regularizer = l2(0.01), activation = 'relu', input_dim = self.stateCnt))
+        ann.add(Dense(units = 84, kernel_regularizer = l2(0.01), activation = 'relu'))
+        ann.add(Dense(units = 42, kernel_regularizer = l2(0.01), activation = 'relu'))
+        ann.add(Dense(units = self.actionCnt, kernel_regularizer = l2(0.01), activation = 'linear'))
         ann.compile(optimizer = 'rmsprop', loss = huber_loss, metrics = ['accuracy'])
         self.ann = ann
     
@@ -46,4 +47,4 @@ class ANN:
     def load(self):
         if os.path.exists(self.filename):
             print (self.filename + " model loaded")
-            self.ann = load_model(self.filename)
+            self.ann = load_model(self.filename, custom_objects={'huber_loss': huber_loss})

@@ -7,17 +7,45 @@ Created on Sat Jun 23 19:47:06 2018
 """
 
 import numpy as np
+import requests, yaml, random
+from functools import lru_cache
 
 LOSER_R = -5
 WINNER_R = 5
 
-class Game:
+@lru_cache(maxsize=None)
+def getP2Move_1(gameString):
+    r = requests.get('http://kevinalbs.com/connect4/back-end/index.php/getMoves?board_data='
+                     + gameString + '&player=2')
+    moves = yaml.safe_load(r.text)
+    return int(max(moves, key=moves.get))
+
+@lru_cache(maxsize=None)
+def getP2Move_2(gameColumnString):
+    r = requests.get('http://connect4.gamesolver.org/solve?pos=' + str(gameColumnString))
+    data = yaml.safe_load(r.text)
+    moves = data['score']
     
-    def __init__(self, rows, columns):
+    choices = []
+    maxi = float("-inf")
+    for index, value in enumerate(moves):
+        if value != 100 and maxi <= value:
+            if maxi<value:
+                choices = [index]
+                maxi = value
+            else:
+                choices.append(index)
+        
+    return choices
+    
+class C4Game:
+    
+    def __init__(self, rows=6, columns=7):
         self.rows = rows
         self.columns = columns
+        self.stateCnt = rows * columns * 2
+        self.actionCnt = columns
         self.gameCnt = -1
-        self.newGame()
         self.deltas = {
                 "N":(0, -1),
                 "NE":(1, -1),
@@ -28,7 +56,8 @@ class Game:
                 "SW":(-1, 1),
                 "S":(0, 1)
                 }
-        self.clearStats()
+        self.stats = {1:0, 2:0, 'Draw':0}
+        self.p2DiffLevel = 5
     
     def newGame(self):
         self.isOver = False
@@ -36,16 +65,42 @@ class Game:
         self.gameCnt += 1
         self.toPlay = 1
         self.turnCnt = 0
-        self.arrayForm = np.zeros((1, self.rows * self.columns * 2), dtype=int)
+        self.arrayForm = np.zeros((1, self.stateCnt), dtype=int)
         self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         self.columnString = ""
-        self.columnFull = {}
+        self.fullColumns = set()
         
-    def dropDisc(self, column):
-        if self.isOver:
+    def getStateActionCnt(self):
+        return (self.stateCnt, self.actionCnt)
+
+    def isOver(self):
+        return True if self.isOver else False
+        
+    def getCurrentState(self):
+        return self.arrayForm
+        
+    def getNextState(self, action):
+        self.step(action)
+        
+        if not self.isOver():
+            self.p2act()
+    
+        if not self.isOver():
+            newState = self.getCurrentState()
+        else:
+            newState = None
+            
+        return (newState, self.getReward(1))
+        
+    def step(self, column):
+        if self.isOver():
             print ("Game's over already.")
             return -1
+
+        if column in self.fullColumns:
+            print ("Illegal Move!!!!")
+            return -2
         
         row = 0
         while row < self.rows:
@@ -53,26 +108,26 @@ class Game:
                 break
             row += 1
         
-        #illegal move. row full.
+        row -= 1
         if row == 0:
-            print ("Illegal Move!!!!")
-            return -2
-        else:
-            if row == 1:
-                self.columnFull[column] = True
+            self.fullColumns.add(column)
             
-            self.gameState[row - 1][column] = self.toPlay
-            self.updateArrayForm(row - 1, column)
-            self.switchTurn()
-            self.checkEndStates(row - 1, column)
-            return self.toPlay
+        self.updateGameState(row, column)
+    
+    def updateGameState(self, row, column):
+        self.gameState[row][column] = self.toPlay
+
+        pos = row * self.columns + column
+        if self.toPlay == 2:
+            pos += self.rows * self.columns
+        self.arrayForm[0][pos] = 1
         
-    def switchTurn(self):
-        self.turnCnt += 1
-        self.toPlay = self.getNextPlayer(self.toPlay)
+        self.columnString += str(column + 1)
+        self.checkEndStates(row, column)
+        self.switchTurn()
         
     def checkEndStates(self, row, column):
-        player = self.gameState[row][column]
+        player = self.toPlay
         directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
 
         for dpair in directions:
@@ -95,12 +150,25 @@ class Game:
                 self.setWinner(player)
                 break
             
-        if self.turnCnt == self.rows * self.columns:
+        if self.turnCnt == self.rows * self.columns - 1:
             self.isOver = True
             self.stats['Draw'] += 1
-
-        return
     
+    def getIllMoves(self):
+        return list(self.fullColumns)
+        
+    def p2act(self):
+        if self.p2DiffLevel == 3:
+            action = getP2Move_1(self.toString())
+        elif self.p2DiffLevel == 5:
+            action = random.sample(getP2Move_2(self.columnString), 1)[0]
+
+        self.step(action)
+        
+    def switchTurn(self):
+        self.turnCnt += 1
+        self.toPlay = self.getNextPlayer(self.toPlay)
+
     def printGameState(self):
         print ("#" * 19)
         print ("Total Games Played: " + str(self.gameCnt))
@@ -112,13 +180,6 @@ class Game:
             print ("\n")
         print ("Winner: " + str(self.isOver))
         print ("No. of turns: " + str(self.turnCnt))
-    
-    def updateArrayForm(self, row, column):
-        pos = row * self.columns + column
-        if self.gameState[row][column] == 2:
-            pos += self.rows * self.columns
-        self.arrayForm[0][pos] = 1
-        self.columnString += str(column + 1)
         
     def setWinner(self, player):
         self.isOver = player
@@ -126,27 +187,17 @@ class Game:
         self.rewards[self.getNextPlayer(player)] = LOSER_R
         self.stats[player] += 1
         
+    def getReward(self, player):
+        if player in self.rewards:
+            return self.rewards[player]
+        else:
+            return 0
+        
     def getNextPlayer(self, player):
         if player == 1:
             return 2
         else:
             return 1
-        
-    def isIllMove(self, column):
-        if column in self.columnFull and self.columnFull[column]:
-            return True
-        else:
-            return False
-
-    def demo(self, moves):
-        self.newGame()
-        for move in moves:
-            self.dropDisc(move)
-            
-        self.printGameState()
-        
-    def clearStats(self):
-        self.stats = {1:0, 2:0, 'Draw':0}
         
     def toString(self):
         lStr = ""

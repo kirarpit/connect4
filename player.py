@@ -11,92 +11,70 @@ import numpy as np
 from pMemory import PMemory
 from qPlot import QPlot
 
-BATCH_SIZE = 1000
+BATCH_SIZE = 100
 T_BATCH_SIZE = 100
 GAMMA = 0.99
-UPDATE_TARGET_NET = 500
+UPDATE_TARGET_NET = 1000
 PLOT_INTERVAL = UPDATE_TARGET_NET/5
 
 #Exploration Rate
 MIN_EPSILON = 0.01
 MAX_EPSILON = 1
-E_LAMBDA = 0.001
+E_LAMBDA = 0.0001
 
 MEMORY_CAPACITY = 100000
 
 class Player:
     
-    def __init__(self, name, game, debug):
-        self.debug = debug
-        self.epsilon = 0 if self.debug else MAX_EPSILON
+    def __init__(self, name, stateCnt, actionCnt, debug=False):
         self.name = name
+        self.stateCnt = stateCnt
+        self.actionCnt = actionCnt
+        self.debug = debug
+        self.epsilon = 0 if debug else MAX_EPSILON
         self.memory = PMemory(MEMORY_CAPACITY)
-        self.stateCnt = game.rows * game.columns * 2
-        self.nullState = np.zeros(self.stateCnt)
-        self.ANN = ANN(name, game)
-        self.tANN = ANN(str(name) + "_", game)
+        self.nullState = np.zeros(stateCnt)
+        self.ANN = ANN(name, stateCnt, actionCnt)
+        self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
+        self.qPlot = QPlot(stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
         self.updateTargetANN()
-        self.qPlot = QPlot(game, self.ANN.ann, PLOT_INTERVAL)
+        self.initLog()
         
-    def play(self, game, action=-1):
-        if action != -1:
-            game.dropDisc(action)
-            game.printGameState()
-            return action
-        
-        s_ = np.copy(game.arrayForm[0]) if not game.isOver else None
-        
-        #observe
-        if game.turnCnt > 1:
-            r = game.rewards[self.name] if self.name in game.rewards else 0
-            
-            #add sample
-            sample = (self.lastState, self.action, r, s_)
-            x, y, errors = self.getTargets(game, [(0, sample)])
-            self.memory.add(errors[0], sample)
-            
-            #train
-            self.train(game)
+    def act(self, state, illActions):
+        if np.random.uniform() < self.epsilon:
+            while True:
+                action = np.random.choice(self.actionCnt, 1)[0]
+                if action not in illActions:
+                    break
         else:
-            self.logs = {}
+            actions = self.ANN.ann.predict(state)[0]
+            actions = self.filterIllMoves(actions, illActions)
+            action = np.argmax(actions)
+            
+            if self.debug:
+                self.logs['preds'] = np.vstack([self.logs['preds'], actions])
+                self.logs['moves'].append(action)
+                
+        return action
 
-        #act
-        if not game.isOver:
-            if np.random.uniform() < self.epsilon:
-                while True:
-                    c = np.random.choice(game.columns, 1)[0]
-                    if not game.isIllMove(c):
-                        break
-                self.action = c
-            else:
-                actions = self.ANN.ann.predict(game.arrayForm)[0]
-                actions = self.filterIllMoves(game, actions)
-                self.action = np.argmax(actions)
-                
-                if self.debug:
-                    if 'preds' in self.logs:
-                        self.logs['preds'] = np.vstack([self.logs['preds'], actions])
-                        self.logs['moves'].append(self.action)
-                    else:
-                        self.logs['preds'] = actions
-                        self.logs['moves'] = [self.action]
-                    
-            self.lastState = s_
-            game.dropDisc(self.action)
-            return self.action
-        else:
-            if game.gameCnt % PLOT_INTERVAL == 0:
-                self.qPlot.printQValues()
-#                self.qPlot.add()
-#                self.qPlot.show()
-                
-            if game.gameCnt % UPDATE_TARGET_NET == 0:
-                self.updateTargetANN()
-                
-            if not self.debug:
-                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * game.gameCnt)
-                
-    def getTargets(self, game, batch):
+    def observe(self, sample, gameCnt):
+        x, y, errors = self.getTargets([(0, sample)])
+        self.memory.add(errors[0], sample)
+        
+        if gameCnt % PLOT_INTERVAL == 0:
+            self.qPlot.printQValues()
+            self.qPlot.add()
+            self.qPlot.show()
+            
+        if gameCnt % UPDATE_TARGET_NET == 0:
+            self.updateTargetANN()
+            
+        if not self.debug:
+            self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
+        
+        self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 else 0
+
+    def getTargets(self, batch):
         batchLen = len(batch)
         
         states = np.array([ o[1][0] for o in batch ])
@@ -107,7 +85,7 @@ class Player:
         tp_ = self.tANN.ann.predict(states_)
         
         x = np.zeros((batchLen, self.stateCnt))
-        y = np.zeros((batchLen, game.columns))
+        y = np.zeros((batchLen, self.actionCnt))
         errors = np.zeros(batchLen)
 
         for i in range(batchLen):
@@ -127,31 +105,35 @@ class Player:
         
         return (x, y, errors)
         
-    def train(self, game):
+    def replay(self):
         batch = self.memory.sample(BATCH_SIZE)
-        x, y, errors = self.getTargets(game, batch)
+        x, y, errors = self.getTargets(batch)
         
         #update errors
         for i in range(len(batch)):
             idx = batch[i][0]
             self.memory.update(idx, errors[i])
         
-        verbosity = 2 if game.gameCnt % PLOT_INTERVAL == 0 else 0
-        self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=verbosity)
-            
-        if self.debug and game.isOver:
+        self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=self.verbosity)
+
+        if self.debug:
             self.logs['x'] = x
             self.logs['y'] = y
             
     def updateTargetANN(self):
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
 
-    def filterIllMoves(self, game, moves):
+    def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):
-            if game.isIllMove(index):
+            if index in illMoves:
                 moves[index] = float("-inf")
         
         return moves
     
     def saveWeights(self):
         self.ANN.save()
+        
+    def initLog(self):
+        self.logs = {}
+        self.logs['preds'] = np.empty([0, self.actionCnt])
+        self.logs['moves'] = []

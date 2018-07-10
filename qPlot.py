@@ -7,29 +7,31 @@ Created on Sun Jul  8 21:27:02 2018
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from game import Game
+from c4game import C4Game
 
 class QPlot:
-    def __init__(self, game, ann, interval=1000):
+    def __init__(self, stateCnt, actionCnt, ann, interval=1000):
+        self.stateCnt = stateCnt
+        self.actionCnt = actionCnt
         self.ann = ann
         self.interval = interval
         self.cnt = 0
-        self.x = []
-        self.states = np.empty([0, len(game.arrayForm[0]  )])
+        self.states = np.empty([0, stateCnt])
         self.actions = []
-        self.getStatesAndActions(game)
-        self.ys = np.empty((len(self.actions),), dtype=object)
+        self.getStatesAndActions()
+        self.x = []
+        self.ys = np.empty((self.states.shape[0],), dtype=object)
         for i,v in enumerate(self.ys): self.ys[i] = list()
         
     def add(self):
         self.x.append(self.cnt * self.interval)
         preds = self.ann.predict(self.states)
         for index, pred in enumerate(preds):
-            self.ys[index].append(pred[self.actions[index]])
+            self.ys[index].append(np.mean(pred))
         self.cnt += 1
         
     def show(self):
-        for i in range(0, len(self.actions)):
+        for i in range(0, self.states.shape[0]):
             plt.plot(self.x, self.ys[i], label=i)
             
         plt.legend(loc = "best")
@@ -43,8 +45,8 @@ class QPlot:
             print (str(pred[self.actions[index]]) + ", ", end="")
         print ("\n")
 
-    def getStatesAndActions(self, game):
-        g = Game(game.rows, game.columns)
+    def getStatesAndActions(self):
+        g = C4Game()
         
         g.newGame()
         g.dropDisc(0)
@@ -53,21 +55,9 @@ class QPlot:
         g.dropDisc(2)
         g.dropDisc(3)
         g.dropDisc(2)
-        self.states = np.vstack([self.states, g.arrayForm])
+        self.states = np.vstack([self.states, g.getCurrentState()])
         self.actions.append(2)
         
-        self.states = np.vstack([self.states, g.arrayForm])
-        self.actions.append(3)
-
         g.newGame()
-        g.dropDisc(5)
-        g.dropDisc(2)
-        g.dropDisc(5)
-        g.dropDisc(2)
-        g.dropDisc(5)
-        g.dropDisc(2)
-        self.states = np.vstack([self.states, g.arrayForm])
-        self.actions.append(5)
-
-        self.states = np.vstack([self.states, g.arrayForm])
-        self.actions.append(2)
+        self.states = np.vstack([self.states, g.getCurrentState()])
+        self.actions.append(3)
