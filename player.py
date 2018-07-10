@@ -11,11 +11,7 @@ import numpy as np
 from pMemory import PMemory
 from qPlot import QPlot
 
-BATCH_SIZE = 100
-T_BATCH_SIZE = 100
 GAMMA = 0.99
-UPDATE_TARGET_NET = 1000
-PLOT_INTERVAL = UPDATE_TARGET_NET/5
 
 #Exploration Rate
 MIN_EPSILON = 0.01
@@ -23,6 +19,11 @@ MAX_EPSILON = 1
 E_LAMBDA = 0.0001
 
 MEMORY_CAPACITY = 100000
+
+UPDATE_TARGET_NET = 1000
+BATCH_SIZE = 100
+T_BATCH_SIZE = 100
+PLOT_INTERVAL = UPDATE_TARGET_NET/5
 
 class Player:
     
@@ -38,6 +39,7 @@ class Player:
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
         self.qPlot = QPlot(stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
         self.updateTargetANN()
+        self.verbosity = 0
         self.initLog()
         
     def act(self, state, illActions):
@@ -47,7 +49,7 @@ class Player:
                 if action not in illActions:
                     break
         else:
-            actions = self.ANN.ann.predict(state)[0]
+            actions = self.ANN.ann.predict(np.array([state]))[0]
             actions = self.filterIllMoves(actions, illActions)
             action = np.argmax(actions)
             
@@ -61,18 +63,18 @@ class Player:
         x, y, errors = self.getTargets([(0, sample)])
         self.memory.add(errors[0], sample)
         
-        if gameCnt % PLOT_INTERVAL == 0:
-            self.qPlot.printQValues()
-            self.qPlot.add()
-            self.qPlot.show()
-            
-        if gameCnt % UPDATE_TARGET_NET == 0:
-            self.updateTargetANN()
-            
-        if not self.debug:
-            self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
+        if sample[3] is None:
+            if gameCnt % PLOT_INTERVAL == 0:
+                self.qPlot.add()
+                self.qPlot.show()
+                
+            if gameCnt % UPDATE_TARGET_NET == 0:
+                self.updateTargetANN()
+                
+            if not self.debug:
+                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
         
-        self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 else 0
+        self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
 
     def getTargets(self, batch):
         batchLen = len(batch)
@@ -121,6 +123,7 @@ class Player:
             self.logs['y'] = y
             
     def updateTargetANN(self):
+        print("Target ANN updated")
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
 
     def filterIllMoves(self, moves, illMoves):

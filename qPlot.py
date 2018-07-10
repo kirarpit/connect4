@@ -27,7 +27,7 @@ class QPlot:
         self.x.append(self.cnt * self.interval)
         preds = self.ann.predict(self.states)
         for index, pred in enumerate(preds):
-            self.ys[index].append(np.mean(pred))
+            self.ys[index].append(pred[self.actions[index]])
         self.cnt += 1
         
     def show(self):
@@ -49,12 +49,12 @@ class QPlot:
         g = C4Game()
         
         g.newGame()
-        g.dropDisc(0)
-        g.dropDisc(2)
-        g.dropDisc(3)
-        g.dropDisc(2)
-        g.dropDisc(3)
-        g.dropDisc(2)
+        g.step(0)
+        g.step(2)
+        g.step(3)
+        g.step(2)
+        g.step(3)
+        g.step(2)
         self.states = np.vstack([self.states, g.getCurrentState()])
         self.actions.append(2)
         

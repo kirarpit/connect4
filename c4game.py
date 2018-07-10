@@ -45,7 +45,7 @@ class C4Game:
         self.columns = columns
         self.stateCnt = rows * columns * 2
         self.actionCnt = columns
-        self.gameCnt = -1
+        self.gameCnt = 0
         self.deltas = {
                 "N":(0, -1),
                 "NE":(1, -1),
@@ -60,12 +60,12 @@ class C4Game:
         self.p2DiffLevel = 5
     
     def newGame(self):
-        self.isOver = False
+        self.over = False
         self.rewards = {}
         self.gameCnt += 1
         self.toPlay = 1
         self.turnCnt = 0
-        self.arrayForm = np.zeros((1, self.stateCnt), dtype=int)
+        self.arrayForm = np.zeros(self.stateCnt, dtype=int)
         self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         self.columnString = ""
@@ -75,7 +75,7 @@ class C4Game:
         return (self.stateCnt, self.actionCnt)
 
     def isOver(self):
-        return True if self.isOver else False
+        return True if self.over else False
         
     def getCurrentState(self):
         return self.arrayForm
@@ -120,7 +120,7 @@ class C4Game:
         pos = row * self.columns + column
         if self.toPlay == 2:
             pos += self.rows * self.columns
-        self.arrayForm[0][pos] = 1
+        self.arrayForm[pos] = 1
         
         self.columnString += str(column + 1)
         self.checkEndStates(row, column)
@@ -151,7 +151,7 @@ class C4Game:
                 break
             
         if self.turnCnt == self.rows * self.columns - 1:
-            self.isOver = True
+            self.over = True
             self.stats['Draw'] += 1
     
     def getIllMoves(self):
@@ -169,7 +169,7 @@ class C4Game:
         self.turnCnt += 1
         self.toPlay = self.getNextPlayer(self.toPlay)
 
-    def printGameState(self):
+    def printGame(self):
         print ("#" * 19)
         print ("Total Games Played: " + str(self.gameCnt))
         print ("Winner Stats: " + str(self.stats))
@@ -178,11 +178,11 @@ class C4Game:
             for y in range(0, self.columns):
                 print (str(self.gameState[x][y]) + "  ", end='')
             print ("\n")
-        print ("Winner: " + str(self.isOver))
+        print ("Winner: " + str(self.over))
         print ("No. of turns: " + str(self.turnCnt))
         
     def setWinner(self, player):
-        self.isOver = player
+        self.over = player
         self.rewards[player] = WINNER_R
         self.rewards[self.getNextPlayer(player)] = LOSER_R
         self.stats[player] += 1
