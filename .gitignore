@@ -2,3 +2,4 @@
 *.pyc
 ann/*
 models/*
+*h5
