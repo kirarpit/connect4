@@ -12,7 +12,6 @@ from keras.models import load_model
 import os.path
 import keras
 import tensorflow as tf
-from keras.regularizers import l2
 
 def huber_loss(y_true, y_pred, clip_delta=1.0):
   error = y_true - y_pred
@@ -31,13 +30,12 @@ class ANN:
         self.actionCnt = actionCnt
         self.createANN()
         self.load()
-    
+
     def createANN(self):
         ann = Sequential()
-        ann.add(Dense(units = 42, kernel_regularizer = l2(0.0001), activation = 'relu', input_dim = self.stateCnt))
-        ann.add(Dense(units = 84, kernel_regularizer = l2(0.0001), activation = 'relu'))
-        ann.add(Dense(units = 42, kernel_regularizer = l2(0.0001), activation = 'relu'))
-        ann.add(Dense(units = self.actionCnt, kernel_regularizer = l2(0.0001), activation = 'linear'))
+        ann.add(Dense(units = 42, activation = 'relu', input_dim = self.stateCnt))
+        ann.add(Dense(units = self.stateCnt, activation = 'relu'))
+        ann.add(Dense(units = self.actionCnt, activation = 'linear'))
         ann.compile(optimizer = 'rmsprop', loss = huber_loss, metrics = ['accuracy'])
         self.ann = ann
     

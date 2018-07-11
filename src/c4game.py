@@ -6,6 +6,7 @@ Created on Sat Jun 23 19:47:06 2018
 @author: Arpit
 """
 
+from game import Game
 import numpy as np
 import requests, yaml, random
 from functools import lru_cache
@@ -38,14 +39,15 @@ def getP2Move_2(gameColumnString):
         
     return choices
     
-class C4Game:
+class C4Game(Game):
     
     def __init__(self, rows=6, columns=7):
+        super().__init__()
+        
         self.rows = rows
         self.columns = columns
         self.stateCnt = rows * columns * 2
         self.actionCnt = columns
-        self.gameCnt = 0
         self.deltas = {
                 "N":(0, -1),
                 "NE":(1, -1),
@@ -60,22 +62,13 @@ class C4Game:
         self.p2DiffLevel = 5
     
     def newGame(self):
-        self.over = False
-        self.rewards = {}
-        self.gameCnt += 1
-        self.toPlay = 1
-        self.turnCnt = 0
+        super().newGame()
+        
         self.arrayForm = np.zeros(self.stateCnt, dtype=int)
         self.arrayForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         self.columnString = ""
         self.fullColumns = set()
-        
-    def getStateActionCnt(self):
-        return (self.stateCnt, self.actionCnt)
-
-    def isOver(self):
-        return True if self.over else False
         
     def getCurrentState(self):
         return self.arrayForm
@@ -165,10 +158,6 @@ class C4Game:
 
         self.step(action)
         
-    def switchTurn(self):
-        self.turnCnt += 1
-        self.toPlay = self.getNextPlayer(self.toPlay)
-
     def printGame(self):
         print ("#" * 19)
         print ("Total Games Played: " + str(self.gameCnt))
@@ -186,18 +175,6 @@ class C4Game:
         self.rewards[player] = WINNER_R
         self.rewards[self.getNextPlayer(player)] = LOSER_R
         self.stats[player] += 1
-        
-    def getReward(self, player):
-        if player in self.rewards:
-            return self.rewards[player]
-        else:
-            return 0
-        
-    def getNextPlayer(self, player):
-        if player == 1:
-            return 2
-        else:
-            return 1
         
     def toString(self):
         lStr = ""
