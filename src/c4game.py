@@ -111,13 +111,3 @@ class C4Game(Game):
     def printGame(self):
         print ("#" * 19)
         super().printGame()
-        
-    def toString(self):
-        lStr = ""
-        for x in range(0, self.rows):
-            for y in range(0, self.columns):
-                if self.gameState[x][y] == -1:
-                    lStr += str(0)
-                else:
-                    lStr += str(self.gameState[x][y])
-        return lStr

@@ -10,8 +10,9 @@ Created on Wed Jun 20 18:46:51 2018
 from t3Game import T3Game
 from player import Player
 
-debug = False
+debug = True
 
+#game = C4Game()
 game = T3Game()
 stateCnt, actionCnt = game.getStateActionCnt()
 p1 = Player(1, stateCnt, actionCnt, debug)

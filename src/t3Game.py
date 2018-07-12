@@ -8,8 +8,11 @@ Created on Wed Jul 11 14:16:25 2018
 
 from game import Game
 import numpy as np
+from t3MinMax import TicTacToeBrain as T3M2
+from functools import lru_cache
 
 class T3Game(Game):
+    
     def __init__(self, size=3):
         super().__init__()
         
@@ -36,10 +39,11 @@ class T3Game(Game):
         return (newState, self.getReward(1))
 
     def p2act(self):
-        while True:
-            action = np.random.choice(self.actionCnt, 1)[0]
-            if action not in self.getIllMoves():
-                break
+        action = self.getBestMove(self.toString())
+#        while True:
+#            action = np.random.choice(self.actionCnt, 1)[0]
+#            if action not in self.getIllMoves():
+#                break
             
         self.step(action)
         
@@ -62,4 +66,19 @@ class T3Game(Game):
         self.checkDrawState()
 
     def getIllMoves(self):
-        return list(self.illMoves)
+        return list(self.illMoves)    
+    
+    @lru_cache(maxsize=None)
+    def getBestMove(self, GS):
+        game = T3M2()
+        game.createBoard()
+        
+        pos = 0
+        for x in range(0, self.rows):
+            for y in range(0, self.columns):
+                if self.gameState[x][y] != 0:
+                    player = "o" if self.gameState[x][y] == 1 else "x"
+                    game.makeMove(pos, player)
+                pos += 1
+        
+        return game.minimax("x")[1]

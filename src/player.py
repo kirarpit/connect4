@@ -125,8 +125,6 @@ class Player:
     def updateTargetANN(self):
         print("Target ANN updated")
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
-        if self.debug:
-            self.logs['w0'] = self.tANN.ann.get_weights()
             
     def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):
