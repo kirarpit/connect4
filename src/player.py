@@ -16,13 +16,13 @@ GAMMA = 0.99
 #Exploration Rate
 MIN_EPSILON = 0.01
 MAX_EPSILON = 1
-E_LAMBDA = 0.0001
+E_LAMBDA = 0.001
 
-MEMORY_CAPACITY = 100000
+MEMORY_CAPACITY = 10000
 
-UPDATE_TARGET_NET = 1000
-BATCH_SIZE = 100
-T_BATCH_SIZE = 100
+UPDATE_TARGET_NET = 5000
+BATCH_SIZE = 64
+T_BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_NET/5
 
 class Player:
@@ -32,6 +32,7 @@ class Player:
         self.stateCnt = stateCnt
         self.actionCnt = actionCnt
         self.debug = debug
+        self.initLog()
         self.epsilon = 0 if debug else MAX_EPSILON
         self.memory = PMemory(MEMORY_CAPACITY)
         self.nullState = np.zeros(stateCnt)
@@ -40,7 +41,6 @@ class Player:
         self.qPlot = QPlot(stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
         self.updateTargetANN()
         self.verbosity = 0
-        self.initLog()
         
     def act(self, state, illActions):
         if np.random.uniform() < self.epsilon:
@@ -50,8 +50,8 @@ class Player:
                     break
         else:
             actions = self.ANN.ann.predict(np.array([state]))[0]
-            actions = self.filterIllMoves(actions, illActions)
-            action = np.argmax(actions)
+            fActions = self.filterIllMoves(np.copy(actions), illActions)
+            action = np.argmax(fActions)
             
             if self.debug:
                 self.logs['preds'] = np.vstack([self.logs['preds'], actions])
@@ -125,7 +125,9 @@ class Player:
     def updateTargetANN(self):
         print("Target ANN updated")
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
-
+        if self.debug:
+            self.logs['w0'] = self.tANN.ann.get_weights()
+            
     def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):
             if index in illMoves:

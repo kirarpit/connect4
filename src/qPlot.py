@@ -7,7 +7,8 @@ Created on Sun Jul  8 21:27:02 2018
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from c4game import C4Game
+from c4Game import C4Game
+from t3Game import T3Game
 
 class QPlot:
     def __init__(self, stateCnt, actionCnt, ann, interval=1000):
@@ -18,7 +19,8 @@ class QPlot:
         self.cnt = 0
         self.states = np.empty([0, stateCnt])
         self.actions = []
-        self.getStatesAndActions()
+#        self.getStatesAndActionsC4()
+        self.getStatesAndActionsT3()
         self.x = []
         self.ys = np.empty((self.states.shape[0],), dtype=object)
         for i,v in enumerate(self.ys): self.ys[i] = list()
@@ -44,8 +46,33 @@ class QPlot:
         for index, pred in enumerate(preds):
             print (str(pred[self.actions[index]]) + ", ", end="")
         print ("\n")
+        
+    def getStatesAndActionsT3(self):
+        g = T3Game()
+        
+        g.newGame()
+        g.step(0)
+        g.step(1)
+        g.step(3)
+        g.step(4)
+        self.states = np.vstack([self.states, g.getCurrentState()])
+        self.actions.append(6)
+        
+        g.newGame()
+        g.step(0)
+        g.step(1)
+        g.step(2)
+        g.step(4)
+        self.states = np.vstack([self.states, g.getCurrentState()])
+        self.actions.append(5)
 
-    def getStatesAndActions(self):
+        g.newGame()
+        self.states = np.vstack([self.states, g.getCurrentState()])
+        self.actions.append(4)
+        self.states = np.vstack([self.states, g.getCurrentState()])
+        self.actions.append(0)
+        
+    def getStatesAndActionsC4(self):
         g = C4Game()
         
         g.newGame()
