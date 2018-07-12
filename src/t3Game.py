@@ -63,14 +63,3 @@ class T3Game(Game):
 
     def getIllMoves(self):
         return list(self.illMoves)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

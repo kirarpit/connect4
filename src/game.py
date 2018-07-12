@@ -11,6 +11,7 @@ import numpy as np
 
 WINNER_R = 1
 LOSER_R = -1
+DRAW_R = -0.5
 
 class Game(ABC):
     
@@ -96,6 +97,8 @@ class Game(ABC):
         if self.turnCnt == self.rows * self.columns - 1:
             self.over = 3
             self.stats['Draw'] += 1
+            self.rewards[self.toPlay] = DRAW_R
+            self.rewards[self.getNextPlayer(self.toPlay)] = DRAW_R
     
     def getCurrentState(self):
         return np.copy(self.arrayForm)

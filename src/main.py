@@ -28,7 +28,6 @@ while not debug or game.gameCnt < 1:
         p1.observe(sample, game.gameCnt)
         p1.replay()
         
-        
     if game.gameCnt % 100 == 0 or debug:
         game.printGame()
         print ("Exploration Rate: " + str(p1.epsilon))

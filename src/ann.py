@@ -34,7 +34,7 @@ class ANN:
     def createANN(self):
         ann = Sequential()
         ann.add(Dense(units = 12, activation = 'relu', input_dim = self.stateCnt))
-#        ann.add(Dense(units = self.stateCnt, activation = 'relu'))
+        ann.add(Dense(units = 12, activation = 'relu'))
         ann.add(Dense(units = self.actionCnt, activation = 'linear'))
         ann.compile(optimizer = 'rmsprop', loss = huber_loss, metrics = ['accuracy'])
         self.ann = ann

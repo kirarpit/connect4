@@ -99,7 +99,7 @@ class Player:
             if s_ is None:
                 t[a] = r
             else:
-                t[a] = r + GAMMA * tp_[i][np.argmax(p_[i])] #DDQN
+                t[a] = min(1, r + GAMMA * tp_[i][np.argmax(p_[i])]) #DDQN
 
             x[i] = s
             y[i] = t
