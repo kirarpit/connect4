@@ -11,25 +11,29 @@ from c4Game import C4Game
 from t3Game import T3Game
 
 class QPlot:
-    def __init__(self, stateCnt, actionCnt, ann, interval=1000):
+    def __init__(self, name, stateCnt, actionCnt, ann, interval=1000):
+        self.name = name
         self.stateCnt = stateCnt
         self.actionCnt = actionCnt
         self.ann = ann
         self.interval = interval
         self.cnt = 0
         self.states = np.empty([0, stateCnt])
-        self.actions = []
-#        self.getStatesAndActionsC4()
-        self.getStatesAndActionsT3()
+#        self.getStatesC4()
+        self.getStatesT3()
         self.x = []
         self.ys = np.empty((self.states.shape[0],), dtype=object)
         for i,v in enumerate(self.ys): self.ys[i] = list()
+        self.illMoves = None
         
     def add(self):
         self.x.append(self.cnt * self.interval)
         preds = self.ann.predict(self.states)
         for index, pred in enumerate(preds):
-#            self.ys[index].append(pred[self.actions[index]])
+            if self.illMoves is not None:
+                for illmove in self.illMoves[index]:
+                    pred[illmove] = 0
+                    
             self.ys[index].append(np.amax(pred))
         self.cnt += 1
         
@@ -38,56 +42,99 @@ class QPlot:
             plt.plot(self.x, self.ys[i], label=i)
             
         plt.legend(loc = "best")
-        plt.savefig('/Users/Arpit/Desktop/qPlot.png')
+        plt.savefig('/Users/Arpit/Desktop/qPlot' + str(self.name) + '.png')
         plt.draw()
         plt.show()
 
     def printQValues(self):
         preds = self.ann.predict(self.states)
         for index, pred in enumerate(preds):
-            print (str(pred[self.actions[index]]) + ", ", end="")
+            print (str(np.amax(pred)) + ", ", end="")
         print ("\n")
         
-    def getStatesAndActionsT3(self):
+    def getStatesT3(self):
         g = T3Game()
+        self.illMoves = []
         
-        g.newGame()
-        g.step(3)
-        g.step(0)
-        g.step(6)
-        g.step(1)
-        self.states = np.vstack([self.states, g.getCurrentState()])
-        
-        g.newGame()
-        g.step(4)
-        g.step(5)
-        self.states = np.vstack([self.states, g.getCurrentState()])
+        if self.name == 1:
+            #win
+            g.newGame()
+            g.step(4)
+            g.step(5)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.illMoves.append([(4,5)])
+            
+            #lose
+            g.newGame()
+            g.step(3)
+            g.step(0)
+            g.step(6)
+            g.step(1)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.illMoves.append([(3,0,6,1)])
 
-    def getStatesAndActionsC4(self):
+            #Draw
+            g.newGame()
+            g.step(4)
+            g.step(0)
+            g.step(7)
+            g.step(1)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.illMoves.append([(4,0,7,1)])
+            
+        else:
+            #win
+            g.newGame()
+            g.step(3)
+            g.step(0)
+            g.step(6)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.illMoves.append([(3,0,6)])
+            
+            #lose
+            g.newGame()
+            g.step(4)
+            g.step(5)
+            g.step(0)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.illMoves.append([(4,5,0)])
+
+            #draw
+            g.newGame()
+            g.step(4)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.illMoves.append([(4)])
+
+    def getStatesC4(self):
         g = C4Game()
         
-        g.newGame()
-        g.step(0)
-        g.step(2)
-        g.step(3)
-        g.step(2)
-        g.step(3)
-        g.step(2)
-        self.states = np.vstack([self.states, g.getCurrentState()])
-        self.actions.append(2)
-        self.states = np.vstack([self.states, g.getCurrentState()])
-        self.actions.append(3)
-        
-        g.newGame()
-        g.step(0)
-        g.step(5)
-        g.step(3)
-        g.step(6)
-        g.step(2)
-        g.step(5)
-        self.states = np.vstack([self.states, g.getCurrentState()])
-        self.actions.append(1)
+        if self.name == 1:
+            g.newGame()
+            g.step(0)
+            g.step(3)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+    
+            g.newGame()
+            g.step(2)
+            g.step(3)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            
+            g.newGame()
+            g.step(3)
+            g.step(3)
+            self.states = np.vstack([self.states, g.getCurrentState()])
 
-        g.newGame()
-        self.states = np.vstack([self.states, g.getCurrentState()])
-        self.actions.append(3)
+        else:
+            g.newGame()
+            g.step(0)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+    
+            g.newGame()
+            g.step(2)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            
+            g.newGame()
+            g.step(3)
+            self.states = np.vstack([self.states, g.getCurrentState()])
+            
+            

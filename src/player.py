@@ -18,12 +18,17 @@ MIN_EPSILON = 0.01
 MAX_EPSILON = 1
 E_LAMBDA = 0.001
 
+#Learning Rate
+MIN_ALPHA = 0.01
+MAX_ALPHA = 1.0
+A_LAMBDA = 0.001
+
 MEMORY_CAPACITY = 10000
 
-UPDATE_TARGET_NET = 5000
+UPDATE_TARGET_FREQUENCY = 4000
 BATCH_SIZE = 64
 T_BATCH_SIZE = 64
-PLOT_INTERVAL = UPDATE_TARGET_NET/5
+PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
 
 class Player:
     
@@ -34,11 +39,12 @@ class Player:
         self.debug = debug
         self.initLog()
         self.epsilon = 0 if debug else MAX_EPSILON
+        self.alpha = MAX_ALPHA
         self.memory = PMemory(MEMORY_CAPACITY)
         self.nullState = np.zeros(stateCnt)
         self.ANN = ANN(name, stateCnt, actionCnt)
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
-        self.qPlot = QPlot(stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
+        self.qPlot = QPlot(name, stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
         self.updateTargetANN()
         self.verbosity = 0
         
@@ -54,8 +60,8 @@ class Player:
             action = np.argmax(fActions)
             
             if self.debug:
-                self.logs['preds'] = np.vstack([self.logs['preds'], actions])
-                self.logs['moves'].append(action)
+                self.logs['preds' + str(self.name)] = np.vstack([self.logs['preds' + str(self.name)], actions])
+                self.logs['moves' + str(self.name)].append(action)
                 
         return action
 
@@ -68,11 +74,15 @@ class Player:
                 self.qPlot.add()
                 self.qPlot.show()
                 
-            if gameCnt % UPDATE_TARGET_NET == 0:
+            if self.name == 1:
+                if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
+                    self.updateTargetANN()
+            elif gameCnt % UPDATE_TARGET_FREQUENCY != 0 and gameCnt % (UPDATE_TARGET_FREQUENCY/2) == 0:
                 self.updateTargetANN()
                 
             if not self.debug:
                 self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
+                self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
         
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
 
@@ -99,7 +109,7 @@ class Player:
             if s_ is None:
                 t[a] = r
             else:
-                t[a] = min(1, r + GAMMA * tp_[i][np.argmax(p_[i])]) #DDQN
+                t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
 
             x[i] = s
             y[i] = t
@@ -119,11 +129,12 @@ class Player:
         self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=self.verbosity)
 
         if self.debug:
-            self.logs['x'] = x
-            self.logs['y'] = y
+            self.logs['x' + str(self.name)] = x
+            self.logs['y' + str(self.name)] = y
             
     def updateTargetANN(self):
-        print("Target ANN updated")
+        print("Player " + str(self.name) + " Target ANN updated")
+        if not self.debug: self.saveWeights()
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
             
     def filterIllMoves(self, moves, illMoves):
@@ -138,5 +149,5 @@ class Player:
         
     def initLog(self):
         self.logs = {}
-        self.logs['preds'] = np.empty([0, self.actionCnt])
-        self.logs['moves'] = []
+        self.logs['preds' + str(self.name)] = np.empty([0, self.actionCnt])
+        self.logs['moves' + str(self.name)] = []

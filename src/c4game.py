@@ -10,9 +10,6 @@ from game import Game
 import requests, yaml, random
 from functools import lru_cache
 
-LOSER_R = -5
-WINNER_R = 5
-
 @lru_cache(maxsize=None)
 def getP2Move_1(gameString):
     r = requests.get('http://kevinalbs.com/connect4/back-end/index.php/getMoves?board_data='
@@ -40,6 +37,8 @@ def getP2Move_2(gameColumnString):
     
 class C4Game(Game):
     
+    DRAW_R = -0.5
+
     def __init__(self, rows=6, columns=7):
         super().__init__()
         
@@ -104,7 +103,8 @@ class C4Game(Game):
         if self.p2DiffLevel == 3:
             action = getP2Move_1(self.toString())
         elif self.p2DiffLevel == 5:
-            action = random.sample(getP2Move_2(self.columnString), 1)[0]
+#            action = random.sample(getP2Move_2(self.columnString), 1)[0]
+            action = getP2Move_2(self.columnString)[0]
 
         self.step(action)
         

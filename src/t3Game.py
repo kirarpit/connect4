@@ -7,11 +7,14 @@ Created on Wed Jul 11 14:16:25 2018
 """
 
 from game import Game
-import numpy as np
 from t3MinMax import TicTacToeBrain as T3M2
 from functools import lru_cache
+import numpy as np
 
 class T3Game(Game):
+    WINNER_R = 1
+    LOSER_R = -1
+    DRAW_R = 0
     
     def __init__(self, size=3):
         super().__init__()
@@ -31,19 +34,18 @@ class T3Game(Game):
         if not self.isOver():
             self.p2act()
     
-        if not self.isOver():
-            newState = self.getCurrentState()
-        else:
-            newState = None
+        newState = self.getCurrentState() if not self.isOver() else None
             
         return (newState, self.getReward(1))
 
     def p2act(self):
-        action = self.getBestMove(self.toString())
-#        while True:
-#            action = np.random.choice(self.actionCnt, 1)[0]
-#            if action not in self.getIllMoves():
-#                break
+        if False and np.random.uniform() < 0.05:
+            while True:
+                action = np.random.choice(self.actionCnt, 1)[0]
+                if action not in self.getIllMoves():
+                    break
+        else:
+            action = self.getBestMove(self.toString())
             
         self.step(action)
         

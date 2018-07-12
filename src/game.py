@@ -12,7 +12,6 @@ import numpy as np
 class Game(ABC):
     WINNER_R = 1
     LOSER_R = -1
-    DRAW_R = -0.5
     
     def __init__(self):
         self.gameCnt = 0
