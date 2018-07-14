@@ -7,6 +7,8 @@ Created on Fri Jul 13 18:50:06 2018
 """
 import requests, yaml, pickle, os.path
 
+dictFN = "games/c4Solution.pickle"
+
 class C4Solver:
     def __init__(self):
         self.cnt = 0
@@ -15,7 +17,7 @@ class C4Solver:
         self.cnt += 1
         
         if self.cnt % 10000 == 0:
-            with open('c4Solution.pickle', 'wb') as handle:
+            with open(dictFN, 'wb') as handle:
                 pickle.dump(self.getP2Move_2.cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
                 
         return self.getP2Move_2(gameState)
@@ -28,9 +30,9 @@ class C4Solver:
                 func.cache[args[1]] = result = func(args[1])
                 return result 
             
-        if os.path.exists("c4Solution.pickle"):
+        if os.path.exists(dictFN):
             print("Dict loaded")
-            with open('c4Solution.pickle', 'rb') as handle:
+            with open(dictFN, 'rb') as handle:
                 wrapper.cache = func.cache = pickle.load(handle)
         else:
             wrapper.cache = func.cache = {}

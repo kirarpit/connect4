@@ -7,8 +7,8 @@ Created on Sun Jul  8 21:27:02 2018
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from c4Game import C4Game
-from t3Game import T3Game
+from games.c4Game import C4Game
+from games.t3Game import T3Game
 
 class QPlot:
     def __init__(self, name, stateCnt, actionCnt, ann, interval=1000):

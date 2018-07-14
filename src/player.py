@@ -8,7 +8,7 @@ Created on Thu Jun 28 17:52:18 2018
 import math
 from ann import ANN
 import numpy as np
-from pMemory import PMemory
+from memory.pMemory import PMemory
 from qPlot import QPlot
 
 GAMMA = 0.99
@@ -23,11 +23,11 @@ MIN_ALPHA = 0.10
 MAX_ALPHA = 1.0
 A_LAMBDA = 0.001
 
-MEMORY_CAPACITY = 10000
+MEMORY_CAPACITY = 100000
 
-UPDATE_TARGET_FREQUENCY = 1000
-BATCH_SIZE = 64
-T_BATCH_SIZE = 64
+UPDATE_TARGET_FREQUENCY = 2000
+BATCH_SIZE = 1000
+T_BATCH_SIZE = 1000
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
 
 class Player:

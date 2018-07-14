@@ -6,8 +6,8 @@ Created on Wed Jul 11 14:16:25 2018
 @author: Arpit
 """
 
-from game import Game
-from t3MinMax import TicTacToeBrain as T3M2
+from games.game import Game
+from games.t3MinMax import TicTacToeBrain as T3M2
 from functools import lru_cache
 import numpy as np
 

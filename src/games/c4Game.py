@@ -6,8 +6,8 @@ Created on Sat Jun 23 19:47:06 2018
 @author: Arpit
 """
 
-from game import Game
-from c4Solver import C4Solver
+from games.game import Game
+from games.c4Solver import C4Solver
 import numpy as np
     
 class C4Game(Game):

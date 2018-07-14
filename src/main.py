@@ -6,11 +6,11 @@ Created on Wed Jun 20 18:46:51 2018
 @author: Arpit
 """
 
-from c4Game import C4Game
+from games.c4Game import C4Game
 #from t3Game import T3Game
 from player import Player
     
-debug = True
+debug = False
 
 game = C4Game()
 #game = T3Game()

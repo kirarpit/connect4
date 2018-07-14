@@ -1,4 +1,4 @@
-from sumTree import SumTree
+from memory.sumTree import SumTree
 import random
 
 class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
