@@ -12,7 +12,7 @@ from functools import lru_cache
 import numpy as np
 
 class T3Game(Game):
-    WINNER_R = 1
+    WINNER_R = 0.5
     LOSER_R = -1
     DRAW_R = 0
     

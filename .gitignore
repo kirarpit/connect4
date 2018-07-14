@@ -3,3 +3,4 @@
 ann/*
 models/*
 *h5
+*.pickle

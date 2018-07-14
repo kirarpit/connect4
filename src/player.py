@@ -16,16 +16,16 @@ GAMMA = 0.99
 #Exploration Rate
 MIN_EPSILON = 0.01
 MAX_EPSILON = 1
-E_LAMBDA = 0.001
+E_LAMBDA = 0.0001
 
 #Learning Rate
-MIN_ALPHA = 0.01
+MIN_ALPHA = 0.10
 MAX_ALPHA = 1.0
 A_LAMBDA = 0.001
 
 MEMORY_CAPACITY = 10000
 
-UPDATE_TARGET_FREQUENCY = 4000
+UPDATE_TARGET_FREQUENCY = 1000
 BATCH_SIZE = 64
 T_BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
@@ -82,7 +82,7 @@ class Player:
                 
             if not self.debug:
                 self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
-                self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
+#                self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
         
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
 
@@ -109,7 +109,7 @@ class Player:
             if s_ is None:
                 t[a] = r
             else:
-                t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
+                t[a] = max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])]))
 
             x[i] = s
             y[i] = t

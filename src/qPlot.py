@@ -19,8 +19,8 @@ class QPlot:
         self.interval = interval
         self.cnt = 0
         self.states = np.empty([0, stateCnt])
-#        self.getStatesC4()
-        self.getStatesT3()
+        self.getStatesC4()
+#        self.getStatesT3()
         self.x = []
         self.ys = np.empty((self.states.shape[0],), dtype=object)
         for i,v in enumerate(self.ys): self.ys[i] = list()
@@ -109,16 +109,19 @@ class QPlot:
         g = C4Game()
         
         if self.name == 1:
+            #lose
             g.newGame()
             g.step(0)
             g.step(3)
             self.states = np.vstack([self.states, g.getCurrentState()])
     
+            #draw
             g.newGame()
             g.step(2)
             g.step(3)
             self.states = np.vstack([self.states, g.getCurrentState()])
             
+            #win
             g.newGame()
             g.step(3)
             g.step(3)

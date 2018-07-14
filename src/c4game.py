@@ -7,33 +7,8 @@ Created on Sat Jun 23 19:47:06 2018
 """
 
 from game import Game
-import requests, yaml, random
-from functools import lru_cache
-
-@lru_cache(maxsize=None)
-def getP2Move_1(gameString):
-    r = requests.get('http://kevinalbs.com/connect4/back-end/index.php/getMoves?board_data='
-                     + gameString + '&player=2')
-    moves = yaml.safe_load(r.text)
-    return int(max(moves, key=moves.get))
-
-@lru_cache(maxsize=None)
-def getP2Move_2(gameColumnString):
-    r = requests.get('http://connect4.gamesolver.org/solve?pos=' + str(gameColumnString))
-    data = yaml.safe_load(r.text)
-    moves = data['score']
-    
-    choices = []
-    maxi = float("-inf")
-    for index, value in enumerate(moves):
-        if value != 100 and maxi <= value:
-            if maxi<value:
-                choices = [index]
-                maxi = value
-            else:
-                choices.append(index)
-        
-    return choices
+from c4Solver import C4Solver
+import numpy as np
     
 class C4Game(Game):
     
@@ -46,9 +21,8 @@ class C4Game(Game):
         self.columns = columns
         self.stateCnt = rows * columns * 2
         self.actionCnt = columns
+        self.solver = C4Solver()
 
-        self.p2DiffLevel = 5
-    
     def newGame(self):
         super().newGame()
         
@@ -100,11 +74,14 @@ class C4Game(Game):
         return list(self.fullColumns)
         
     def p2act(self):
-        if self.p2DiffLevel == 3:
-            action = getP2Move_1(self.toString())
-        elif self.p2DiffLevel == 5:
-#            action = random.sample(getP2Move_2(self.columnString), 1)[0]
-            action = getP2Move_2(self.columnString)[0]
+        if False and np.random.uniform() < 0.05:
+            while True:
+                action = np.random.choice(self.actionCnt, 1)[0]
+                if action not in self.getIllMoves():
+                    break
+        else:
+#            action = random.sample(c4Solver.solve(self.columnString), 1)[0]
+            action = self.solver.solve(self.columnString)[0]
 
         self.step(action)
         
