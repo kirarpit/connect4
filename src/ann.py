@@ -7,7 +7,7 @@ Created on Thu Jun 28 17:53:30 2018
 """
 
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Convolution2D, MaxPooling2D, Flatten
 from keras.models import load_model
 import os.path
 import keras
@@ -33,10 +33,11 @@ class ANN:
 
     def createANN(self):
         ann = Sequential()
-        ann.add(Dense(units = 42, activation = 'relu', input_dim = self.stateCnt))
-        ann.add(Dense(units = 84, activation = 'relu'))
-        ann.add(Dense(units = 84, activation = 'relu'))
-        ann.add(Dense(units = 42, activation = 'relu'))
+        ann.add(Convolution2D(16, (4, 4), strides=(1,1), activation='relu', input_shape=self.stateCnt, data_format="channels_first"))
+#        ann.add(Convolution2D(8, (2, 2), strides=(1,1), activation='relu', input_shape=self.stateCnt, data_format="channels_first"))
+        ann.add(MaxPooling2D(pool_size = (2, 2), strides=(2,2), padding='same'))
+        ann.add(Flatten())
+        ann.add(Dense(units = 35, activation = 'relu'))
         ann.add(Dense(units = self.actionCnt, activation = 'linear'))
         ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
         self.ann = ann

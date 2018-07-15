@@ -1,9 +1,8 @@
 import numpy
 
 class SumTree:
-    write = 0
-
     def __init__(self, capacity):
+        self.write = 0
         self.capacity = capacity
         self.tree = numpy.zeros( 2*capacity - 1 )
         self.data = numpy.zeros( capacity, dtype=object )

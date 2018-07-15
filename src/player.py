@@ -19,15 +19,15 @@ MAX_EPSILON = 1
 E_LAMBDA = 0.0001
 
 #Learning Rate
-MIN_ALPHA = 0.10
-MAX_ALPHA = 1.0
-A_LAMBDA = 0.001
+MIN_ALPHA = 0.01
+MAX_ALPHA = 0.5
+A_LAMBDA = 0.0001
 
-MEMORY_CAPACITY = 100000
+MEMORY_CAPACITY = 10000
 
 UPDATE_TARGET_FREQUENCY = 2000
-BATCH_SIZE = 1000
-T_BATCH_SIZE = 1000
+BATCH_SIZE = 64
+T_BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
 
 class Player:
@@ -74,15 +74,12 @@ class Player:
                 self.qPlot.add()
                 self.qPlot.show()
                 
-            if self.name == 1:
-                if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
-                    self.updateTargetANN()
-            elif gameCnt % UPDATE_TARGET_FREQUENCY != 0 and gameCnt % (UPDATE_TARGET_FREQUENCY/2) == 0:
+            if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
                 self.updateTargetANN()
                 
             if not self.debug:
                 self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
-#                self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
+                self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
         
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
 
@@ -96,7 +93,11 @@ class Player:
         p_ = self.ANN.ann.predict(states_)
         tp_ = self.tANN.ann.predict(states_)
         
-        x = np.zeros((batchLen, self.stateCnt))
+        if type(self.stateCnt) is tuple:
+            x = np.zeros((batchLen, *self.stateCnt[0:len(self.stateCnt)]))
+        else:
+            x = np.zeros((batchLen, self.stateCnt))
+        
         y = np.zeros((batchLen, self.actionCnt))
         errors = np.zeros(batchLen)
 
@@ -109,7 +110,7 @@ class Player:
             if s_ is None:
                 t[a] = r
             else:
-                t[a] = max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])]))
+                t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
 
             x[i] = s
             y[i] = t

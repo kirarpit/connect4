@@ -9,7 +9,8 @@ Created on Sat Jun 23 19:47:06 2018
 from games.game import Game
 from games.c4Solver import C4Solver
 import numpy as np
-    
+import random
+
 class C4Game(Game):
     
     DRAW_R = -0.5
@@ -19,12 +20,14 @@ class C4Game(Game):
         
         self.rows = rows
         self.columns = columns
-        self.stateCnt = rows * columns * 2
+        self.stateCnt = (1, self.rows, self.columns)
         self.actionCnt = columns
         self.solver = C4Solver()
 
     def newGame(self):
         super().newGame()
+        self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
+        self.stateForm[True] = 128
         
         self.columnString = ""
         self.fullColumns = set()
@@ -59,10 +62,17 @@ class C4Game(Game):
     
     def updateGameState(self, row, column):
         self.gameState[row][column] = self.toPlay
-        self.updateArrayForm(row, column)
+        self.updateStateForm(row, column)
         self.columnString += str(column + 1)
         self.checkEndStates(row, column)
         self.switchTurn()
+    
+    def updateStateForm(self, row, column):
+        if self.toPlay == 2:
+            val = 64
+        else:
+            val = 192
+        self.stateForm[0][row][column] = val
         
     def checkEndStates(self, row, column):
         if self.xInARow(row, column, 4):
@@ -74,14 +84,14 @@ class C4Game(Game):
         return list(self.fullColumns)
         
     def p2act(self):
-        if False and np.random.uniform() < 0.05:
+        if np.random.uniform() < 0.05:
             while True:
                 action = np.random.choice(self.actionCnt, 1)[0]
                 if action not in self.getIllMoves():
                     break
         else:
-#            action = random.sample(c4Solver.solve(self.columnString), 1)[0]
-            action = self.solver.solve(self.columnString)[0]
+            action = random.sample(self.solver.solve(self.columnString), 1)[0]
+#            action = self.solver.solve(self.columnString)[0]
 
         self.step(action)
         

@@ -5,8 +5,8 @@ Created on Sun Jul  8 21:27:02 2018
 
 @author: Arpit
 """
-import matplotlib.pyplot as plt
 import numpy as np
+from graphPlot import GraphPlot
 from games.c4Game import C4Game
 from games.t3Game import T3Game
 
@@ -18,40 +18,36 @@ class QPlot:
         self.ann = ann
         self.interval = interval
         self.cnt = 0
-        self.states = np.empty([0, stateCnt])
+        
+        if type(self.stateCnt) is tuple:
+            self.states = np.empty((0, *self.stateCnt[0:len(self.stateCnt)]))
+        else:
+            self.states = np.empty([0, stateCnt])
+            
         self.getStatesC4()
 #        self.getStatesT3()
-        self.x = []
-        self.ys = np.empty((self.states.shape[0],), dtype=object)
-        for i,v in enumerate(self.ys): self.ys[i] = list()
+        
+        self.gPlot = GraphPlot("qPlot" + str(self.name), 1, self.states.shape[0], ["winState", "loseState", "drawState"])
         self.illMoves = None
         
     def add(self):
-        self.x.append(self.cnt * self.interval)
+        x = self.cnt * self.interval
+        y = []
+        
         preds = self.ann.predict(self.states)
         for index, pred in enumerate(preds):
             if self.illMoves is not None:
                 for illmove in self.illMoves[index]:
-                    pred[illmove] = 0
+                    pred[illmove] = float("-inf")
                     
-            self.ys[index].append(np.amax(pred))
+            y.append(np.amax(pred))
+            
+        self.gPlot.add(x, y)
         self.cnt += 1
         
     def show(self):
-        for i in range(0, self.states.shape[0]):
-            plt.plot(self.x, self.ys[i], label=i)
-            
-        plt.legend(loc = "best")
-        plt.savefig('/Users/Arpit/Desktop/qPlot' + str(self.name) + '.png')
-        plt.draw()
-        plt.show()
+        self.gPlot.show()
 
-    def printQValues(self):
-        preds = self.ann.predict(self.states)
-        for index, pred in enumerate(preds):
-            print (str(np.amax(pred)) + ", ", end="")
-        print ("\n")
-        
     def getStatesT3(self):
         g = T3Game()
         self.illMoves = []
@@ -61,7 +57,7 @@ class QPlot:
             g.newGame()
             g.step(4)
             g.step(5)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
             self.illMoves.append([(4,5)])
             
             #lose
@@ -70,7 +66,7 @@ class QPlot:
             g.step(0)
             g.step(6)
             g.step(1)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
             self.illMoves.append([(3,0,6,1)])
 
             #Draw
@@ -79,7 +75,7 @@ class QPlot:
             g.step(0)
             g.step(7)
             g.step(1)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
             self.illMoves.append([(4,0,7,1)])
             
         else:
@@ -88,7 +84,7 @@ class QPlot:
             g.step(3)
             g.step(0)
             g.step(6)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
             self.illMoves.append([(3,0,6)])
             
             #lose
@@ -96,48 +92,48 @@ class QPlot:
             g.step(4)
             g.step(5)
             g.step(0)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
             self.illMoves.append([(4,5,0)])
 
             #draw
             g.newGame()
             g.step(4)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
             self.illMoves.append([(4)])
 
     def getStatesC4(self):
         g = C4Game()
         
         if self.name == 1:
+            #win
+            g.newGame()
+            g.step(3)
+            g.step(3)
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
+
             #lose
             g.newGame()
             g.step(0)
             g.step(3)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
     
             #draw
             g.newGame()
             g.step(2)
             g.step(3)
-            self.states = np.vstack([self.states, g.getCurrentState()])
-            
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
+        else:
             #win
             g.newGame()
-            g.step(3)
-            g.step(3)
-            self.states = np.vstack([self.states, g.getCurrentState()])
-
-        else:
-            g.newGame()
             g.step(0)
-            self.states = np.vstack([self.states, g.getCurrentState()])
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
+            
+            #lose
+            g.newGame()
+            g.step(3)
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])
     
+            #draw
             g.newGame()
             g.step(2)
-            self.states = np.vstack([self.states, g.getCurrentState()])
-            
-            g.newGame()
-            g.step(3)
-            self.states = np.vstack([self.states, g.getCurrentState()])
-            
-            
+            self.states = np.vstack([self.states, g.getCurrentState()[np.newaxis]])

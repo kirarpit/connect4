@@ -12,20 +12,23 @@ from functools import lru_cache
 import numpy as np
 
 class T3Game(Game):
-    WINNER_R = 0.5
+    WINNER_R = 1
     LOSER_R = -1
-    DRAW_R = 0
+    DRAW_R = 0.5
     
     def __init__(self, size=3):
-        super().__init__()
+        super().__init__("T3")
         
         self.rows = 3
         self.columns = 3
-        self.stateCnt = self.rows * self.columns * 2
+        self.stateCnt = (1, self.rows, self.columns)
         self.actionCnt = self.rows * self.columns
         
     def newGame(self):
         super().newGame()
+        self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
+        self.stateForm[True] = 128
+
         self.illMoves = set()
         
     def getNextState(self, action):
@@ -39,7 +42,7 @@ class T3Game(Game):
         return (newState, self.getReward(1))
 
     def p2act(self):
-        if False and np.random.uniform() < 0.05:
+        if np.random.uniform() < 0.05:
             while True:
                 action = np.random.choice(self.actionCnt, 1)[0]
                 if action not in self.getIllMoves():
@@ -55,10 +58,17 @@ class T3Game(Game):
         x = int(action/self.rows)
         y = action % self.columns
         self.gameState[x][y] = self.toPlay
-        self.updateArrayForm(x, y)
+        self.updateStateForm(x, y)
         self.illMoves.add(action)
         self.checkEndStates(x, y)
         self.switchTurn()
+        
+    def updateStateForm(self, row, column):
+        if self.toPlay == 2:
+            val = 64
+        else:
+            val = 192
+        self.stateForm[0][row][column] = val
         
     def checkEndStates(self, row, column):
         if self.xInARow(row, column, 3):

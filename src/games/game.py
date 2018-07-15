@@ -7,13 +7,14 @@ Created on Wed Jul 11 13:42:11 2018
 """
 
 from abc import ABC, abstractmethod
+from graphPlot import GraphPlot
 import numpy as np
 
 class Game(ABC):
     WINNER_R = 1
     LOSER_R = -1
     
-    def __init__(self):
+    def __init__(self, name="game"):
         self.gameCnt = 0
         self.stats = {1:0, 2:0, 'Draw':0}
         self.deltas = {
@@ -27,6 +28,7 @@ class Game(ABC):
             "S":(0, 1)
         }
         self.directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
+        self.gPlot = GraphPlot(name, 1, 3, list(self.stats.keys()))
     
     @abstractmethod
     def newGame(self):
@@ -35,9 +37,10 @@ class Game(ABC):
         self.gameCnt += 1
         self.toPlay = 1
         self.turnCnt = 0
-        self.arrayForm = np.zeros(self.stateCnt, dtype=int)
-        self.arrayForm[True] = -1
+        self.stateForm = np.zeros(self.stateCnt, dtype=int)
+        self.stateForm[True] = -1
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
+        if self.gameCnt % 1000 == 0: self.gPlot.save()
     
     @abstractmethod
     def step(self, action):
@@ -85,12 +88,12 @@ class Game(ABC):
         self.rewards[self.getNextPlayer(player)] = self.LOSER_R
         self.stats[player] += 1
         
-    def updateArrayForm(self, row, column):
+    def updateStateForm(self, row, column):
         pos = row * self.columns + column
         if self.toPlay == 2:
             pos += self.rows * self.columns
-        self.arrayForm[pos] = 1
-
+        self.stateForm[pos] = 1
+        
     def checkDrawState(self):
         if self.turnCnt == self.rows * self.columns - 1:
             self.over = 3
@@ -99,8 +102,8 @@ class Game(ABC):
             self.rewards[self.getNextPlayer(self.toPlay)] = self.DRAW_R
     
     def getCurrentState(self):
-        return np.copy(self.arrayForm)
-        
+        return np.copy(self.stateForm)
+    
     def getStateActionCnt(self):
         return (self.stateCnt, self.actionCnt)
     
@@ -124,7 +127,11 @@ class Game(ABC):
             return 0
         
     def clearStats(self):
+        self.gPlot.add(self.gameCnt, list(self.stats.values()))
         self.stats = {1:0, 2:0, 'Draw':0}
+        
+    def showGraph(self):
+        self.gPlot.show()
         
     def toString(self):
         lStr = ""
