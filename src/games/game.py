@@ -16,7 +16,7 @@ class Game(ABC):
     
     def __init__(self, name="game"):
         self.gameCnt = 0
-        self.stats = {1:0, 2:0, 'Draw':0}
+        self.initStats()
         self.deltas = {
             "N":(0, -1),
             "NE":(1, -1),
@@ -28,7 +28,7 @@ class Game(ABC):
             "S":(0, 1)
         }
         self.directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
-        self.gPlot = GraphPlot(name, 1, 3, list(self.stats.keys()))
+        self.gPlot = GraphPlot(name, 1, 3, list(self.stats[1].keys()))
     
     @abstractmethod
     def newGame(self):
@@ -36,6 +36,7 @@ class Game(ABC):
         self.rewards = {}
         self.gameCnt += 1
         self.toPlay = 1
+        self.firstToPlay = 1
         self.turnCnt = 0
         self.stateForm = np.zeros(self.stateCnt, dtype=int)
         self.stateForm[True] = -1
@@ -82,11 +83,15 @@ class Game(ABC):
 
         return False
     
+    def setFirstToPlay(self, player):
+        self.firstToPlay = player
+        self.toPlay = self.firstToPlay
+        
     def setWinner(self, player):
         self.over = player
         self.rewards[player] = self.WINNER_R
         self.rewards[self.getNextPlayer(player)] = self.LOSER_R
-        self.stats[player] += 1
+        self.stats[self.firstToPlay][player] += 1
         
     def updateStateForm(self, row, column):
         pos = row * self.columns + column
@@ -97,7 +102,7 @@ class Game(ABC):
     def checkDrawState(self):
         if self.turnCnt == self.rows * self.columns - 1:
             self.over = 3
-            self.stats['Draw'] += 1
+            self.stats[self.firstToPlay]['Draw'] += 1
             self.rewards[self.toPlay] = self.DRAW_R
             self.rewards[self.getNextPlayer(self.toPlay)] = self.DRAW_R
     
@@ -127,8 +132,11 @@ class Game(ABC):
             return 0
         
     def clearStats(self):
-        self.gPlot.add(self.gameCnt, list(self.stats.values()))
-        self.stats = {1:0, 2:0, 'Draw':0}
+        self.gPlot.add(self.gameCnt, np.add(list(self.stats[1].values()), list(self.stats[2].values())))
+        self.initStats()
+
+    def initStats(self):
+        self.stats = {1:{1:0, 2:0, 'Draw':0}, 2:{1:0, 2:0, 'Draw':0}}
         
     def showGraph(self):
         self.gPlot.show()

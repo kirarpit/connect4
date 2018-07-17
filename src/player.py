@@ -14,14 +14,14 @@ from qPlot import QPlot
 GAMMA = 0.99
 
 #Exploration Rate
-MIN_EPSILON = 0.01
+MIN_EPSILON = 0.25
 MAX_EPSILON = 1
-E_LAMBDA = 0.0001
+E_LAMBDA = 0.001
 
 #Learning Rate
 MIN_ALPHA = 0.01
 MAX_ALPHA = 0.5
-A_LAMBDA = 0.0001
+A_LAMBDA = 0.001
 
 MEMORY_CAPACITY = 10000
 

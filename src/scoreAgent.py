@@ -11,14 +11,23 @@ from player import Player
 
 game = T3Game()
 stateCnt, actionCnt = game.getStateActionCnt()
-p1 = Player("1-20", stateCnt, actionCnt, True)
+p = Player(2, stateCnt, actionCnt, True)
+
+epsilon = 0.05
 
 while game.gameCnt < 5000:
-    game.newGame()
+    game.newGame() 
+    
+    if game.gameCnt % 2 == 0:
+        game.setFirstToPlay(2)
+        game.p2act(epsilon)
     
     while not game.isOver():
         s = game.getCurrentState()
-        a = p1.act(s, game.getIllMoves())
-        game.getNextState(a)
-
+        a = p.act(s, game.getIllMoves())
+        game.step(a)
+        
+        if not game.isOver():
+            game.p2act(epsilon)
+    
 game.printGame()

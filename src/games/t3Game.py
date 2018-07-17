@@ -14,7 +14,7 @@ import numpy as np
 class T3Game(Game):
     WINNER_R = 1
     LOSER_R = -1
-    DRAW_R = 0.5
+    DRAW_R = 0
     
     def __init__(self, size=3):
         super().__init__("T3")
@@ -32,6 +32,7 @@ class T3Game(Game):
         self.illMoves = set()
         
     def getNextState(self, action):
+        player = self.toPlay
         self.step(action)
 
         if not self.isOver():
@@ -39,10 +40,10 @@ class T3Game(Game):
     
         newState = self.getCurrentState() if not self.isOver() else None
             
-        return (newState, self.getReward(1))
+        return (newState, self.getReward(player))
 
-    def p2act(self):
-        if np.random.uniform() < 0.05:
+    def p2act(self, epsilon=0.25):
+        if np.random.uniform() < epsilon:
             while True:
                 action = np.random.choice(self.actionCnt, 1)[0]
                 if action not in self.getIllMoves():
@@ -93,4 +94,5 @@ class T3Game(Game):
                     game.makeMove(pos, player)
                 pos += 1
         
-        return game.minimax("x")[1]
+        toPlay = "x" if self.toPlay == 2 else "o"            
+        return game.minimax(toPlay)[1]

@@ -16,7 +16,7 @@ class C4Game(Game):
     DRAW_R = -0.5
 
     def __init__(self, rows=6, columns=7):
-        super().__init__()
+        super().__init__("C4")
         
         self.rows = rows
         self.columns = columns
@@ -83,8 +83,8 @@ class C4Game(Game):
     def getIllMoves(self):
         return list(self.fullColumns)
         
-    def p2act(self):
-        if np.random.uniform() < 0.05:
+    def p2act(self, epsilon=0.25):
+        if np.random.uniform() < epsilon:
             while True:
                 action = np.random.choice(self.actionCnt, 1)[0]
                 if action not in self.getIllMoves():
