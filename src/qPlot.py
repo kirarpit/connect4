@@ -46,7 +46,7 @@ class QPlot:
         self.cnt += 1
         
     def show(self):
-        self.gPlot.show()
+        self.gPlot.save()
 
     def getStatesT3(self):
         g = T3Game()

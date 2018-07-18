@@ -9,12 +9,12 @@ import math
 from ann import ANN
 import numpy as np
 from memory.pMemory import PMemory
-from qPlot import QPlot
+#from qPlot import QPlot
 
 GAMMA = 0.99
 
 #Exploration Rate
-MIN_EPSILON = 0.25
+MIN_EPSILON = 0.1
 MAX_EPSILON = 1
 E_LAMBDA = 0.001
 
@@ -44,7 +44,7 @@ class Player:
         self.nullState = np.zeros(stateCnt)
         self.ANN = ANN(name, stateCnt, actionCnt)
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
-        self.qPlot = QPlot(name, stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
+#        self.qPlot = QPlot(name, stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
         self.updateTargetANN()
         self.verbosity = 0
         
@@ -70,9 +70,9 @@ class Player:
         self.memory.add(errors[0], sample)
         
         if sample[3] is None:
-            if gameCnt % PLOT_INTERVAL == 0:
-                self.qPlot.add()
-                self.qPlot.show()
+#            if gameCnt % PLOT_INTERVAL == 0:
+#                self.qPlot.add()
+#                self.qPlot.show()
                 
             if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
                 self.updateTargetANN()

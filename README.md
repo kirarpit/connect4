@@ -2,7 +2,7 @@
 
 The goal is to solve Connect4 in an unsupervised fashion. The work is still in progress. Below is the list of methods and architectures currently in use to try to make it work.
 
-- Convolutional Neural Network vs perfect-playing [MiniMax bot](http://connect4.gamesolver.org/?pos=)
+- Convolutional Neural Network vs perfect-playing [MiniMax bot](https://github.com/PascalPons/connect4)
 - Q value approximation with the ANN
 - e-greedy Boltzmann exploration
 - Prioritised Experience Replay using a [SumTree](https://jaromiru.com/2016/11/07/lets-make-a-dqn-double-learning-and-prioritized-experience-replay/)

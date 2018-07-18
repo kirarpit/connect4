@@ -51,7 +51,12 @@ class Game(ABC):
 
         if action in self.getIllMoves():
             print ("Illegal Move!!!!")
+            print (self.gameState)
+            print ("To play " + str(self.toPlay))
+            print ("Wrong move " + str(action))
             return -2
+    
+        return 1
     
     @abstractmethod
     def getNextState(self, action):

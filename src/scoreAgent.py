@@ -6,16 +6,18 @@ Created on Sun Jul 15 16:55:37 2018
 @author: Arpit
 """
 
-from games.t3Game import T3Game
+from games.c4Game import C4Game
+#from games.t3Game import T3Game
 from player import Player
 
-game = T3Game()
+#game = T3Game()
+game = C4Game()
 stateCnt, actionCnt = game.getStateActionCnt()
-p = Player(2, stateCnt, actionCnt, True)
+p = Player(1, stateCnt, actionCnt, True)
 
 epsilon = 0.05
 
-while game.gameCnt < 5000:
+while game.gameCnt < 1000:
     game.newGame() 
     
     if game.gameCnt % 2 == 0:
@@ -29,5 +31,5 @@ while game.gameCnt < 5000:
         
         if not game.isOver():
             game.p2act(epsilon)
-    
+            
 game.printGame()

@@ -24,7 +24,7 @@ def observeSample(lastS, lastA):
     
 debug = False
 
-game = C4Game()
+game = C4Game(4,5)
 #game = T3Game()
 stateCnt, actionCnt = game.getStateActionCnt()
 p1 = Player(1, stateCnt, actionCnt, debug)
@@ -33,43 +33,43 @@ p2 = Player(2, stateCnt, actionCnt, debug)
 while not debug or game.gameCnt < 2:
     game.newGame()
     
-#    if game.gameCnt % 2 == 0:
-#        game.setFirstToPlay(2)
-#        game.p2act()
-#    
-#    while not game.isOver():
-#        s = game.getCurrentState()
-#        a = p1.act(s, game.getIllMoves())
-#        s_, r = game.getNextState(a)
-#        sample = (s, a, r, s_)
-#        
-#        p1.observe(sample, game.gameCnt)
-#        p1.replay()
-
-    flag = 0
     if game.gameCnt % 2 == 0:
         game.setFirstToPlay(2)
-        flag = 1
-        
-    lastS = None
-    lastA = None
-    while not game.isOver():
-        p = p1 if (game.turnCnt + flag) % 2 == 0 else p2
-        
-        s = game.getCurrentState()
-        a = p.act(s, game.getIllMoves())
-        game.step(a)
-
-        if lastS is not None:
-            observeSample(lastS, lastA)
-        
-        lastS = s
-        lastA = a
-        
-    game.turnCnt += 1
-    observeSample(lastS, lastA)
+        game.p2act()
     
-    if game.gameCnt % 200 == 0 or debug:
+    while not game.isOver():
+        s = game.getCurrentState()
+        a = p1.act(s, game.getIllMoves())
+        s_, r = game.getNextState(a)
+        sample = (s, a, r, s_)
+        
+        p1.observe(sample, game.gameCnt)
+        p1.replay()
+
+    flag = 0
+#    if game.gameCnt % 2 == 0:
+#        game.setFirstToPlay(2)
+#        flag = 1
+#        
+#    lastS = None
+#    lastA = None
+#    while not game.isOver():
+#        p = p1 if (game.turnCnt + flag) % 2 == 0 else p2
+#        
+#        s = game.getCurrentState()
+#        a = p.act(s, game.getIllMoves())
+#        game.step(a)
+#
+#        if lastS is not None:
+#            observeSample(lastS, lastA)
+#        
+#        lastS = s
+#        lastA = a
+#        
+#    game.turnCnt += 1
+#    observeSample(lastS, lastA)
+    
+    if game.gameCnt % 100 == 0 or debug:
         game.printGame()
         print ("Exploration Rate: " + str(p1.epsilon))
         print ("Learning Rate: " + str(p1.alpha))
