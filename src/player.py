@@ -9,11 +9,12 @@ import math
 from ann import ANN
 import numpy as np
 from memory.pMemory import PMemory
+from graphPlot import GraphPlot
 
 GAMMA = 0.99
 
 #Exploration Rate
-MIN_EPSILON = 0.1
+MIN_EPSILON = 0.20
 MAX_EPSILON = 1
 E_LAMBDA = 0.001
 
@@ -22,9 +23,9 @@ MIN_ALPHA = 0.01
 MAX_ALPHA = 0.5
 A_LAMBDA = 0.001
 
-MEMORY_CAPACITY = 10000
+MEMORY_CAPACITY = 20000
 
-UPDATE_TARGET_FREQUENCY = 2000
+UPDATE_TARGET_FREQUENCY = 4000
 BATCH_SIZE = 64
 T_BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
@@ -46,6 +47,7 @@ class Player:
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
         self.updateTargetANN()
         self.verbosity = 0
+        self.gPlot = GraphPlot(str(name) + "hp", 1, 2, ["e", "a"])
         
     def act(self, state, illActions):
         if np.random.uniform() < self.epsilon:
@@ -78,6 +80,10 @@ class Player:
                 self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
                 self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
         
+            if gameCnt % 100 == 0: 
+                self.gPlot.add(gameCnt, [self.epsilon, self.alpha])
+                if gameCnt % 1000 == 0: self.gPlot.save()
+
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
 
     def getTargets(self, batch):

@@ -13,20 +13,22 @@ import random
 
 class C4Game(Game):
     
-    DRAW_R = 0
+    DRAW_R = 0.5
 
     def __init__(self, rows=6, columns=7):
         super().__init__("C4")
         
         self.rows = rows
         self.columns = columns
-        self.stateCnt = (1, self.rows, self.columns)
+#        self.stateCnt = (1, self.rows, self.columns)
+        self.stateCnt = self.rows * self.columns * 2
         self.actionCnt = columns
 
     def newGame(self):
         super().newGame()
-        self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
-        self.stateForm[True] = 128
+        if type(self.stateCnt) is tuple:
+            self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
+            self.stateForm[True] = 128
         
         self.columnString = ""
         self.fullColumns = set()
@@ -37,15 +39,12 @@ class C4Game(Game):
         if not self.isOver():
             self.p2act()
     
-        if not self.isOver():
-            newState = self.getCurrentState()
-        else:
-            newState = None
-            
+        newState = self.getCurrentState() if not self.isOver() else None
         return (newState, self.getReward(1))
         
     def step(self, column):
         if (super().step(column) < 0):
+            print("Error!!!")
             print(self.columnString)
         
         row = 0
@@ -68,22 +67,31 @@ class C4Game(Game):
         self.switchTurn()
     
     def updateStateForm(self, row, column):
-        if self.toPlay == 2:
-            val = 64
+        if type(self.stateCnt) is tuple:
+            if self.toPlay == 2:
+                val = 64
+            else:
+                val = 192
+            self.stateForm[0][row][column] = val
         else:
-            val = 192
-        self.stateForm[0][row][column] = val
+            super().updateStateForm(row, column)
         
     def checkEndStates(self, row, column):
         if self.xInARow(row, column, 4):
             self.setWinner(self.toPlay)
+            return
             
         self.checkDrawState()
+        
+    def checkDrawState(self):
+        if super().checkDrawState():
+            self.rewards[self.firstToPlay] = 0
+            self.rewards[self.getNextPlayer(self.firstToPlay)] = self.DRAW_R
         
     def getIllMoves(self):
         return list(self.fullColumns)
         
-    def p2act(self, epsilon=0.25):
+    def p2act(self, epsilon=0.30):
         if np.random.uniform() < epsilon:
             while True:
                 action = np.random.choice(self.actionCnt, 1)[0]

@@ -110,6 +110,8 @@ class Game(ABC):
             self.stats[self.firstToPlay]['Draw'] += 1
             self.rewards[self.toPlay] = self.DRAW_R
             self.rewards[self.getNextPlayer(self.toPlay)] = self.DRAW_R
+            return True
+        return False
     
     def getCurrentState(self):
         return np.copy(self.stateForm)
