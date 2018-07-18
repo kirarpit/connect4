@@ -19,6 +19,8 @@ class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
 
     def sample(self, n):
         n = min(n, self.cnt)
+        if n == 0: return []
+        
         batch = []
         segment = self.tree.total() / n
 

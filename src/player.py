@@ -9,7 +9,6 @@ import math
 from ann import ANN
 import numpy as np
 from memory.pMemory import PMemory
-#from qPlot import QPlot
 
 GAMMA = 0.99
 
@@ -41,10 +40,10 @@ class Player:
         self.epsilon = 0 if debug else MAX_EPSILON
         self.alpha = MAX_ALPHA
         self.memory = PMemory(MEMORY_CAPACITY)
+        self.goodMemory = PMemory(MEMORY_CAPACITY)
         self.nullState = np.zeros(stateCnt)
         self.ANN = ANN(name, stateCnt, actionCnt)
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
-#        self.qPlot = QPlot(name, stateCnt, actionCnt, self.ANN.ann, PLOT_INTERVAL)
         self.updateTargetANN()
         self.verbosity = 0
         
@@ -67,13 +66,11 @@ class Player:
 
     def observe(self, sample, gameCnt):
         x, y, errors = self.getTargets([(0, sample)])
-        self.memory.add(errors[0], sample)
+        
+        memory = self.goodMemory if sample[2] > 0 else self.memory
+        memory.add(errors[0], sample)
         
         if sample[3] is None:
-#            if gameCnt % PLOT_INTERVAL == 0:
-#                self.qPlot.add()
-#                self.qPlot.show()
-                
             if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
                 self.updateTargetANN()
                 
@@ -93,6 +90,17 @@ class Player:
         p_ = self.ANN.ann.predict(states_)
         tp_ = self.tANN.ann.predict(states_)
         
+        if self.debug:
+            self.logs['cnt'] += 1
+            if self.logs['cnt'] == 10:
+                self.logs['batch'] = batch
+                self.logs['states'] = states
+                self.logs['states_'] = states_
+                self.logs['p'] = np.copy(p)
+                self.logs['p_'] = np.copy(p_)
+                self.logs['tp_'] = np.copy(tp_)
+            
+        x = None
         if type(self.stateCnt) is tuple:
             x = np.zeros((batchLen, *self.stateCnt[0:len(self.stateCnt)]))
         else:
@@ -116,16 +124,23 @@ class Player:
             y[i] = t
             errors[i] = abs(oldVal - t[a])
         
+        if self.debug and self.logs['cnt'] == 10:
+            self.logs['p_corrected'] = y
+
         return (x, y, errors)
         
     def replay(self):
-        batch = self.memory.sample(BATCH_SIZE)
+        batch = self.memory.sample(int(BATCH_SIZE/2))
+        goodMemLen = len(batch)
+        
+        batch += self.memory.sample(int(BATCH_SIZE - goodMemLen))
         x, y, errors = self.getTargets(batch)
         
         #update errors
         for i in range(len(batch)):
             idx = batch[i][0]
-            self.memory.update(idx, errors[i])
+            memory = self.goodMemory if i < goodMemLen else self.memory 
+            memory.update(idx, errors[i])
         
         self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=self.verbosity)
 
@@ -137,7 +152,7 @@ class Player:
         print("Player " + str(self.name) + " Target ANN updated")
         if not self.debug: self.saveWeights()
         self.tANN.ann.set_weights(self.ANN.ann.get_weights())
-            
+        
     def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):
             if index in illMoves:
@@ -152,3 +167,4 @@ class Player:
         self.logs = {}
         self.logs['preds' + str(self.name)] = np.empty([0, self.actionCnt])
         self.logs['moves' + str(self.name)] = []
+        self.logs['cnt'] = 0
