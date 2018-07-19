@@ -10,16 +10,17 @@ from ann import ANN
 import numpy as np
 from memory.pMemory import PMemory
 from graphPlot import GraphPlot
+from mathEq import MathEq
 
 GAMMA = 0.99
 
 #Exploration Rate
-MIN_EPSILON = 0.20
-MAX_EPSILON = 1
+MIN_EPSILON = 0.01
+MAX_EPSILON = 0.35
 E_LAMBDA = 0.001
 
 #Learning Rate
-MIN_ALPHA = 0.01
+MIN_ALPHA = 0.1
 MAX_ALPHA = 0.5
 A_LAMBDA = 0.001
 
@@ -47,7 +48,8 @@ class Player:
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
         self.updateTargetANN()
         self.verbosity = 0
-        self.gPlot = GraphPlot(str(name) + "hp", 1, 2, ["e", "a"])
+        self.gPlot = GraphPlot(str(name) + "hp", 1, 3, ["p1e", "p2e", "a"])
+        self.eq = MathEq(1)
         
     def act(self, state, illActions):
         if np.random.uniform() < self.epsilon:
@@ -66,7 +68,8 @@ class Player:
                 
         return action
 
-    def observe(self, sample, gameCnt):
+    def observe(self, sample, game):
+        gameCnt = game.gameCnt
         x, y, errors = self.getTargets([(0, sample)])
         
         memory = self.goodMemory if sample[2] > 0 else self.memory
@@ -77,11 +80,12 @@ class Player:
                 self.updateTargetANN()
                 
             if not self.debug:
-                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
+#                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
+                self.epsilon = self.eq.getValue(gameCnt)
                 self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
         
             if gameCnt % 100 == 0: 
-                self.gPlot.add(gameCnt, [self.epsilon, self.alpha])
+                self.gPlot.add(gameCnt, [self.epsilon, game.eq.getValue(gameCnt), self.alpha])
                 if gameCnt % 1000 == 0: self.gPlot.save()
 
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0

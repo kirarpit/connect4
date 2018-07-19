@@ -17,8 +17,8 @@ p = Player(1, stateCnt, actionCnt, True)
 
 epsilon = 0.05
 
-while game.gameCnt < 1000:
-    game.newGame() 
+while game.gameCnt < 999:
+    game.newGame()
     
     if game.gameCnt % 2 == 0:
         game.setFirstToPlay(2)

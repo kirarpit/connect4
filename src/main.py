@@ -43,7 +43,7 @@ while not debug or game.gameCnt < 2:
         s_, r = game.getNextState(a)
         sample = (s, a, r, s_)
         
-        p1.observe(sample, game.gameCnt)
+        p1.observe(sample, game)
         p1.replay()
 
     flag = 0

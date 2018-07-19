@@ -7,6 +7,7 @@ Created on Sat Jun 23 19:47:06 2018
 """
 
 from games.game import Game
+from mathEq import MathEq
 import games.c4Solver as C4Solver
 import numpy as np
 import random
@@ -23,6 +24,7 @@ class C4Game(Game):
 #        self.stateCnt = (1, self.rows, self.columns)
         self.stateCnt = self.rows * self.columns * 2
         self.actionCnt = columns
+        self.eq = MathEq(2)
 
     def newGame(self):
         super().newGame()
@@ -37,7 +39,7 @@ class C4Game(Game):
         self.step(action)
         
         if not self.isOver():
-            self.p2act()
+            self.p2act(self.eq.getValue(self.gameCnt))
     
         newState = self.getCurrentState() if not self.isOver() else None
         return (newState, self.getReward(1))
@@ -85,8 +87,9 @@ class C4Game(Game):
         
     def checkDrawState(self):
         if super().checkDrawState():
-            self.rewards[self.firstToPlay] = 0
-            self.rewards[self.getNextPlayer(self.firstToPlay)] = self.DRAW_R
+            pass
+#            self.rewards[self.firstToPlay] = 0
+#            self.rewards[self.getNextPlayer(self.firstToPlay)] = self.DRAW_R
         
     def getIllMoves(self):
         return list(self.fullColumns)
