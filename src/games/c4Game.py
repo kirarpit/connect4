@@ -10,11 +10,10 @@ from games.game import Game
 from mathEq import MathEq
 import games.c4Solver as C4Solver
 import numpy as np
-import random
 
 class C4Game(Game):
     
-    DRAW_R = 0.5
+    DRAW_R = 0.2
 
     def __init__(self, rows=6, columns=7):
         super().__init__("C4")
@@ -25,6 +24,7 @@ class C4Game(Game):
         self.stateCnt = self.rows * self.columns * 2
         self.actionCnt = columns
         self.eq = MathEq(2)
+        self.solver = C4Solver
 
     def newGame(self):
         super().newGame()
@@ -104,8 +104,7 @@ class C4Game(Game):
             if len(self.getIllMoves()) == self.actionCnt - 1:#only one legal move left
                 action = list(set(range(self.actionCnt)) - set(self.getIllMoves()))[0]
             else:
-#                action = random.sample(C4Solver.solve(self.columnString), 1)[0]
-                action = C4Solver.solve(self.columnString)[0]
+                action = self.solver.solve(self)
 
         self.step(action)
         

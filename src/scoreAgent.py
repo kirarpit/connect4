@@ -11,7 +11,7 @@ from games.c4Game import C4Game
 from player import Player
 
 #game = T3Game()
-game = C4Game(4, 5)
+game = C4Game(5, 6)
 stateCnt, actionCnt = game.getStateActionCnt()
 p = Player(1, stateCnt, actionCnt, True)
 

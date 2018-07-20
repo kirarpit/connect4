@@ -12,22 +12,26 @@ import os, pickle
 debug = False
 
 def cached(func):
-    func.cnt = 0
+    func.cacheInfo = {'hits':0, 'misses':0}
     dictName = "dicts/" + func.__name__ + ".pickle"
     if debug: print(dictName)
-
+    
+    def cache_info():
+        print(func.cacheInfo)
+    
     def wrapper(*args):
         try:
             result =  func.cache[args]
             if debug: print("Hit the cache for args: " + str(args))
+            func.cacheInfo['hits'] += 1
             return result
         
         except KeyError:
-            func.cnt += 1
+            func.cacheInfo['misses'] += 1
             if debug: print("Missed the cache for args: " + str(args))
             func.cache[args] = result = func(*args)
             
-            if func.cnt % 10000 == 0:
+            if func.cacheInfo['misses'] % 10000 == 0:
                 try:
                     with open(dictName, 'wb') as handle:
                         if debug: print("Dumping the cache")
@@ -46,5 +50,7 @@ def cached(func):
     else:
         if debug: print("No cache was found")
         wrapper.cache = func.cache = {}
+
+    wrapper.cache_info = cache_info
     
     return wrapper

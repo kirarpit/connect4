@@ -24,7 +24,7 @@ def observeSample(lastS, lastA):
     
 debug = False
 
-game = C4Game(4,5)
+game = C4Game(6,7)
 #game = T3Game()
 stateCnt, actionCnt = game.getStateActionCnt()
 p1 = Player(1, stateCnt, actionCnt, debug)
