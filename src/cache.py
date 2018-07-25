@@ -31,7 +31,7 @@ def cached(func):
             if debug: print("Missed the cache for args: " + str(args))
             func.cache[args] = result = func(*args)
             
-            if func.cacheInfo['misses'] % 10000 == 0:
+            if func.cacheInfo['misses'] % 1000 == 0:
                 try:
                     with open(dictName, 'wb') as handle:
                         if debug: print("Dumping the cache")

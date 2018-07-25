@@ -33,11 +33,11 @@ class ANN:
 
     def createANN(self):
         ann = Sequential()
-        ann.add(Dense(units = 24, activation = 'relu', input_dim = self.stateCnt))
+        ann.add(Dense(units = 48, activation = 'relu', input_dim = self.stateCnt))
 #        ann.add(Convolution2D(32, (3, 3), padding='valid', strides=(1, 1), activation='relu', input_shape=self.stateCnt, data_format="channels_first"))
-#        ann.add(MaxPooling2D(pool_size = (2, 2), strides=1, padding='same', data_format="channels_first"))
+#        ann.add(MaxPooling2D(pool_size = (2, 2), strides=2, padding='same', data_format="channels_first"))
 #        ann.add(Flatten())
-        ann.add(Dense(units = 24, activation = 'relu'))
+        ann.add(Dense(units = 48, activation = 'relu'))
         ann.add(Dense(units = self.actionCnt, activation = 'linear'))
         ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
         self.ann = ann

@@ -20,7 +20,8 @@ def solve(game):
     elif game.rows == 4 and game.columns == 5:
         moves = miniMax4X5Shell(gameString)
 
-    action = random.sample(moves, 1)[0]
+#    action = random.sample(moves, 1)[0]
+    action = moves[0]
     return action
 
 @cached
@@ -43,13 +44,14 @@ def miniMax6X7Shell(gameString):
     else:
         return miniMax6X7API(gameString)
     return getBestMoves(scores)
-    
+
 @cached
 def miniMax6X7API(gameString):
     if debug: print("miniMax6X7API called")
     r = requests.get('http://connect4.gamesolver.org/solve?pos=' + str(gameString))
     data = yaml.safe_load(r.text)
-    scores = data['score']
+    scores = [-99 if i == 100 else i for i in data['score']]
+    if debug: print(scores)
 
     return getBestMoves(scores)
 

@@ -13,7 +13,7 @@ import numpy as np
 
 class C4Game(Game):
     
-    DRAW_R = 0.2
+    DRAW_R = 0.5
 
     def __init__(self, rows=6, columns=7):
         super().__init__("C4")
@@ -39,7 +39,8 @@ class C4Game(Game):
         self.step(action)
         
         if not self.isOver():
-            self.p2act(self.eq.getValue(self.gameCnt))
+#            self.p2act(self.eq.getValue(self.gameCnt))
+            self.p2act()
     
         newState = self.getCurrentState() if not self.isOver() else None
         return (newState, self.getReward(1))
@@ -94,7 +95,7 @@ class C4Game(Game):
     def getIllMoves(self):
         return list(self.fullColumns)
         
-    def p2act(self, epsilon=0.30):
+    def p2act(self, epsilon=0.70):
         if np.random.uniform() < epsilon:
             while True:
                 action = np.random.choice(self.actionCnt, 1)[0]
