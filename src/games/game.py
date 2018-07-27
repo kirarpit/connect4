@@ -38,8 +38,8 @@ class Game(ABC):
         self.toPlay = 1
         self.firstToPlay = 1
         self.turnCnt = 0
-        self.stateForm = np.zeros(self.stateCnt, dtype=int)
-        self.stateForm[True] = -1
+        self.stateForm = np.zeros(self.stateCnt, dtype=float)
+        self.stateForm[True] = 0.01
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         if self.gameCnt % 1000 == 0: self.gPlot.save()
     

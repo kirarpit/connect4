@@ -39,8 +39,8 @@ class C4Game(Game):
         self.step(action)
         
         if not self.isOver():
-#            self.p2act(self.eq.getValue(self.gameCnt))
-            self.p2act()
+            self.p2act(self.eq.getValue(self.gameCnt))
+#            self.p2act()
     
         newState = self.getCurrentState() if not self.isOver() else None
         return (newState, self.getReward(1))
@@ -89,8 +89,8 @@ class C4Game(Game):
     def checkDrawState(self):
         if super().checkDrawState():
             pass
-#            self.rewards[self.firstToPlay] = 0
-#            self.rewards[self.getNextPlayer(self.firstToPlay)] = self.DRAW_R
+            self.rewards[self.firstToPlay] = 0
+            self.rewards[self.getNextPlayer(self.firstToPlay)] = self.DRAW_R
         
     def getIllMoves(self):
         return list(self.fullColumns)

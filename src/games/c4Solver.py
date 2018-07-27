@@ -20,8 +20,7 @@ def solve(game):
     elif game.rows == 4 and game.columns == 5:
         moves = miniMax4X5Shell(gameString)
 
-#    action = random.sample(moves, 1)[0]
-    action = moves[0]
+    action = random.sample(moves, 1)[0]
     return action
 
 @cached

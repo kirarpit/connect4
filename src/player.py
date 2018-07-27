@@ -140,7 +140,7 @@ class Player:
         return (x, y, errors)
         
     def replay(self):
-        batch = self.memory.sample(int(BATCH_SIZE/2))
+        batch = self.goodMemory.sample(int(BATCH_SIZE/2))
         goodMemLen = len(batch)
         
         batch += self.memory.sample(int(BATCH_SIZE - goodMemLen))
