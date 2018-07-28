@@ -12,12 +12,12 @@ class T3Game(Game):
     LOSER_R = -1
     DRAW_R = 0
     
-    def __init__(self, size=3):
-        super().__init__("T3")
+    def __init__(self, size=3, isConv=False):
+        super().__init__("T3", isConv)
         
         self.rows = 3
         self.columns = 3
-        self.stateCnt = self.rows * self.columns * 2
+        self.stateCnt = self.rows * self.columns * 2 if not self.isConv else (1, self.rows, self.columns)
         self.actionCnt = self.rows * self.columns
         
     def newGame(self):

@@ -11,12 +11,13 @@ class C4Game(Game):
     
     DRAW_R = 0.5
 
-    def __init__(self, rows=6, columns=7):
-        super().__init__("C4")
+    def __init__(self, rows=6, columns=7, isConv=False):
+        super().__init__("C4", isConv)
         
         self.rows = rows
         self.columns = columns
-        self.stateCnt = rows * columns * 2
+        
+        self.stateCnt = rows * columns * 2 if not self.isConv else (1, rows, columns)
         self.actionCnt = columns
 
     def newGame(self):
@@ -28,6 +29,8 @@ class C4Game(Game):
         if (super().step(column) < 0):
             print("Error!!!")
             print(self.columnString)
+            self.over = True
+            return -1
         
         row = 0
         while row < self.rows:

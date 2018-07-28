@@ -7,32 +7,25 @@ Created on Fri Jul 27 16:53:32 2018
 """
 from players.player import Player
 from games.t3MinMax import TicTacToeBrain as T3M2
-import numpy as np
-from mathEq import MathEq
 from functools import lru_cache
+import numpy as np
 
 class MinimaxT3Player(Player):
     
-    def __init__(self, name, stateCnt, actionCnt, debug=False):
-        super().__init__(name, stateCnt, actionCnt, debug)
-        self.epsilon = 0.75 if debug else 1
+    def __init__(self, name, game, **kwargs):
+        super().__init__(name, game, **kwargs)
         self.solver = T3M2()
-        self.eq = MathEq(2)
     
     def act(self, game):
-        illActions = game.getIllMoves()
-
         if np.random.uniform() < self.epsilon:
-            action = self.getRandomMove(illActions)
+            action = self.getRandomMove(game.getIllMoves())
         else:
             action = self.getBestMove(game.toString())
-
+        
         return action
     
     def observe(self, sample, game):
-        if sample[3] is None:
-            if not self.debug:
-                self.epsilon = self.eq.getValue(game.gameCnt)
+        super().observe(game)
         
     def train(self):
         pass

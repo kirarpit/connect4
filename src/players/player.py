@@ -10,19 +10,25 @@ import numpy as np
 
 class Player(ABC):
     
-    def __init__(self, name, stateCnt, actionCnt, debug):
+    def __init__(self, name, game, **kwargs):
         self.name = name
-        self.stateCnt = stateCnt
-        self.actionCnt = actionCnt
-        self.debug = debug
+        self.stateCnt, self.actionCnt = game.getStateActionCnt()
+        
+        self.debug = kwargs['debug'] if "debug" in kwargs else False
+        self.eEq = kwargs['eEq'] if "eEq" in kwargs else None
+        self.aEq = kwargs['aEq'] if "aEq" in kwargs else None
+        
+        self.epsilon = 0
     
     @abstractmethod
     def act(self):
         pass
     
     @abstractmethod
-    def observe(self):
-        pass
+    def observe(self, game):
+        if game.isOver() and self.eEq is not None:
+            if not self.debug:
+                self.epsilon = self.eEq.getValue(game.gameCnt)
     
     @abstractmethod
     def train(self):

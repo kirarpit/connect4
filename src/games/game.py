@@ -14,8 +14,9 @@ class Game(ABC):
     WINNER_R = 1
     LOSER_R = -1
     
-    def __init__(self, name):
+    def __init__(self, name, isConv=False):
         self.name = name
+        self.isConv = isConv
         self.gameCnt = 0
         self.initStats()
         self.deltas = {
@@ -41,7 +42,7 @@ class Game(ABC):
         self.turnCnt = 0
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         
-        if type(self.stateCnt) is tuple:#means convolutional layer/image input
+        if self.isConv:
             self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
             self.stateForm[True] = 128
         else:
@@ -102,7 +103,7 @@ class Game(ABC):
         self.stats[self.firstToPlay][player] += 1
         
     def updateStateForm(self, row, column):
-        if type(self.stateCnt) is tuple:
+        if self.isConv:
             if self.toPlay == 2:
                 val = 64
             else:
