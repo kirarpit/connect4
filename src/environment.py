@@ -16,23 +16,17 @@ class Environment():
         self.debug = debug
         
         self.startTime = time.time()
-        self.gPlot = GraphPlot("e-rate", 1, 2, ["p1-e", "p2-e"])
+        self.gPlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
 
     def run(self):
         while not self.debug or self.game.gameCnt < 10:
             self.runGame()
             
             if self.game.gameCnt % 100 == 0 or self.debug:
-                self.game.printGame()
-                print ("p1-e: " + str(self.p1.epsilon))
-                print ("p2-e: " + str(self.p2.epsilon))
-                print ("Learning Rate: " + str(self.p1.alpha))
-                self.game.clearStats()
-                print("Time since beginning: " + str(time.time() - self.startTime))
-                print("#"*50)
-                self.gPlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
+                self.printEnv()
                 
-            if self.game.gameCnt % 1000 == 0: self.gPlot.save()
+            if self.game.gameCnt % 1000 == 0:
+                self.gPlot.save()
 
     def runGame(self):
         self.game.newGame()
@@ -68,4 +62,17 @@ class Environment():
     
         sample = (lastS, lastA, r, s_)
         p.observe(sample, self.game)
-        p.train()
+        if not self.debug:
+            p.train()
+        
+    def printEnv(self):
+        self.game.printGame()
+        print ("p1-e: " + str(self.p1.epsilon))
+        print ("p2-e: " + str(self.p2.epsilon))
+        print ("Learning Rate: " + str(self.p1.alpha))
+        self.game.clearStats()
+        print("Time since beginning: " + str(time.time() - self.startTime))
+        print("#"*50)
+              
+        if not self.debug:
+            self.gPlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])

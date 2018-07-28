@@ -14,9 +14,9 @@ class Game(ABC):
     WINNER_R = 1
     LOSER_R = -1
     
-    def __init__(self, name, isConv=False):
-        self.name = name
-        self.isConv = isConv
+    def __init__(self, **kwargs):
+        self.name = kwargs['name'] if "name" in kwargs else "game"
+        self.isConv = kwargs['isConv'] if "isConv" in kwargs else False
         self.gameCnt = 0
         self.initStats()
         self.deltas = {
@@ -30,7 +30,7 @@ class Game(ABC):
             "S":(0, 1)
         }
         self.directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
-        self.gPlot = GraphPlot(name, 1, 3, list(self.stats[1].keys()))
+        self.gPlot = GraphPlot("game-stats-" + str(self.name), 1, 3, list(self.stats[1].keys()))
     
     @abstractmethod
     def newGame(self):
@@ -44,7 +44,7 @@ class Game(ABC):
         
         if self.isConv:
             self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
-            self.stateForm[True] = 128
+            self.stateForm[True] = 1
         else:
             self.stateForm = np.zeros(self.stateCnt, dtype=float)
             self.stateForm[True] = 0.01

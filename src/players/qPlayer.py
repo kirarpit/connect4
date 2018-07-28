@@ -24,7 +24,7 @@ MIN_ALPHA = 0.1
 MAX_ALPHA = 0.5
 A_LAMBDA = 0.001
 
-MEMORY_CAPACITY = 100000
+MEMORY_CAPACITY = 20000
 UPDATE_TARGET_FREQUENCY = 4000
 BATCH_SIZE = 64
 T_BATCH_SIZE = 64
@@ -75,8 +75,8 @@ class QPlayer(Player):
 
     def observe(self, sample, game):
         gameCnt = game.gameCnt
-        x, y, errors = self.getTargets([(0, sample)])
         
+        _, _, errors = self.getTargets([(0, sample)])
         memory = self.goodMemory if sample[2] > 0 else self.memory
         memory.add(errors[0], sample)
         
@@ -159,8 +159,8 @@ class QPlayer(Player):
         return (x, y, errors)
             
     def updateTargetBrain(self):
-        print("Player " + str(self.name) + " Target brain updated")
-        if not self.debug: self.saveWeights()
+        if self.debug: return
+        self.saveWeights()
         self.tBrain.model.set_weights(self.brain.model.get_weights())
         
     def filterIllMoves(self, moves, illMoves):

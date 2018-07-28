@@ -7,29 +7,30 @@ Created on Sun Jul 15 16:55:37 2018
 """
 
 from games.c4Game import C4Game
-#from games.t3Game import T3Game
-from player import Player
+from environment import Environment
+from players.qPlayer import QPlayer
+from keras.models import Sequential
+from keras.layers import Dense
+from players.minimaxC4Player import MinimaxC4Player
+from mathEq import MathEq
 
-#game = T3Game()
-game = C4Game(5, 6)
-stateCnt, actionCnt = game.getStateActionCnt()
-p = Player(1, stateCnt, actionCnt, True)
+game = C4Game(4, 5)
 
-epsilon = 0.05
+ann = Sequential()
+ann.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu', input_dim = game.stateCnt))
+ann.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
+ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
+ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+
+p1 = QPlayer(1, game, debug=True, model=ann)
+p1.brain.load("test2")
+
+eq1 = MathEq({"min":0.05, "max":0.05, "lambda":0})
+p2 = MinimaxC4Player(2, game, eEq=eq1)
+
+env = Environment(game, p1, p2, debug=True)
 
 while game.gameCnt < 999:
-    game.newGame()
+    env.runGame()
     
-    if game.gameCnt % 2 == 0:
-        game.setFirstToPlay(2)
-        game.p2act(epsilon)
-    
-    while not game.isOver():
-        s = game.getCurrentState()
-        a = p.act(s, game.getIllMoves())
-        game.step(a)
-        
-        if not game.isOver():
-            game.p2act(epsilon)
-            
-game.printGame()
+env.printEnv()

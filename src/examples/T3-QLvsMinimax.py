@@ -62,7 +62,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 p1 = QPlayer(1, game, model=ann)
 
 #OPT: set custom exploration rate equation
-eq = MathEq({"min":0, "max":1, "lambda":0.001})
+eq = MathEq({"min":0, "max":0.3, "lambda":0.001})
 p2 = MinimaxT3Player(2, game, eEq=eq)
 env = Environment(game, p1, p2)
 env.run()
@@ -71,8 +71,8 @@ env.run()
 game = T3Game(3, isConv=True)
 
 ann = Sequential()
-ann.add(Convolution2D(16, (2, 2), padding='valid', strides=(1, 1), activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
-ann.add(MaxPooling2D(pool_size = (2, 2), strides=1, padding='same', data_format="channels_first"))
+ann.add(Convolution2D(8, (2, 2), padding='valid', strides=(1, 1), activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
+#ann.add(MaxPooling2D(pool_size = (2, 2), strides=1, padding='same', data_format="channels_first"))
 ann.add(Flatten())
 ann.add(Dense(units = 32, activation = 'relu'))
 ann.add(Dense(units = game.actionCnt, activation = 'linear'))
@@ -80,6 +80,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 
 debug = False
 p1 = QPlayer(1, game, model=ann, debug=debug)
+eq = MathEq({"min":0, "max":0.3, "lambda":0.001})
 p2 = MinimaxT3Player(2, game)
 env = Environment(game, p1, p2, debug)
 env.run()

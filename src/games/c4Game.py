@@ -11,12 +11,11 @@ class C4Game(Game):
     
     DRAW_R = 0.5
 
-    def __init__(self, rows=6, columns=7, isConv=False):
-        super().__init__("C4", isConv)
+    def __init__(self, rows=6, columns=7, **kwargs):
+        super().__init__(**kwargs)
         
         self.rows = rows
         self.columns = columns
-        
         self.stateCnt = rows * columns * 2 if not self.isConv else (1, rows, columns)
         self.actionCnt = columns
 
@@ -65,7 +64,3 @@ class C4Game(Game):
         
     def getIllMoves(self):
         return list(self.filledColumns)
-                
-    def printGame(self):
-        print ("#" * 19)
-        super().printGame()

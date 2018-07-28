@@ -12,8 +12,8 @@ class T3Game(Game):
     LOSER_R = -1
     DRAW_R = 0
     
-    def __init__(self, size=3, isConv=False):
-        super().__init__("T3", isConv)
+    def __init__(self, size=3,  **kwargs):
+        super().__init__(**kwargs)
         
         self.rows = 3
         self.columns = 3

@@ -35,7 +35,8 @@ def cached(func):
                 try:
                     with open(dictName, 'wb') as handle:
                         if debug: print("Dumping the cache")
-                        pickle.dump(func.cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                        if len(func.cache):
+                            pickle.dump(func.cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
                 except Exception as e:
                     print("Pickle dump error: " + str(e))
                 
