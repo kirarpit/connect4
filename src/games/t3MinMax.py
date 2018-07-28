@@ -2,7 +2,6 @@ class TicTacToeBrain :
 
     def __init__(self, player = "x") :
         self._squares = {}
-        self._copySquares = {}
         self._winningCombos = (
         [0, 1, 2], [3, 4, 5], [6, 7, 8],
         [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -74,7 +73,3 @@ class TicTacToeBrain :
                 if val < best :
                     best, bestMove = val, move
         return best, bestMove
-
-    def printCopy(self) :
-        return
-        print(self._copySquares)

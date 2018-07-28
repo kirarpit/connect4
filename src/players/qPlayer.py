@@ -9,15 +9,10 @@ import math
 from ann import ANN
 import numpy as np
 from memory.pMemory import PMemory
-from graphPlot import GraphPlot
 from mathEq import MathEq
+from players.player import Player
 
 GAMMA = 0.99
-
-#Exploration Rate
-MIN_EPSILON = 0.01
-MAX_EPSILON = 1
-E_LAMBDA = 0.0001
 
 #Learning Rate
 MIN_ALPHA = 0.1
@@ -31,32 +26,33 @@ BATCH_SIZE = 64
 T_BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
 
-class Player:
+class QPlayer(Player):
     
     def __init__(self, name, stateCnt, actionCnt, debug=False):
-        self.name = name
-        self.stateCnt = stateCnt
-        self.actionCnt = actionCnt
-        self.debug = debug
-        self.initLog()
-        self.epsilon = 0 if debug else MAX_EPSILON
+        super().__init__(name, stateCnt, actionCnt, debug)
+                
+        self.nullState = np.zeros(stateCnt)
+        self.epsilon = 0 if debug else 1
         self.alpha = MAX_ALPHA
+        self.verbosity = 0
+
         self.memory = PMemory(MEMORY_CAPACITY)
         self.goodMemory = PMemory(MEMORY_CAPACITY)
-        self.nullState = np.zeros(stateCnt)
+        
         self.ANN = ANN(name, stateCnt, actionCnt)
         self.tANN = ANN(str(name) + "_", stateCnt, actionCnt)
-        self.updateTargetANN()
-        self.verbosity = 0
-        self.gPlot = GraphPlot(str(name) + "hp", 1, 3, ["p1e", "p2e", "a"])
-        self.eq = MathEq(1)
         
-    def act(self, state, illActions):
+        self.eq = MathEq(1)
+
+        self.initLog()
+        self.updateTargetANN()
+        
+    def act(self, game):
+        state = game.getCurrentState()
+        illActions = game.getIllMoves()
+        
         if np.random.uniform() < self.epsilon:
-            while True:
-                action = np.random.choice(self.actionCnt, 1)[0]
-                if action not in illActions:
-                    break
+            action = self.getRandomMove(illActions)
         else:
             actions = self.ANN.ann.predict(np.array([state]))[0]
             fActions = self.filterIllMoves(np.copy(actions), illActions)
@@ -80,16 +76,30 @@ class Player:
                 self.updateTargetANN()
                 
             if not self.debug:
-#                self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * math.exp(-E_LAMBDA * gameCnt)
                 self.epsilon = self.eq.getValue(gameCnt)
                 self.alpha = MIN_ALPHA + (MAX_ALPHA - MIN_ALPHA) * math.exp(-A_LAMBDA * gameCnt)
         
-            if gameCnt % 100 == 0: 
-                self.gPlot.add(gameCnt, [self.epsilon, game.eq.getValue(gameCnt), self.alpha])
-                if gameCnt % 1000 == 0: self.gPlot.save()
-
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
+        
+    def train(self):
+        batch = self.goodMemory.sample(int(BATCH_SIZE/2))
+        goodMemLen = len(batch)
+        
+        batch += self.memory.sample(int(BATCH_SIZE - goodMemLen))
+        x, y, errors = self.getTargets(batch)
+        
+        #update errors
+        for i in range(len(batch)):
+            idx = batch[i][0]
+            memory = self.goodMemory if i < goodMemLen else self.memory 
+            memory.update(idx, errors[i])
+        
+        self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=self.verbosity)
 
+        if self.debug:
+            self.logs['x' + str(self.name)] = x
+            self.logs['y' + str(self.name)] = y
+            
     def getTargets(self, batch):
         batchLen = len(batch)
         
@@ -126,7 +136,7 @@ class Player:
             t = p[i]
             oldVal = t[a]
             if s_ is None:
-                t[a] = r
+                t[a] += (r - t[a]) * self.alpha
             else:
                 t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
 
@@ -138,25 +148,6 @@ class Player:
             self.logs['p_corrected'] = y
 
         return (x, y, errors)
-        
-    def replay(self):
-        batch = self.goodMemory.sample(int(BATCH_SIZE/2))
-        goodMemLen = len(batch)
-        
-        batch += self.memory.sample(int(BATCH_SIZE - goodMemLen))
-        x, y, errors = self.getTargets(batch)
-        
-        #update errors
-        for i in range(len(batch)):
-            idx = batch[i][0]
-            memory = self.goodMemory if i < goodMemLen else self.memory 
-            memory.update(idx, errors[i])
-        
-        self.ANN.ann.fit(x, y, batch_size=T_BATCH_SIZE, verbose=self.verbosity)
-
-        if self.debug:
-            self.logs['x' + str(self.name)] = x
-            self.logs['y' + str(self.name)] = y
             
     def updateTargetANN(self):
         print("Player " + str(self.name) + " Target ANN updated")

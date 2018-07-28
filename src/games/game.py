@@ -14,7 +14,8 @@ class Game(ABC):
     WINNER_R = 1
     LOSER_R = -1
     
-    def __init__(self, name="game"):
+    def __init__(self, name):
+        self.name = name
         self.gameCnt = 0
         self.initStats()
         self.deltas = {
@@ -38,9 +39,15 @@ class Game(ABC):
         self.toPlay = 1
         self.firstToPlay = 1
         self.turnCnt = 0
-        self.stateForm = np.zeros(self.stateCnt, dtype=float)
-        self.stateForm[True] = 0.01
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
+        
+        if type(self.stateCnt) is tuple:#means convolutional layer/image input
+            self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
+            self.stateForm[True] = 128
+        else:
+            self.stateForm = np.zeros(self.stateCnt, dtype=float)
+            self.stateForm[True] = 0.01
+
         if self.gameCnt % 1000 == 0: self.gPlot.save()
     
     @abstractmethod
@@ -58,10 +65,6 @@ class Game(ABC):
     
         return 1
     
-    @abstractmethod
-    def getNextState(self, action):
-        pass
-            
     @abstractmethod
     def getIllMoves(self):
         pass
@@ -99,10 +102,17 @@ class Game(ABC):
         self.stats[self.firstToPlay][player] += 1
         
     def updateStateForm(self, row, column):
-        pos = row * self.columns + column
-        if self.toPlay == 2:
-            pos += self.rows * self.columns
-        self.stateForm[pos] = 1
+        if type(self.stateCnt) is tuple:
+            if self.toPlay == 2:
+                val = 64
+            else:
+                val = 192
+            self.stateForm[0][row][column] = val
+        else:
+            pos = row * self.columns + column
+            if self.toPlay == 2:
+                pos += self.rows * self.columns
+            self.stateForm[pos] = 1
         
     def checkDrawState(self):
         if self.turnCnt == self.rows * self.columns - 1:
@@ -152,10 +162,7 @@ class Game(ABC):
         lStr = ""
         for x in range(0, self.rows):
             for y in range(0, self.columns):
-                if self.gameState[x][y] == -1:
-                    lStr += str(0)
-                else:
-                    lStr += str(self.gameState[x][y])
+                lStr += str(self.gameState[x][y])
         return lStr
     
     def printGame(self):

@@ -33,13 +33,14 @@ class ANN:
 
     def createANN(self):
         ann = Sequential()
-        ann.add(Dense(units = 48, 
-                      kernel_initializer='random_uniform', 
-                      bias_initializer='random_uniform', 
-                      activation = 'relu', input_dim = self.stateCnt))
 #        ann.add(Convolution2D(32, (3, 3), padding='valid', strides=(1, 1), activation='relu', input_shape=self.stateCnt, data_format="channels_first"))
 #        ann.add(MaxPooling2D(pool_size = (2, 2), strides=2, padding='same', data_format="channels_first"))
 #        ann.add(Flatten())
+        ann.add(Dense(units = 48, 
+                      kernel_initializer='random_uniform', 
+                      bias_initializer='random_uniform', 
+                      activation = 'relu',
+                      input_dim = self.stateCnt))
         ann.add(Dense(units = 24, 
                       kernel_initializer='random_uniform', 
                       bias_initializer='random_uniform', 
