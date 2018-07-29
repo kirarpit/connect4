@@ -13,6 +13,7 @@ class MyThread(threading.Thread):
     def __init__(self, env):
         threading.Thread.__init__(self)
         self.env = env
+        self.env.thread = True
         self.stop_signal = False
         self.number = self.cnt
         MyThread.cnt += 1    

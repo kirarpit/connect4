@@ -100,7 +100,7 @@ class QPlayer(Player):
             memory = self.goodMemory if i < goodMemLen else self.memory 
             memory.update(idx, errors[i])
         
-        self.brain.model.fit(x, y, batch_size=T_BATCH_SIZE, verbose=self.verbosity)
+        self.brain.train(x, y, T_BATCH_SIZE, self.verbosity)
 
         if self.debug:
             self.logs['x' + str(self.name)] = x
@@ -157,7 +157,7 @@ class QPlayer(Player):
             
     def updateTargetBrain(self):
         if self.debug: return
-        self.saveWeights()
+        self.brain.save()
         self.tBrain.model.set_weights(self.brain.model.get_weights())
         
     def filterIllMoves(self, moves, illMoves):
@@ -167,9 +167,6 @@ class QPlayer(Player):
         
         return moves
     
-    def saveWeights(self):
-        self.brain.save()
-        
     def initLog(self):
         self.logs = {}
         self.logs['preds' + str(self.name)] = np.empty([0, self.actionCnt])

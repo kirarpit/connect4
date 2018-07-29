@@ -35,7 +35,7 @@ while i < 2:
     p1 = PGPlayer(name, game, brain=brain, eEq=eq1)
     p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver)
 
-    env = Environment(game, p1, p2, thread=True)
+    env = Environment(game, p1, p2)
     threads.append(MyThread(env))
     i += 1
 

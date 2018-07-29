@@ -37,7 +37,7 @@ while i < 4:
     env = Environment(game, p1, p2, thread=True)
     threads.append(MyThread(env))
     i += 1
-    config['max'] += 0.1
+    config['max'] += 0.05
 
 opts = [Optimizer(brain) for i in range(1)]
 for o in opts:

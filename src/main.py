@@ -11,7 +11,6 @@ from players.minimaxC4Player import MinimaxC4Player
 from players.qPlayer import QPlayer
 from mathEq import MathEq
 
-#Example 1
 game = C4Game(4,5)
 
 debug = True

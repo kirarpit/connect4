@@ -10,18 +10,29 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.models import load_model
 import os.path
+import tensorflow as tf
+from keras import backend as K
 
 class Brain:
     def __init__(self, name, game, model=None):
         self.filename = str(name) + '.h5'
         self.stateCnt, self.actionCnt = game.getStateActionCnt()
         
+        self.session = tf.Session()
+        K.set_session(self.session)
+        K.manual_variable_initialization(True)
+
         if model is None:
             self.model = self._buildModel()
         else:
-            print("Custom ANN model loaded")
             self.model = model
-    
+        
+        model._make_predict_function()
+        model._make_train_function()
+        
+        self.session.run(tf.global_variables_initializer())
+        self.default_graph = tf.get_default_graph()
+
     def _buildModel(self):
         model = Sequential()
         model.add(Dense(units = int((self.stateCnt + self.actionCnt)/2),
@@ -36,14 +47,17 @@ class Brain:
         model.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
         return model
     
-    def setModel(self, model):
-        self.model = model
-        
     def predict(self, s):
-        return self.model.predict(s)
+        with self.default_graph.as_default():
+            return self.model.predict(s)
 
+    def train(self, x, y, batch_size, verbose):
+        with self.default_graph.as_default():
+            self.model.fit(x, y, batch_size=batch_size, verbose=verbose)
+        
     def save(self):
-        self.model.save(self.filename)
+        with self.session:
+            self.model.save(self.filename)
         
     def load(self, filename):
         filename = str(filename) + '.h5'
