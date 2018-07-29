@@ -158,7 +158,7 @@ class QPlayer(Player):
     def updateTargetBrain(self):
         if self.debug: return
         self.brain.save()
-        self.tBrain.model.set_weights(self.brain.model.get_weights())
+        self.tBrain.set_weights(self.brain.get_weights())
         
     def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):

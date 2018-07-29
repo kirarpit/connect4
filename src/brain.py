@@ -55,9 +55,14 @@ class Brain:
         with self.default_graph.as_default():
             self.model.fit(x, y, batch_size=batch_size, verbose=verbose)
         
+    def get_weights(self):
+        return self.model.get_weights()
+    
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
+    
     def save(self):
-        with self.session:
-            self.model.save(self.filename)
+        self.model.save(self.filename)
         
     def load(self, filename):
         filename = str(filename) + '.h5'
