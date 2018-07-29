@@ -15,7 +15,7 @@ from players.player import Player
 GAMMA = 0.99
 
 #Exploration Rate
-MIN_EPSILON = 0.01
+MIN_EPSILON = 0.05
 MAX_EPSILON = 1
 E_LAMBDA = 0.001
 
@@ -74,6 +74,7 @@ class QPlayer(Player):
         return action
 
     def observe(self, sample, game):
+        super().observe(game)
         gameCnt = game.gameCnt
         
         _, _, errors = self.getTargets([(0, sample)])
@@ -84,10 +85,6 @@ class QPlayer(Player):
             if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
                 self.updateTargetBrain()
                 
-            if not self.debug:
-                self.epsilon = self.eEq.getValue(gameCnt)
-                self.alpha = self.aEq.getValue(gameCnt)
-        
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
         
     def train(self):

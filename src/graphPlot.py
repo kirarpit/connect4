@@ -26,19 +26,25 @@ class GraphPlot:
             self.Ys[i].append(Y[i])
     
     def show(self):
-        plt = self.save(True)
-        plt.draw()
-        plt.show()
-        plt.close(self.fig)
+        try:
+            plt = self.save(True)
+            plt.draw()
+            plt.show()
+            plt.close(self.fig)
+        except Exception as e:
+            print("error: " + str(e))
     
     def save(self, show=False):
-        self.fig = plt.figure()
-        for i in range(self.yCnt):
-            plt.plot(self.X, self.Ys[i], label=self.labels[i] if self.labels is not None else i)
-        
-        plt.legend(loc = "best")
-        plt.savefig('/Users/Arpit/Desktop/' + str(self.name) + '.png')
-       
-        if not show: plt.close(self.fig)
-        
-        return plt
+        try:
+            self.fig = plt.figure()
+            for i in range(self.yCnt):
+                plt.plot(self.X, self.Ys[i], label=self.labels[i] if self.labels is not None else i)
+            
+            plt.legend(loc = "best")
+            plt.savefig('/Users/Arpit/Desktop/' + str(self.name) + '.png')
+           
+            if not show: plt.close(self.fig)
+            
+            return plt
+        except Exception as e:
+            print("error: " + str(e))

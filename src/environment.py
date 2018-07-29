@@ -9,11 +9,12 @@ from graphPlot import GraphPlot
 import time
 
 class Environment():
-    def __init__(self, game, p1, p2, debug=False):
+    def __init__(self, game, p1, p2, **kwargs):
         self.game = game
         self.p1 = p1
         self.p2 = p2
-        self.debug = debug
+        self.debug = kwargs['debug'] if "debug" in kwargs else False
+        self.thread = kwargs['thread'] if "thread" in kwargs else False
         
         self.startTime = time.time()
         self.gPlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
@@ -28,36 +29,36 @@ class Environment():
             if self.game.gameCnt % 1000 == 0:
                 self.gPlot.save()
 
+            if self.thread: break
+        
     def runGame(self):
         self.game.newGame()
         
-        flag = 0
         if self.game.gameCnt % 2 == 0: # switch first to play alternatively
             self.game.setFirstToPlay(2)
-            flag = 1
 
         lastS = None
         lastA = None
         while not self.game.isOver():
-            p = self.p1 if (self.game.turnCnt + flag) % 2 == 0 else self.p2
+            p = self.p1 if self.game.toPlay == 1 else self.p2
             
             s = self.game.getCurrentState()
             a = p.act(self.game)
             self.game.step(a)
     
             if lastS is not None:
-                self.teachLastPlayer(lastS, lastA, flag)
+                self.teachLastPlayer(lastS, lastA)
             
             lastS = s
             lastA = a
             
-        self.game.turnCnt += 1
-        self.teachLastPlayer(lastS, lastA, flag)
+        self.game.switchTurn() # Dummy switch so that the player who made the last action could take the reward 
+        self.teachLastPlayer(lastS, lastA)
 
-    def teachLastPlayer(self, lastS, lastA, flag): # if a player has played then previous turn player can get their rewards, observe sample and train
-        p = self.p1 if (self.game.turnCnt + flag) % 2 == 0 else self.p2
+    def teachLastPlayer(self, lastS, lastA): # if a player has played then previous turn player can get their rewards, observe sample and train
+        p = self.p1 if self.game.toPlay == 1 else self.p2
         
-        r = self.game.getReward(p.name)
+        r = self.game.getReward(self.game.toPlay)
         s_ = self.game.getCurrentState() if not self.game.isOver() else None
     
         sample = (lastS, lastA, r, s_)
@@ -69,7 +70,8 @@ class Environment():
         self.game.printGame()
         print ("p1-e: " + str(self.p1.epsilon))
         print ("p2-e: " + str(self.p2.epsilon))
-        print ("Learning Rate: " + str(self.p1.alpha))
+        if self.p1.alpha is not None:
+            print ("Learning Rate: " + str(self.p1.alpha))
         self.game.clearStats()
         print("Time since beginning: " + str(time.time() - self.startTime))
         print("#"*50)

@@ -34,8 +34,11 @@ ann.add(Dense(units = game.actionCnt,
               activation = 'linear'))
 ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 
-p1 = QPlayer(1, game, model=ann)
-p2 = MinimaxT3Player(2, game)
+eq1 = MathEq({"min":0.05, "max":0.3, "lambda":0.001})
+eq2 = MathEq({"min":0, "max":0.05, "lambda":0.0001})
+
+p1 = QPlayer(1, game, model=ann, eEq=eq1)
+p2 = MinimaxT3Player(2, game, eEq=eq2)
 env = Environment(game, p1, p2)
 env.run()
 

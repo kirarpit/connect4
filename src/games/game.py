@@ -156,9 +156,6 @@ class Game(ABC):
     def initStats(self):
         self.stats = {1:{1:0, 2:0, 'Draw':0}, 2:{1:0, 2:0, 'Draw':0}}
         
-    def showGraph(self):
-        self.gPlot.show()
-        
     def toString(self):
         lStr = ""
         for x in range(0, self.rows):

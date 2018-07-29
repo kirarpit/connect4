@@ -19,6 +19,7 @@ class Player(ABC):
         self.aEq = kwargs['aEq'] if "aEq" in kwargs else None
         
         self.epsilon = 0
+        self.alpha = None
     
     @abstractmethod
     def act(self):
@@ -26,9 +27,11 @@ class Player(ABC):
     
     @abstractmethod
     def observe(self, game):
-        if game.isOver() and self.eEq is not None:
-            if not self.debug:
+        if game.isOver() and not self.debug:
+            if self.eEq is not None:
                 self.epsilon = self.eEq.getValue(game.gameCnt)
+            if self.aEq is not None:
+                self.alpha = self.aEq.getValue(game.gameCnt)
     
     @abstractmethod
     def train(self):

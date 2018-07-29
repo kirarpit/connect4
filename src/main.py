@@ -5,13 +5,20 @@ Created on Wed Jun 20 18:46:51 2018
 
 @author: Arpit
 """
-from environment import Environment
 from games.c4Game import C4Game
+from environment import Environment
+from players.minimaxC4Player import MinimaxC4Player
+from players.qPlayer import QPlayer
+from mathEq import MathEq
 
-debug = False
-game = C4Game(6,7)
+#Example 1
+game = C4Game(4,5)
 
-env = Environment(game, p1, p2, debug)
+debug = True
+p1 = QPlayer(1, game, debug=debug)
+eq = MathEq({"min":0, "max":0.3, "lambda":0.001})
+p2 = MinimaxC4Player(2, game)
+env = Environment(game, p1, p2, debug=debug)
 env.run()
 
 if debug:

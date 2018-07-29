@@ -13,7 +13,8 @@ class MinimaxC4Player(Player):
     
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
-        self.solver = C4Solver
+        
+        self.solver = kwargs['solver'] if "solver" in kwargs else C4Solver
     
     def act(self, game):
         illActions = game.getIllMoves()
