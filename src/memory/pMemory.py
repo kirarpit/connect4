@@ -2,9 +2,10 @@ from memory.sumTree import SumTree
 import random, threading
 
 class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
-    lock_queue = threading.Lock()
 
     def __init__(self, capacity):
+        self.lock = threading.Lock()
+
         self.e = 0.01
         self.a = 0.6
         self.tree = SumTree(capacity)
@@ -14,12 +15,22 @@ class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
         return (error + self.e) ** self.a
 
     def add(self, error, sample):
-        with self.lock_queue:
+#        print('acquiring lock under add')
+
+        with self.lock:
+#            print('lock acquired under add')
+
             p = self._getPriority(error)
             self.tree.add(p, sample) 
             self.cnt += 1
+        
+#        print('lock released under add')
 
     def sample(self, n):
+#        print('acquiring lock under sample')
+        self.lock.acquire()
+#        print('lock acquired under sample')
+        
         n = min(n, self.cnt)
         if n == 0: return []
         
@@ -37,6 +48,9 @@ class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
         return batch
 
     def update(self, idx, error):
-        with self.lock_queue:
-            p = self._getPriority(error)
-            self.tree.update(idx, p)
+        p = self._getPriority(error)
+        self.tree.update(idx, p)
+        
+    def releaseLock(self):
+        self.lock.release()
+#        print('lock released under releaseLock')

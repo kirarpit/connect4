@@ -108,6 +108,9 @@ class QPlayer(Player):
             memory = self.goodMemory if i < goodMemLen else self.memory 
             memory.update(idx, errors[i])
         
+        self.memory.releaseLock()
+        self.goodMemory.releaseLock()
+        
         self.brain.train(x, y, T_BATCH_SIZE, self.verbosity)
 
         if self.debug:
