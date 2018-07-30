@@ -1,7 +1,8 @@
 from memory.sumTree import SumTree
-import random
+import random, threading
 
 class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
+    lock_queue = threading.Lock()
 
     def __init__(self, capacity):
         self.e = 0.01
@@ -13,9 +14,10 @@ class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
         return (error + self.e) ** self.a
 
     def add(self, error, sample):
-        p = self._getPriority(error)
-        self.tree.add(p, sample) 
-        self.cnt += 1
+        with self.lock_queue:
+            p = self._getPriority(error)
+            self.tree.add(p, sample) 
+            self.cnt += 1
 
     def sample(self, n):
         n = min(n, self.cnt)
@@ -35,5 +37,6 @@ class PMemory:   # stored as ( s, a, r, s_ ) in SumTree
         return batch
 
     def update(self, idx, error):
-        p = self._getPriority(error)
-        self.tree.update(idx, p)
+        with self.lock_queue:
+            p = self._getPriority(error)
+            self.tree.update(idx, p)

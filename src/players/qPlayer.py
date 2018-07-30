@@ -39,13 +39,20 @@ class QPlayer(Player):
         self.epsilon = 0 if self.debug else MAX_EPSILON
         self.alpha = MAX_ALPHA
         self.verbosity = 0
-
-        self.memory = PMemory(MEMORY_CAPACITY)
-        self.goodMemory = PMemory(MEMORY_CAPACITY)
+        self.targetNet = kwargs['targetNet'] if 'targetNet' in kwargs else True
         
-        model = kwargs['model'] if "model" in kwargs else None
-        self.brain = Brain(name, game, model)
-        self.tBrain = Brain(str(name) + "_", game, model)
+        self.memory = PMemory(MEMORY_CAPACITY) if 'memory' not in kwargs else kwargs['memory']
+        self.goodMemory = PMemory(MEMORY_CAPACITY) if 'goodMemory' not in kwargs else kwargs['goodMemory']
+        
+        self.brain = kwargs['brain'] if 'brain' in kwargs else None
+        self.tBrain = kwargs['tBrain'] if 'tBrain' in kwargs else None
+
+        if self.brain is None:
+            model = kwargs['model'] if "model" in kwargs else None
+            self.brain = Brain(name, game, model)
+            
+            if self.targetNet:
+                self.tBrain = Brain(str(name) + "_", game, model)
         
         if self.eEq is None:
             self.eEq = MathEq({"min":MIN_EPSILON, "max":MAX_EPSILON, "lambda":E_LAMBDA})
@@ -54,7 +61,8 @@ class QPlayer(Player):
             self.aEq = MathEq({"min":MIN_ALPHA, "max":MAX_ALPHA, "lambda":A_LAMBDA})
 
         self.initLog()
-        self.updateTargetBrain()
+        if self.targetNet:
+            self.updateTargetBrain()
     
     def act(self, game):
         state = game.getCurrentState()
@@ -81,7 +89,7 @@ class QPlayer(Player):
         memory = self.goodMemory if sample[2] > 0 else self.memory
         memory.add(errors[0], sample)
         
-        if game.isOver():
+        if game.isOver() and self.targetNet:
             if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
                 self.updateTargetBrain()
                 
@@ -114,7 +122,8 @@ class QPlayer(Player):
 
         p = self.brain.predict(states)
         p_ = self.brain.predict(states_)
-        tp_ = self.tBrain.predict(states_)
+        if self.targetNet:
+            tp_ = self.tBrain.predict(states_)
         
         if self.debug:
             self.logs['cnt'] += 1
@@ -124,7 +133,8 @@ class QPlayer(Player):
                 self.logs['states_'] = states_
                 self.logs['p'] = np.copy(p)
                 self.logs['p_'] = np.copy(p_)
-                self.logs['tp_'] = np.copy(tp_)
+                if self.targetNet:
+                    self.logs['tp_'] = np.copy(tp_)
             
         x = None
         if type(self.stateCnt) is tuple:
@@ -144,7 +154,10 @@ class QPlayer(Player):
             if s_ is None:
                 t[a] += (r - t[a]) * self.alpha
             else:
-                t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
+                if self.targetNet:
+                    t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
+                else:
+                    t[a] += (max(-1, min(1, r + GAMMA * p_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
 
             x[i] = s
             y[i] = t

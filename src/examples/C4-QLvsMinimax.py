@@ -15,7 +15,10 @@ from keras.layers import Dense
 from mathEq import MathEq
 import games.c4Solver as C4Solver
 from myThread import MyThread
+from memory.pMemory import PMemory
 
+memory = PMemory(20000)
+goodMemory = PMemory(20000)
 threads = []
 #Example 1
 game = C4Game(4,5, name="test1")
@@ -29,7 +32,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 eq1 = MathEq({"min":0.05, "max":0.3, "lambda":0.001})
 eq2 = MathEq({"min":0, "max":0.10, "lambda":0})
 
-p1 = QPlayer(1, game, model=ann, eEq=eq1)
+p1 = QPlayer(1, game, model=ann, eEq=eq1, memory=memory, goodMemory=goodMemory)
 p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver)
 env = Environment(game, p1, p2)
 threads.append(MyThread(env))
@@ -46,7 +49,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 eq1 = MathEq({"min":0.05, "max":0.3, "lambda":0.001})
 eq2 = MathEq({"min":0, "max":0.20, "lambda":0})
 
-p1 = QPlayer(1, game, model=ann, eEq=eq1)
+p1 = QPlayer(1, game, model=ann, eEq=eq1, memory=memory, goodMemory=goodMemory)
 p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver)
 env = Environment(game, p1, p2)
 #env.run()
@@ -64,7 +67,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 eq1 = MathEq({"min":0.05, "max":0.3, "lambda":0.001})
 eq2 = MathEq({"min":0, "max":0.30, "lambda":0})
 
-p1 = QPlayer(1, game, model=ann, eEq=eq1)
+p1 = QPlayer(1, game, model=ann, eEq=eq1, memory=memory, goodMemory=goodMemory)
 p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver)
 env = Environment(game, p1, p2)
 threads.append(MyThread(env))
@@ -82,7 +85,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 eq1 = MathEq({"min":0.05, "max":0.3, "lambda":0.001})
 eq2 = MathEq({"min":0, "max":0.40, "lambda":0})
 
-p1 = QPlayer(1, game, model=ann, eEq=eq1)
+p1 = QPlayer(1, game, model=ann, eEq=eq1, memory=memory, goodMemory=goodMemory)
 p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver)
 env = Environment(game, p1, p2)
 threads.append(MyThread(env))
