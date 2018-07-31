@@ -14,6 +14,8 @@ from mathEq import MathEq
 from pgBrain import Brain
 from optimizer import Optimizer
 from myThread import MyThread
+from keras.layers import Input, Dense
+from keras.models import Model, load_model
 
 GAMMA = 0.99
 N_STEP_RETURN = 2
@@ -21,7 +23,18 @@ GAMMA_N = GAMMA ** N_STEP_RETURN
 
 #Example 1
 game = T3Game()
-brain = Brain('pgbrain', game, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
+
+l_input = Input( batch_shape=(None, game.stateCnt) )
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_input)
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_dense)
+
+out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)
+out_value   = Dense(1, activation='linear')(l_dense)
+
+model = Model(inputs=[l_input], outputs=[out_actions, out_value])
+model._make_predict_function()	# have to initialize before threading
+
+brain = Brain('pgbrain', game, model=model, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}

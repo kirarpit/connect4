@@ -34,7 +34,7 @@ class Brain:
         K.set_session(self.session)
         K.manual_variable_initialization(True)
 
-        self.model = self._build_model()
+        self.model = self._build_model() if "model" not in kwargs else kwargs['model']
         self.graph = self._build_graph()
         
         self.session.run(tf.global_variables_initializer())
