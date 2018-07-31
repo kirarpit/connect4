@@ -13,7 +13,7 @@ from keras.models import Model, load_model
 from keras.layers import Input, Dense
 from keras import backend as K
 
-MIN_BATCH = 64
+MIN_BATCH = 256
 LEARNING_RATE = 5e-3
 LOSS_V = .5			# v loss coefficient
 LOSS_ENTROPY = .01 	# entropy coefficient
@@ -45,11 +45,9 @@ class Brain:
         
     def _build_model(self):
         l_input = Input( batch_shape=(None, self.stateCnt) )
-        l_dense = Dense(12, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+        l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                         activation='relu')(l_input)
-#        l_dense = Dense(96, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-#                        activation='relu')(l_dense)
-        l_dense = Dense(12, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+        l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                         activation='relu')(l_dense)
         
         out_actions = Dense(self.actionCnt, activation='softmax')(l_dense)
