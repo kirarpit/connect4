@@ -29,6 +29,7 @@ class Brain:
         self.gamma = kwargs['gamma']
         self.n_step = kwargs['n_step']
         self.gamma_n = kwargs['gamma_n']
+        self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else MIN_BATCH
         
         self.session = tf.Session()
         K.set_session(self.session)
@@ -41,8 +42,6 @@ class Brain:
         self.default_graph = tf.get_default_graph()
         self.default_graph.finalize()
 
-        self.load()
-        
     def _build_model(self):
         l_input = Input( batch_shape=(None, self.stateCnt) )
         l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
@@ -80,12 +79,12 @@ class Brain:
         return s_t, a_t, q_t, minimize
 
     def optimize(self):
-        if len(self.train_queue[0]) < MIN_BATCH:
+        if len(self.train_queue[0]) < self.min_batch:
             time.sleep(0)	# yield
             return
 
         with self.lock_queue:
-            if len(self.train_queue[0]) < MIN_BATCH:	# more thread could have passed without lock
+            if len(self.train_queue[0]) < self.min_batch:	# more thread could have passed without lock
                 return 									# we can't yield inside lock
 
             s, a, r, s_, s_mask = self.train_queue
@@ -97,7 +96,7 @@ class Brain:
         s_ = np.vstack(s_)
         s_mask = np.vstack(s_mask)
 
-        if len(s) > 5*MIN_BATCH: print("Optimizer alert! Minimizing batch of %d" % len(s))
+        if len(s) > 5*self.min_batch: print("Optimizer alert! Minimizing batch of %d" % len(s))
         
         v = self.predict_v(s_)
         q = r + self.gamma_n * v * s_mask	# set v to 0 where s_ is terminal state

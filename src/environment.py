@@ -15,9 +15,11 @@ class Environment():
         self.p2 = p2
         self.debug = kwargs['debug'] if "debug" in kwargs else False
         self.thread = kwargs['thread'] if "thread" in kwargs else False
+        self.ePlot = kwargs['ePlot'] if "ePlot" in kwargs else True
         
         self.startTime = time.time()
-        self.gPlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
+        if self.ePlot:
+            self.gPlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
 
     def run(self):
         while not self.debug or self.game.gameCnt < 10:
@@ -27,7 +29,8 @@ class Environment():
                 self.printEnv()
                 
             if self.game.gameCnt % 1000 == 0:
-                self.gPlot.save()
+                if self.ePlot: self.gPlot.save()
+                self.p1.brain.save()
 
             if self.thread: break
         
@@ -77,4 +80,4 @@ class Environment():
         print("#"*50)
               
         if not self.debug:
-            self.gPlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
+            if self.ePlot: self.gPlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
