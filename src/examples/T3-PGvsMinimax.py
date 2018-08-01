@@ -22,7 +22,9 @@ GAMMA = 0.99
 N_STEP_RETURN = 2
 GAMMA_N = GAMMA ** N_STEP_RETURN
 MIN_BATCH = 256
-isConv = False
+isConv = True
+loadWeights = True
+filename = "pgbraint3"
 
 #Example 1
 game = T3Game(3, isConv=isConv)
@@ -43,7 +45,7 @@ out_value   = Dense(1, activation='linear')(l_dense)
 model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain('pgbrain', game, model=model, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
+brain = Brain(filename, game, model=model, loadWeights=loadWeights, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}

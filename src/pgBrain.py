@@ -39,6 +39,9 @@ class Brain:
         self.graph = self._build_graph()
         
         self.session.run(tf.global_variables_initializer())
+        if "loadWeights" in kwargs and kwargs['loadWeights']:
+            self.loadWeights()
+        
         self.default_graph = tf.get_default_graph()
         self.default_graph.finalize()
 
@@ -145,6 +148,11 @@ class Brain:
     def save(self):
         self.model.save(self.filename)
         
+    def loadWeights(self):
+        if os.path.exists(self.filename):
+            print (self.filename + " weights loaded")
+            self.model.load_weights(self.filename)
+            
     def load(self):
         if os.path.exists(self.filename):
             print (self.filename + " model loaded")
