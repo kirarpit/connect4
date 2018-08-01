@@ -58,7 +58,12 @@ class Brain:
         return model
     
     def _build_graph(self):
-        s_t = tf.placeholder(tf.float32, shape=(None, self.stateCnt))
+        
+        if type(self.stateCnt) is tuple:
+            s_t = tf.placeholder(tf.float32, shape=(None, *self.stateCnt[0:len(self.stateCnt)]))
+        else:
+            s_t = tf.placeholder(tf.float32, shape=(None, self.stateCnt))
+
         a_t = tf.placeholder(tf.float32, shape=(None, self.actionCnt))
         q_t = tf.placeholder(tf.float32, shape=(None, 1)) # not immediate, but discounted n step reward
         
@@ -90,10 +95,10 @@ class Brain:
             s, a, r, s_, s_mask = self.train_queue
             self.train_queue = [ [], [], [], [], [] ]
 
-        s = np.vstack(s)
+        s = np.stack(s)
         a = np.vstack(a)
         r = np.vstack(r)
-        s_ = np.vstack(s_)
+        s_ = np.stack(s_)
         s_mask = np.vstack(s_mask)
 
         if len(s) > 5*self.min_batch: print("Optimizer alert! Minimizing batch of %d" % len(s))

@@ -15,8 +15,8 @@ class T3Game(Game):
     def __init__(self, size=3,  **kwargs):
         super().__init__(**kwargs)
         
-        self.rows = 3
-        self.columns = 3
+        self.rows = size
+        self.columns = size
         self.stateCnt = self.rows * self.columns * 2 if not self.isConv else (1, self.rows, self.columns)
         self.actionCnt = self.rows * self.columns
         

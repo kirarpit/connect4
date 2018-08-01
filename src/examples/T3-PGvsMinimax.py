@@ -15,17 +15,26 @@ from pgBrain import Brain
 from optimizer import Optimizer
 from myThread import MyThread
 from keras.layers import Input, Dense
-from keras.models import Model, load_model
+from keras.layers import Convolution2D, MaxPooling2D, Flatten
+from keras.models import Model
 
 GAMMA = 0.99
 N_STEP_RETURN = 2
 GAMMA_N = GAMMA ** N_STEP_RETURN
+MIN_BATCH = 256
+isConv = False
 
 #Example 1
-game = T3Game()
+game = T3Game(3, isConv=isConv)
 
-l_input = Input( batch_shape=(None, game.stateCnt) )
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_input)
+if isConv:
+    l_input = Input( shape=game.stateCnt )
+    l_dense = Convolution2D(8, (2, 2), strides=(1,1), padding='valid', activation='relu', data_format="channels_first")(l_input)
+    l_dense = Flatten()(l_dense)
+else:
+    l_input = Input( batch_shape=(None, game.stateCnt) )
+    l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_input)
+
 l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_dense)
 
 out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)
@@ -48,11 +57,11 @@ i = 1
 threads = []
 while i <= 4:
     name = "test" + str(i)
-    game = T3Game(3, name=name)
+    game = T3Game(3, name=name, isConv=isConv)
     p1 = PGPlayer(name, game, brain=brain, eEq=MathEq(config[i]))
     p2 = MinimaxT3Player(2, game, eEq=eq2)
 
-    env = Environment(game, p1, p2)
+    env = Environment(game, p1, p2, ePlot=False)
     threads.append(MyThread(env))
     i += 1
 

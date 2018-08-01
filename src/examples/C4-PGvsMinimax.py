@@ -46,7 +46,7 @@ if os.path.exists(filename + ".h5"):
     
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain('pgbrain', game, model=model, min_batch=MIN_BATCH, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
+brain = Brain(filename, game, model=model, min_batch=MIN_BATCH, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}
@@ -54,7 +54,7 @@ config[2] = {"min":0.05, "max":0.25, "lambda":0}
 config[3] = {"min":0.05, "max":0.35, "lambda":0}
 config[4] = {"min":0.05, "max":0.45, "lambda":0}
 
-eq2 = MathEq({"min":0.05, "max":0.05, "lambda":0})
+eq2 = MathEq({"min":0.05, "max":0.45, "lambda":0})
 
 i = 1
 threads = []
@@ -68,7 +68,7 @@ while i <= 4:
     threads.append(MyThread(env))
     i += 1
 
-opts = [Optimizer(brain) for i in range(1)]
+opts = [Optimizer(brain) for i in range(2)]
 for o in opts:
     o.start()
 for t in threads:
