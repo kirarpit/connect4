@@ -15,15 +15,15 @@ from pgBrain import Brain
 from optimizer import Optimizer
 from myThread import MyThread
 from keras.layers import Input, Dense
-from keras.layers import Convolution2D, MaxPooling2D, Flatten
+from keras.layers import Convolution2D, Flatten
 from keras.models import Model
 
 GAMMA = 0.99
 N_STEP_RETURN = 2
 GAMMA_N = GAMMA ** N_STEP_RETURN
 MIN_BATCH = 256
-isConv = True
-loadWeights = True
+isConv = False
+loadWeights = False
 filename = "pgbraint3"
 
 #Example 1
@@ -53,7 +53,7 @@ config[2] = {"min":0.05, "max":0.25, "lambda":0}
 config[3] = {"min":0.05, "max":0.35, "lambda":0}
 config[4] = {"min":0.05, "max":0.45, "lambda":0}
 
-eq2 = MathEq({"min":0.05, "max":0.05, "lambda":0})
+eq2 = MathEq({"min":0, "max":0.05, "lambda":0.0001})
 
 i = 1
 threads = []

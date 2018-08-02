@@ -27,7 +27,6 @@ A_LAMBDA = 0.001
 MEMORY_CAPACITY = 20000
 UPDATE_TARGET_FREQUENCY = 4000
 BATCH_SIZE = 64
-T_BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
 
 class QPlayer(Player):
@@ -40,6 +39,7 @@ class QPlayer(Player):
         self.alpha = MAX_ALPHA
         self.verbosity = 0
         self.targetNet = kwargs['targetNet'] if 'targetNet' in kwargs else True
+        self.batch_size = kwargs['batch_size'] if 'batch_size' in kwargs else BATCH_SIZE
         
         self.memory = PMemory(MEMORY_CAPACITY) if 'memory' not in kwargs else kwargs['memory']
         self.goodMemory = PMemory(MEMORY_CAPACITY) if 'goodMemory' not in kwargs else kwargs['goodMemory']
@@ -96,10 +96,10 @@ class QPlayer(Player):
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
         
     def train(self):
-        batch = self.goodMemory.sample(int(BATCH_SIZE/2))
+        batch = self.goodMemory.sample(int(self.batch_size/2))
         goodMemLen = len(batch)
         
-        batch += self.memory.sample(int(BATCH_SIZE - goodMemLen))
+        batch += self.memory.sample(int(self.batch_size - goodMemLen))
         x, y, errors = self.getTargets(batch)
         
         #update errors
@@ -111,7 +111,7 @@ class QPlayer(Player):
         self.memory.releaseLock()
         self.goodMemory.releaseLock()
         
-        self.brain.train(x, y, T_BATCH_SIZE, self.verbosity)
+        self.brain.train(x, y, self.batch_size, self.verbosity)
 
         if self.debug:
             self.logs['x' + str(self.name)] = x

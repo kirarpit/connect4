@@ -16,9 +16,8 @@ from optimizer import Optimizer
 from myThread import MyThread
 from keras.layers import Input, Dense
 from keras.layers import Convolution2D, MaxPooling2D, Flatten
-from keras.models import Model, load_model
+from keras.models import Model
 import games.c4Solver as C4Solver
-import os.path
 
 GAMMA = 0.99
 N_STEP_RETURN = 3
@@ -27,7 +26,7 @@ MIN_BATCH = 256
 ROWS = 6
 COLUMNS = 7
 isConv = True
-loadFile = True
+loadWeights = True
 filename = "pgbrain67"
 
 game = C4Game(ROWS, COLUMNS, name="dummy", isConv=isConv)
@@ -46,14 +45,9 @@ out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)
 out_value   = Dense(1, activation='linear')(l_dense)
 
 model = Model(inputs=[l_input], outputs=[out_actions, out_value])
-
-if os.path.exists(filename + ".h5") and loadFile:
-    model = load_model(filename + ".h5")
-    print (filename + " model loaded")
-    
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain(filename, game, model=model, min_batch=MIN_BATCH, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
+brain = Brain(filename, game, model=model, loadWeights=loadWeights, min_batch=MIN_BATCH, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}
