@@ -87,13 +87,14 @@ class QPlayer(Player):
         
         if game.isOver():
             if len(self.sarsaMem) < self.n_step: # if game ends before n steps
-                cnt = self.n_step - self.sarsaMem
+                cnt = self.n_step - len(self.sarsaMem)
                 while cnt:
                     self.R /= self.gamma
                     cnt -= 1
             
             while len(self.sarsaMem) > 0:
-                self.addToReplayMemory()
+                sample = self.getNSample(len(self.sarsaMem))
+                self.addToReplayMemory(sample)
                 self.R = (self.R - self.sarsaMem[0][2]) / self.gamma
                 self.sarsaMem.pop(0)
 
@@ -103,7 +104,8 @@ class QPlayer(Player):
                 self.updateTargetBrain()
 
         if len(self.sarsaMem) >= self.n_step:
-            self.addToReplayMemory()
+            sample = self.getNSample(len(self.sarsaMem))
+            self.addToReplayMemory(sample)
             self.R = self.R - self.sarsaMem[0][2]
             self.sarsaMem.pop(0)
                 
@@ -114,7 +116,9 @@ class QPlayer(Player):
         goodMemLen = len(batch)
         
         batch += self.memory.sample(int(self.batch_size - goodMemLen))
-        x, y, errors = self.getTargets(batch)
+        
+        if len(batch):
+            x, y, errors = self.getTargets(batch)
         
         #update errors
         for i in range(len(batch)):
@@ -125,14 +129,14 @@ class QPlayer(Player):
         self.memory.releaseLock()
         self.goodMemory.releaseLock()
         
-        self.brain.train(x, y, self.batch_size, self.verbosity)
+        if len(batch):
+            self.brain.train(x, y, self.batch_size, self.verbosity)
 
-        if self.debug:
-            self.logs['x' + str(self.name)] = x
-            self.logs['y' + str(self.name)] = y
+            if self.debug:
+                self.logs['x' + str(self.name)] = x
+                self.logs['y' + str(self.name)] = y
         
-    def addToReplayMemory(self):
-        sample = self.getNSample(len(self.sarsaMem))
+    def addToReplayMemory(self, sample):
         _, _, errors = self.getTargets([(0, sample)])
         memory = self.goodMemory if sample[2] > 0 else self.memory
         memory.add(errors[0], sample)

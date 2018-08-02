@@ -18,8 +18,12 @@ from myThread import MyThread
 from memory.pMemory import PMemory
 from brain import Brain
 
+#try with rand true
+
+loadWeights = False
+
 GAMMA = 0.99
-N_STEP_RETURN = 3
+N_STEP_RETURN = 6
 
 memory = PMemory(2000)
 goodMemory = PMemory(2000)
@@ -37,7 +41,7 @@ ann.add(Dense(units = 18, kernel_initializer='random_uniform', bias_initializer=
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
 ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 
-brain = Brain('c4Async', game, model=ann)
+brain = Brain('c4Async', game, model=ann, loadWeights=loadWeights)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}

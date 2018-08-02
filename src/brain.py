@@ -14,23 +14,26 @@ import tensorflow as tf
 from keras import backend as K
 
 class Brain:
-    def __init__(self, name, game, model=None):
+    def __init__(self, name, game, **kwargs):
         self.filename = str(name) + '.h5'
         self.stateCnt, self.actionCnt = game.getStateActionCnt()
+        
+        self.model = kwargs['model'] if "model" in kwargs else None
         
         self.session = tf.Session()
         K.set_session(self.session)
         K.manual_variable_initialization(True)
 
-        if model is None:
+        if self.model is None:
             self.model = self._buildModel()
-        else:
-            self.model = model
         
-        model._make_predict_function()
-        model._make_train_function()
+        self.model._make_predict_function()
+        self.model._make_train_function()
         
         self.session.run(tf.global_variables_initializer())
+        if "loadWeights" in kwargs and kwargs['loadWeights']:
+            self.loadWeights()
+
         self.default_graph = tf.get_default_graph()
 
     def _buildModel(self):
@@ -64,6 +67,11 @@ class Brain:
     def save(self):
         self.model.save(self.filename)
         
+    def loadWeights(self):
+        if os.path.exists(self.filename):
+            print (self.filename + " weights loaded")
+            self.model.load_weights(self.filename)
+
     def load(self, filename):
         filename = str(filename) + '.h5'
         if os.path.exists(filename):

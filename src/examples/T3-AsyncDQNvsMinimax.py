@@ -18,9 +18,14 @@ from myThread import MyThread
 from memory.pMemory import PMemory
 from brain import Brain
 
-memory = PMemory(500)
-goodMemory = PMemory(500)
+GAMMA = 0.99
+N_STEP_RETURN = 3
+
+memory = PMemory(1000)
+goodMemory = PMemory(1000)
 isConv = False
+BATCH_SIZE = 64
+
 threads = []
 
 game = T3Game(3, name="dummy", isConv=isConv)
@@ -52,9 +57,10 @@ eq2 = MathEq({"min":0, "max":0.05, "lambda":0})
 i = 1
 threads = []
 while i <= 4:
-    name = "asyncDQNT3" + str(i)
+    name = "asyncDQNT3-1" + str(i)
     game = T3Game(3, name=name, isConv=isConv)
-    p1 = QPlayer(name, game, brain=brain, eEq=MathEq(config[i]), memory=memory, goodMemory=goodMemory, targetNet=False)
+    p1 = QPlayer(name, game, brain=brain, eEq=MathEq(config[i]), memory=memory, 
+                 goodMemory=goodMemory, targetNet=False, gamma=GAMMA, n_step=N_STEP_RETURN)
     p2 = MinimaxT3Player(2, game, eEq=eq2)
 
     env = Environment(game, p1, p2, ePlot=False)
