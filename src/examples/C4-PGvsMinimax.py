@@ -21,7 +21,6 @@ import games.c4Solver as C4Solver
 
 GAMMA = 0.99
 N_STEP_RETURN = 3
-GAMMA_N = GAMMA ** N_STEP_RETURN
 MIN_BATCH = 256
 ROWS = 6
 COLUMNS = 7
@@ -33,13 +32,16 @@ game = C4Game(ROWS, COLUMNS, name="dummy", isConv=isConv)
 
 if isConv:
     l_input = Input( shape=game.stateCnt )
-    l_dense = Convolution2D(8, (4, 4), strides=(1,1), padding='valid', activation='relu', data_format="channels_first")(l_input)
+    l_dense = Convolution2D(8, (4, 4), strides=(1,1), padding='valid', activation='relu', 
+                            data_format="channels_first")(l_input)
     l_dense = Flatten()(l_dense)
 else:
     l_input = Input( batch_shape=(None, game.stateCnt) )
-    l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_input)
+    l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                    activation='relu')(l_input)
 
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_dense)
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                activation='relu')(l_dense)
 
 out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)
 out_value   = Dense(1, activation='linear')(l_dense)
@@ -47,7 +49,8 @@ out_value   = Dense(1, activation='linear')(l_dense)
 model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain(filename, game, model=model, loadWeights=loadWeights, min_batch=MIN_BATCH, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
+brain = Brain(filename, game, model=model, loadWeights=loadWeights, min_batch=MIN_BATCH, 
+              gamma=GAMMA, n_step=N_STEP_RETURN)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}
@@ -62,7 +65,8 @@ threads = []
 while i <= 4:
     name = "test" + str(i)
     game = C4Game(ROWS, COLUMNS, name=name, isConv=isConv)
-    p1 = PGPlayer(name, game, brain=brain, eEq=MathEq(config[i]))
+    p1 = PGPlayer(name, game, brain=brain, eEq=MathEq(config[i]),
+                  gamma=GAMMA, n_step=N_STEP_RETURN)
     p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver)
 
     env = Environment(game, p1, p2, ePlot=False)

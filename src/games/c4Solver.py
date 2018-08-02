@@ -10,7 +10,7 @@ from cache import cached
 
 debug = False
 
-def solve(game):
+def solve(game, rand):
     gameString = game.columnString
 
     if game.rows == 6 and game.columns == 7:
@@ -20,7 +20,11 @@ def solve(game):
     elif game.rows == 4 and game.columns == 5:
         moves = miniMax4X5Shell(gameString)
 
-    action = random.sample(moves, 1)[0]
+    if rand:
+        action = random.sample(moves, 1)[0]
+    else:
+        action = moves[0]
+        
     return action
 
 @cached

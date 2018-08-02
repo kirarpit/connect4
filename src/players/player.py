@@ -20,7 +20,13 @@ class Player(ABC):
         
         self.epsilon = 0
         self.alpha = None
-    
+        
+        self.gamma = kwargs['gamma'] if "gamma" in kwargs else 0.99
+        self.n_step = kwargs['n_step'] if "n_step" in kwargs else 1
+        self.gamma_n = self.gamma ** self.n_step
+        self.R = 0
+        self.sarsaMem = []
+
     @abstractmethod
     def act(self):
         pass
@@ -44,3 +50,12 @@ class Player(ABC):
                 break
 
         return action
+    
+    def updateR(self, r):
+        self.R = (self.R + self.gamma_n*r)/self.gamma
+        
+    def getNSample(self, n):
+        s, a, _, _  = self.sarsaMem[0]
+        _, _, _, s_ = self.sarsaMem[n-1]
+
+        return (s, a, self.R, s_)

@@ -15,6 +15,7 @@ class MinimaxC4Player(Player):
         super().__init__(name, game, **kwargs)
         
         self.solver = kwargs['solver'] if "solver" in kwargs else C4Solver
+        self.rand = kwargs['rand'] if "rand" in kwargs else True
     
     def act(self, game):
         illActions = game.getIllMoves()
@@ -25,7 +26,7 @@ class MinimaxC4Player(Player):
             if len(illActions) == self.actionCnt - 1:#only one legal move left
                 action = list(set(range(self.actionCnt)) - set(illActions))[0]
             else:
-                action = self.solver.solve(game)
+                action = self.solver.solve(game, self.rand)
 
         return action
     

@@ -28,7 +28,7 @@ class Brain:
         
         self.gamma = kwargs['gamma']
         self.n_step = kwargs['n_step']
-        self.gamma_n = kwargs['gamma_n']
+        self.gamma_n = self.gamma ** self.n_step
         self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else MIN_BATCH
         
         self.session = tf.Session()

@@ -18,13 +18,7 @@ class PGPlayer(Player):
         else:
             print("Error: All policy gradient workers requrie a master brain")
             
-        self.gamma = self.brain.gamma
-        self.n_step = self.brain.n_step
-        self.gamma_n = self.brain.gamma_n
-
         self.initLog()
-        self.memory = []
-        self.R = 0
         if self.eEq is None:
             self.eEq = MathEq({"min":0.05, "max":1, "lambda":0.001})
         
@@ -51,30 +45,24 @@ class PGPlayer(Player):
         a_cats = np.zeros(self.actionCnt)	# turn action into one-hot representation
         a_cats[sample[1]] = 1
         
-        self.memory.append((sample[0], a_cats, sample[2], sample[3]))
-        self.R = (self.R + sample[2] * self.gamma_n) / self.gamma
+        self.sarsaMem.append((sample[0], a_cats, sample[2], sample[3]))
+        self.updateR(sample[2])
         
         if game.isOver():
-            while len(self.memory) > 0:
-                self.brain.train_push(self.getNSample(len(self.memory)))
-                self.R = (self.R - self.memory[0][2]) / self.gamma
-                self.memory.pop(0)
+            while len(self.sarsaMem) > 0:
+                self.brain.train_push(self.getNSample(len(self.sarsaMem)))
+                self.R = (self.R - self.sarsaMem[0][2]) / self.gamma
+                self.sarsaMem.pop(0)
                 
             self.R = 0
             
-        if len(self.memory) >= self.n_step:
+        if len(self.sarsaMem) >= self.n_step:
             self.brain.train_push(self.getNSample(self.n_step))
-            self.R = self.R - self.memory[0][2]
-            self.memory.pop(0)
+            self.R = self.R - self.sarsaMem[0][2]
+            self.sarsaMem.pop(0)
         
     def train(self):
         pass
-    
-    def getNSample(self, n):
-        s, a, _, _  = self.memory[0]
-        _, _, _, s_ = self.memory[n-1]
-
-        return (s, a, self.R, s_)
     
     def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):

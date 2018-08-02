@@ -11,9 +11,6 @@ from memory.pMemory import PMemory
 from mathEq import MathEq
 from players.player import Player
 
-#Discount Factor
-GAMMA = 0.99
-
 #Exploration Rate
 MIN_EPSILON = 0.05
 MAX_EPSILON = 1
@@ -26,8 +23,8 @@ A_LAMBDA = 0.001
 
 MEMORY_CAPACITY = 20000
 UPDATE_TARGET_FREQUENCY = 4000
-BATCH_SIZE = 64
 PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
+BATCH_SIZE = 64
 
 class QPlayer(Player):
     
@@ -85,15 +82,32 @@ class QPlayer(Player):
         super().observe(game)
         gameCnt = game.gameCnt
         
-        _, _, errors = self.getTargets([(0, sample)])
-        memory = self.goodMemory if sample[2] > 0 else self.memory
-        memory.add(errors[0], sample)
+        self.sarsaMem.append(sample)
+        self.updateR(sample[2])
         
-        if game.isOver() and self.targetNet:
-            if gameCnt % UPDATE_TARGET_FREQUENCY == 0:
+        if game.isOver():
+            if len(self.sarsaMem) < self.n_step: # if game ends before n steps
+                cnt = self.n_step - self.sarsaMem
+                while cnt:
+                    self.R /= self.gamma
+                    cnt -= 1
+            
+            while len(self.sarsaMem) > 0:
+                self.addToReplayMemory()
+                self.R = (self.R - self.sarsaMem[0][2]) / self.gamma
+                self.sarsaMem.pop(0)
+
+            self.R = 0
+            
+            if self.targetNet and gameCnt % UPDATE_TARGET_FREQUENCY == 0:
                 self.updateTargetBrain()
+
+        if len(self.sarsaMem) >= self.n_step:
+            self.addToReplayMemory()
+            self.R = self.R - self.sarsaMem[0][2]
+            self.sarsaMem.pop(0)
                 
-        self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and sample[3] is not None else 0
+        self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and not game.isOver() else 0
         
     def train(self):
         batch = self.goodMemory.sample(int(self.batch_size/2))
@@ -116,6 +130,12 @@ class QPlayer(Player):
         if self.debug:
             self.logs['x' + str(self.name)] = x
             self.logs['y' + str(self.name)] = y
+        
+    def addToReplayMemory(self):
+        sample = self.getNSample(len(self.sarsaMem))
+        _, _, errors = self.getTargets([(0, sample)])
+        memory = self.goodMemory if sample[2] > 0 else self.memory
+        memory.add(errors[0], sample)
         
     def getTargets(self, batch):
         batchLen = len(batch)
@@ -158,9 +178,9 @@ class QPlayer(Player):
                 t[a] += (r - t[a]) * self.alpha
             else:
                 if self.targetNet:
-                    t[a] += (max(-1, min(1, r + GAMMA * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
+                    t[a] += (max(-1, min(1, r + self.gamma_n * tp_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
                 else:
-                    t[a] += (max(-1, min(1, r + GAMMA * p_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
+                    t[a] += (max(-1, min(1, r + self.gamma_n * p_[i][np.argmax(p_[i])])) - t[a]) * self.alpha
 
             x[i] = s
             y[i] = t
