@@ -9,11 +9,13 @@ from players.player import Player
 from games.t3MinMax import TicTacToeBrain as T3M2
 from functools import lru_cache
 import numpy as np
+import random
 
 class MinimaxT3Player(Player):
     
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
+        self.rand = kwargs['rand'] if "rand" in kwargs else True
         self.solver = T3M2()
     
     def act(self, game):
@@ -30,13 +32,23 @@ class MinimaxT3Player(Player):
     def train(self):
         pass
     
-    @lru_cache(maxsize=None)
     def getBestMove(self, gameStr):
-        self.solver.createBoard()
-                
-        for pos, move in enumerate(gameStr):
-            if move != "0":
-                player = "o" if move == "1" else "x"
-                self.solver.makeMove(pos, player)
+        moves = self.getBestMoves(gameStr)
+        action = moves[0] if not self.rand else random.sample(moves, 1)[0]
+        return action
+    
+    @lru_cache(maxsize=None)
+    def getBestMoves(self, gameStr):
+        moves = self.solver.getScores(gameStr)
         
-        return self.solver.minimax("x")[1]
+        choices = []
+        maxi = float("-inf")
+        for index, value in enumerate(moves):
+            if maxi <= value:
+                if maxi < value:
+                    choices = [index]
+                    maxi = value
+                else:
+                    choices.append(index)
+        
+        return choices

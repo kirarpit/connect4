@@ -49,6 +49,9 @@ class PGPlayer(Player):
         self.updateR(sample[2])
         
         if game.isOver():
+            if len(self.sarsaMem) < self.n_step: # if game ends before n steps
+                self.increaseR()
+
             while len(self.sarsaMem) > 0:
                 self.brain.train_push(self.getNSample(len(self.sarsaMem)))
                 self.R = (self.R - self.sarsaMem[0][2]) / self.gamma

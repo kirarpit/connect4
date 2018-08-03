@@ -14,6 +14,8 @@ class Environment():
         self.p1 = p1
         self.p2 = p2
         self.debug = kwargs['debug'] if "debug" in kwargs else False
+        self.training = kwargs['training'] if "training" in kwargs else True
+        self.observing = kwargs['observing'] if "observing" in kwargs else True
         self.thread = kwargs['thread'] if "thread" in kwargs else False
         self.ePlot = kwargs['ePlot'] if "ePlot" in kwargs else True
         
@@ -65,8 +67,10 @@ class Environment():
         s_ = self.game.getCurrentState() if not self.game.isOver() else None
     
         sample = (lastS, lastA, r, s_)
-        p.observe(sample, self.game)
-        if not self.debug:
+        
+        if self.observing:
+            p.observe(sample, self.game)
+        if self.training:
             p.train()
         
     def printEnv(self):

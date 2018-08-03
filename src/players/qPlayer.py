@@ -32,9 +32,8 @@ class QPlayer(Player):
         super().__init__(name, game, **kwargs)
                 
         self.nullState = np.zeros(self.stateCnt)
-        self.epsilon = 0 if self.debug else MAX_EPSILON
-        self.alpha = MAX_ALPHA
         self.verbosity = 0
+        
         self.targetNet = kwargs['targetNet'] if 'targetNet' in kwargs else True
         self.batch_size = kwargs['batch_size'] if 'batch_size' in kwargs else BATCH_SIZE
         
@@ -43,13 +42,19 @@ class QPlayer(Player):
         
         self.brain = kwargs['brain'] if 'brain' in kwargs else None
         self.tBrain = kwargs['tBrain'] if 'tBrain' in kwargs else None
+        
+        loadWeights = kwargs['loadWeights'] if 'loadWeights' in kwargs else False
 
         if self.brain is None:
             model = kwargs['model'] if "model" in kwargs else None
-            self.brain = Brain(name, game, model)
+            self.brain = Brain(name, game, model=model)
             
             if self.targetNet:
-                self.tBrain = Brain(str(name) + "_", game, model)
+                tModel = kwargs['tModel'] if model is not None else None
+                self.tBrain = Brain(str(name) + "_target", game, model=tModel)
+        
+        if loadWeights:
+            self.brain.load_weights()
         
         if self.eEq is None:
             self.eEq = MathEq({"min":MIN_EPSILON, "max":MAX_EPSILON, "lambda":E_LAMBDA})
@@ -57,10 +62,13 @@ class QPlayer(Player):
         if self.aEq is None:
             self.aEq = MathEq({"min":MIN_ALPHA, "max":MAX_ALPHA, "lambda":A_LAMBDA})
 
+        self.epsilon = self.eEq.getValue(0)
+        self.alpha = self.aEq.getValue(0)
+
         self.initLog()
         if self.targetNet:
             self.updateTargetBrain()
-    
+            
     def act(self, game):
         state = game.getCurrentState()
         illActions = game.getIllMoves()
@@ -87,10 +95,7 @@ class QPlayer(Player):
         
         if game.isOver():
             if len(self.sarsaMem) < self.n_step: # if game ends before n steps
-                cnt = self.n_step - len(self.sarsaMem)
-                while cnt:
-                    self.R /= self.gamma
-                    cnt -= 1
+                self.increaseR()
             
             while len(self.sarsaMem) > 0:
                 sample = self.getNSample(len(self.sarsaMem))
@@ -197,7 +202,6 @@ class QPlayer(Player):
             
     def updateTargetBrain(self):
         if self.debug: return
-        self.brain.save()
         self.tBrain.set_weights(self.brain.get_weights())
         
     def filterIllMoves(self, moves, illMoves):
