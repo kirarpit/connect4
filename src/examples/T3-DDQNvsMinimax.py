@@ -16,14 +16,13 @@ from mathEq import MathEq
 
 game = T3Game()
 BATCH_SIZE = 64
+N_STEP_RETURN = 3
 
 #opt: set custom ANN model
 ann = Sequential()
-ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
+ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform',
               activation = 'relu',
               input_dim = game.stateCnt))
-ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu'))
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
               activation = 'linear'))
 ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
@@ -31,7 +30,7 @@ ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 eq1 = MathEq({"min":0.10, "max":0.10, "lambda":0})
 eq2 = MathEq({"min":0, "max":0, "lambda":0})
 
-p1 = QPlayer(1, game, model=ann, eEq=eq1, batch_size=BATCH_SIZE)
+p1 = QPlayer(1, game, model=ann, eEq=eq1, batch_size=BATCH_SIZE, n_step=N_STEP_RETURN)
 p2 = MinimaxT3Player(2, game, eEq=eq2)
 env = Environment(game, p1, p2)
 env.run()

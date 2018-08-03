@@ -21,17 +21,15 @@ from brain import Brain
 GAMMA = 0.99
 N_STEP_RETURN = 3
 
+loadWeights = False
+
 memory = PMemory(1000)
 goodMemory = PMemory(1000)
 isConv = False
 BATCH_SIZE = 64
 
-threads = []
-
 game = T3Game(3, name="dummy", isConv=isConv)
-
 ann = Sequential()
-
 if isConv:
     ann.add(Convolution2D(16, (2, 2), padding='valid', strides=(1, 1), 
                           activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
@@ -44,7 +42,7 @@ ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer=
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
 ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 
-brain = Brain('t3infmem', game, model=ann)
+brain = Brain('t3infmem', game, model=ann, loadWeights=loadWeights)
 
 config = {}
 config[1] = {"min":0.05, "max":0.05, "lambda":0}

@@ -17,10 +17,13 @@ from mathEq import MathEq
 from myThread import MyThread
 from memory.pMemory import PMemory
 from brain import Brain
+from keras import optimizers
 
-#try with rand true
+#try rmsprop
+#try conv
 
 loadWeights = False
+randBestMoves = True
 
 GAMMA = 0.99
 N_STEP_RETURN = 6
@@ -39,7 +42,9 @@ ann.add(Dense(units = 18, kernel_initializer='random_uniform', bias_initializer=
 ann.add(Dense(units = 18, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
 #ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
-ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+
+rmsprop = optimizers.RMSprop(lr=0.005, decay=0.99)
+ann.compile(optimizer = rmsprop, loss = 'logcosh', metrics = ['accuracy'])
 
 brain = Brain('c4Async', game, model=ann, loadWeights=loadWeights)
 
@@ -60,7 +65,7 @@ while i <= 4:
     p1 = QPlayer(name, game, brain=brain, eEq=MathEq(config[i]),
                  memory=memory, goodMemory=goodMemory, targetNet=False, batch_size=BATCH_SIZE,
                  gamma=GAMMA, n_step=N_STEP_RETURN)
-    p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver, rand=False)
+    p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver, rand=randBestMoves)
 
     env = Environment(game, p1, p2, ePlot=False)
     threads.append(MyThread(env))
