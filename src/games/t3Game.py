@@ -25,8 +25,9 @@ class T3Game(Game):
         self.illMoves = set()
         
     def step(self, action):
-        super().step(action)
-        
+        if (super().step(action) < 0):
+            return -1
+
         x = int(action/self.rows)
         y = action % self.columns
         self.gameState[x][y] = self.toPlay

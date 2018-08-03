@@ -11,7 +11,9 @@ from cache import cached
 debug = False
 
 def solve(game, rand):
-    gameString = game.columnString
+    gameString = ""
+    for i in game.toString():
+        gameString += str(int(i) + 1)
 
     if game.rows == 6 and game.columns == 7:
         moves = miniMax6X7Shell(gameString)    

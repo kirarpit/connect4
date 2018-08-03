@@ -34,6 +34,7 @@ class Game(ABC):
     
     @abstractmethod
     def newGame(self):
+        self.movesHistory = ""
         self.over = False
         self.rewards = {}
         self.gameCnt += 1
@@ -60,10 +61,14 @@ class Game(ABC):
         if action in self.getIllMoves():
             print ("Illegal Move!!!!")
             print (self.gameState)
+            print (self.movesHistory)
             print ("To play " + str(self.toPlay))
             print ("Wrong move " + str(action))
+            self.over = True
+
             return -2
     
+        self.movesHistory += str(action)
         return 1
     
     @abstractmethod
@@ -157,11 +162,7 @@ class Game(ABC):
         self.stats = {1:{1:0, 2:0, 'Draw':0}, 2:{1:0, 2:0, 'Draw':0}}
         
     def toString(self):
-        lStr = ""
-        for x in range(0, self.rows):
-            for y in range(0, self.columns):
-                lStr += str(self.gameState[x][y])
-        return lStr
+        return self.movesHistory
     
     def printGame(self):
         print ("Total Games Played: " + str(self.gameCnt))

@@ -6,17 +6,20 @@ class TicTacToeBrain :
         [0, 1, 2], [3, 4, 5], [6, 7, 8],
         [0, 3, 6], [1, 4, 7], [2, 5, 8],
         [0, 4, 8], [2, 4, 6])
+        
+        self.movesCnt = 0
 
     def createBoard(self) :
         for i in range(9) :
             self._squares[i] = "."
+            
+        self.movesCnt = 0
 
-    def showBoard(self, flag=False) :
-        if not flag: return
-        print ()
+    def showBoard(self) :
         print(self._squares[0], self._squares[1], self._squares[2])
         print(self._squares[3], self._squares[4], self._squares[5])
         print(self._squares[6], self._squares[7], self._squares[8])
+        print()
 
     def getAvailableMoves(self) :
         self._availableMoves = []
@@ -27,7 +30,11 @@ class TicTacToeBrain :
 
     def makeMove(self, position, player) :
         self._squares[position] = player
-        self.showBoard()
+        
+        if player != ".":
+            self.movesCnt += 1
+        else:
+            self.movesCnt -= 1
 
     def complete(self) :
         if "." not in self._squares.values() :
@@ -50,26 +57,47 @@ class TicTacToeBrain :
             return "o"
         return "x"
 
-    def minimax(self, player, depth = 0) :
-        if player == "o": 
-            best = -10
-        else:
-            best = 10
+    def minimax(self, player, alpha=-10, beta=10) :
         if self.complete() :
-            if self.getWinner() == "x" :
-                return -10 + depth, None
-            elif self.getWinner() == "tie" :
-                return 0, None
-            elif self.getWinner() == "o" :
-                return 10 - depth, None
+            if self.getWinner() == "tie" :
+                return 0
+            elif self.getWinner() == player:
+                return 10 - self.movesCnt
+            else:
+                return self.movesCnt - 10
+            
+        alpha = max(alpha, self.movesCnt - 10)
+        beta = min(beta, 10 - self.movesCnt)
+        if alpha >= beta: return beta
+        
         for move in self.getAvailableMoves() :
             self.makeMove(move, player)
-            val, _ = self.minimax(self.getEnemyPlayer(player), depth+1)
+            alpha = max(-1 * self.minimax(self.getEnemyPlayer(player), -beta, -alpha), alpha)
             self.makeMove(move, ".")
-            if player == "o" :
-                if val > best :
-                    best, bestMove = val, move
-            else :
-                if val < best :
-                    best, bestMove = val, move
-        return best, bestMove
+
+            if alpha >= beta:
+                return alpha
+            
+        return alpha
+    
+    def makeMoves(self, gameStr):
+        self.createBoard()
+        for idx, move in enumerate(gameStr):
+            player = "x" if idx%2 == 0 else "o"
+            self.makeMove(int(move), player)
+            
+    def getScores(self, gameStr):
+        self.makeMoves(gameStr)
+        player = "x" if len(gameStr)%2 == 0 else "o"
+
+        scores = []
+        legalMoves = self.getAvailableMoves()
+        for i in range(9):
+            if i not in legalMoves:
+                scores.append(-10)
+            else:
+                self.makeMove(i, player)
+                scores.append(-1 * self.minimax(self.getEnemyPlayer(player)))
+                self.makeMove(i, ".")
+                
+        return scores

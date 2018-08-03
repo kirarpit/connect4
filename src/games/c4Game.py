@@ -21,14 +21,10 @@ class C4Game(Game):
 
     def newGame(self):
         super().newGame()
-        self.columnString = ""
         self.filledColumns = set()
         
     def step(self, column):
         if (super().step(column) < 0):
-            print("Error!!!")
-            print(self.columnString)
-            self.over = True
             return -1
         
         row = 0
@@ -46,7 +42,6 @@ class C4Game(Game):
     def updateGameState(self, row, column):
         self.gameState[row][column] = self.toPlay
         self.updateStateForm(row, column)
-        self.columnString += str(column + 1)
         self.checkEndStates(row, column)
         self.switchTurn()
     
