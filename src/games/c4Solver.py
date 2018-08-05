@@ -5,9 +5,13 @@ Created on Fri Jul 13 18:50:06 2018
 
 @author: Arpit
 """
-import requests, yaml, os, random
+import requests, yaml, os, random, threading
 from cache import cached
+from functools import lru_cache
 
+FIFO = "games/c4solver67-pipe-in"
+FILE = "games/out.txt"
+LOCK = "games/lock"
 debug = False
 
 def solve(game, rand):
@@ -16,7 +20,7 @@ def solve(game, rand):
         gameString += str(int(i) + 1)
 
     if game.rows == 6 and game.columns == 7:
-        moves = miniMax6X7Shell(gameString)    
+        moves = miniMax6X7Shell(gameString)  
     elif game.rows == 5 and game.columns == 6:
         moves = miniMax5X6Shell(gameString)
     elif game.rows == 4 and game.columns == 5:
@@ -29,6 +33,24 @@ def solve(game, rand):
         
     return action
 
+@lru_cache(maxsize=None)
+def miniMax6X7Ntuple(gameString):
+    with threading.Lock():
+        if os.path.exists(FILE):
+            modTime = os.path.getmtime(FILE)
+        else:
+            modTime = 0
+            
+        command = "echo \"" + gameString + "\" > " + FIFO
+        os.popen(command)
+        
+        while not os.path.exists(FILE) or modTime == os.path.getmtime(FILE) or os.path.exists(LOCK):
+            pass
+        file = open(FILE, "r")
+        moves = getBestMoves(list(map(int, file.read().split())))
+    
+    return moves
+    
 @cached
 def miniMax4X5Shell(gameString):
     if debug: print("miniMax4X5Shell called")
