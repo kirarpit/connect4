@@ -8,11 +8,29 @@ Created on Fri Jul 13 18:50:06 2018
 import requests, yaml, os, random, threading
 from cache import cached
 from functools import lru_cache
+from timer_cm import Timer
+from threading import Thread
 
 FIFO = "games/c4solver67-pipe-in"
+FIFO_OUT = "games/c4solver67-pipe-out"
 FILE = "games/out.txt"
 LOCK = "games/lock"
 debug = False
+
+threadLock = threading.Lock()
+
+def readFifo():
+    global output, mod
+    
+    while True:
+        with open(FIFO_OUT) as fifo:
+            output = fifo.read()
+            mod = True
+
+mod = False
+output = ""
+#thread = Thread(target = readFifo)
+#thread.start()
 
 def solve(game, rand):
     gameString = ""
@@ -33,9 +51,14 @@ def solve(game, rand):
         
     return action
 
-@lru_cache(maxsize=None)
+def miniMax5X6Ntuple(gameString):
+    return nTuple(gameString, True)
+
 def miniMax6X7Ntuple(gameString):
-    with threading.Lock():
+    return nTuple(gameString, False)
+
+def nTuple(gameString, invertScores=False):
+    with threadLock:
         if os.path.exists(FILE):
             modTime = os.path.getmtime(FILE)
         else:
@@ -43,14 +66,33 @@ def miniMax6X7Ntuple(gameString):
             
         command = "echo \"" + gameString + "\" > " + FIFO
         os.popen(command)
-        
+    
         while not os.path.exists(FILE) or modTime == os.path.getmtime(FILE) or os.path.exists(LOCK):
             pass
+    
         file = open(FILE, "r")
-        moves = getBestMoves(list(map(int, file.read().split())))
+        scores = list(map(int, file.read().split()))
+
+        if invertScores:
+            scores = [i * -1 for i in scores]    
     
-    return moves
+        return getBestMoves(scores)
+
+def fifoOut(gameString):
+    global mod;
     
+    with threadLock:
+        mod = False
+    
+        command = "echo \"" + gameString + "\" > " + FIFO
+        os.popen(command)
+    
+        while not mod: pass
+
+        scores = list(map(int, output.split()))
+        scores = [i * -1 for i in scores]    
+        return getBestMoves(scores)
+
 @cached
 def miniMax4X5Shell(gameString):
     if debug: print("miniMax4X5Shell called")
@@ -60,8 +102,10 @@ def miniMax4X5Shell(gameString):
 @cached
 def miniMax5X6Shell(gameString):
     if debug: print("miniMax5X6Shell called")
-    scores = getScores("./games/c4solver56", gameString)
-    return getBestMoves(scores)
+    return miniMax5X6Ntuple(gameString)
+
+#    scores = getScores("./games/c4solver56", gameString)
+#    return getBestMoves(scores)
 
 @cached
 def miniMax6X7Shell(gameString):

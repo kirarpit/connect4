@@ -10,7 +10,7 @@ from games.game import Game
 class T3Game(Game):
     WINNER_R = 1
     LOSER_R = -1
-    DRAW_R = 0.5
+    DRAW_R = -0.5
     
     def __init__(self, size=3,  **kwargs):
         super().__init__(**kwargs)
