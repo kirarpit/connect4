@@ -37,8 +37,10 @@ class QPlayer(Player):
         self.targetNet = kwargs['targetNet'] if 'targetNet' in kwargs else True
         self.batch_size = kwargs['batch_size'] if 'batch_size' in kwargs else BATCH_SIZE
         
-        self.memory = PMemory(MEMORY_CAPACITY) if 'memory' not in kwargs else kwargs['memory']
-        self.goodMemory = PMemory(MEMORY_CAPACITY) if 'goodMemory' not in kwargs else kwargs['goodMemory']
+        self.mem_cap = kwargs['mem_cap'] if 'mem_cap' in kwargs else MEMORY_CAPACITY
+
+        self.memory = PMemory(self.mem_cap) if 'memory' not in kwargs else kwargs['memory']
+        self.goodMemory = PMemory(self.mem_cap) if 'goodMemory' not in kwargs else kwargs['goodMemory']
         
         self.brain = kwargs['brain'] if 'brain' in kwargs else None
         self.tBrain = kwargs['tBrain'] if 'tBrain' in kwargs else None

@@ -20,7 +20,7 @@ class MinimaxC4Player(Player):
     def act(self, game):
         illActions = game.getIllMoves()
 
-        if np.random.uniform() < self.epsilon:
+        if np.random.uniform() < self.epsilon or game.turnCnt <= 1:
             action = self.getRandomMove(illActions)
         else:
             if len(illActions) == self.actionCnt - 1:#only one legal move left

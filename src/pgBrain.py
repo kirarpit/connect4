@@ -26,8 +26,8 @@ class Brain:
         self.filename = str(name) + '.h5'
         self.stateCnt, self.actionCnt = game.getStateActionCnt()
         
-        self.gamma = kwargs['gamma']
-        self.n_step = kwargs['n_step']
+        self.gamma = kwargs['gamma'] if "gamma" in kwargs else 0.99
+        self.n_step = kwargs['n_step'] if "n_step" in kwargs else 1
         self.gamma_n = self.gamma ** self.n_step
         self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else MIN_BATCH
         

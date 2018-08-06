@@ -17,34 +17,33 @@ from mathEq import MathEq
 from myThread import MyThread
 from memory.pMemory import PMemory
 from brain import Brain
-from keras import optimizers
+#from keras import optimizers
 
-#try rmsprop
-#try conv
-
-loadWeights = False
-randBestMoves = True
+loadWeights = True
+randBestMoves = False
 
 GAMMA = 0.99
-N_STEP_RETURN = 6
+N_STEP_RETURN = 13
 
 memory = PMemory(2000)
 goodMemory = PMemory(2000)
 threads = []
-ROWS = 4
-COLUMNS = 5
-BATCH_SIZE = 256
+ROWS = 5
+COLUMNS = 6
+BATCH_SIZE = 64
+
+#make first move by minimax random otherwise perfect play 
 
 game = C4Game(ROWS, COLUMNS, name="dummy")
 
 ann = Sequential()
-ann.add(Dense(units = 18, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu', input_dim = game.stateCnt))
-ann.add(Dense(units = 18, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
-#ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
+ann.add(Dense(units = 45, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu', input_dim = game.stateCnt))
+ann.add(Dense(units = 25, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
+ann.add(Dense(units = 16, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
 
-rmsprop = optimizers.RMSprop(lr=0.005, decay=0.99)
-ann.compile(optimizer = rmsprop, loss = 'logcosh', metrics = ['accuracy'])
+#rmsprop = optimizers.RMSprop(lr=0.005, decay=0.99)
+ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 
 brain = Brain('c4Async', game, model=ann, loadWeights=loadWeights)
 
@@ -54,7 +53,7 @@ config[2] = {"min":0.05, "max":0.25, "lambda":0}
 config[3] = {"min":0.05, "max":0.35, "lambda":0}
 config[4] = {"min":0.05, "max":0.45, "lambda":0}
 
-eq2 = MathEq({"min":0, "max":0.05, "lambda":0})
+eq2 = MathEq({"min":0, "max":0, "lambda":0.00001})
 
 i = 1
 threads = []

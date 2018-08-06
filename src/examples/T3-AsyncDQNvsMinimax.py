@@ -18,15 +18,15 @@ from myThread import MyThread
 from memory.pMemory import PMemory
 from brain import Brain
 
-GAMMA = 0.99
+GAMMA = 0.80
 N_STEP_RETURN = 3
 
 loadWeights = False
 
-memory = PMemory(1000)
-goodMemory = PMemory(1000)
+memory = PMemory(500)
+goodMemory = PMemory(500)
 isConv = False
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 game = T3Game(3, name="dummy", isConv=isConv)
 ann = Sequential()
@@ -35,10 +35,10 @@ if isConv:
                           activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
     ann.add(Flatten())
 else:
-    ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform',
+    ann.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform',
                   activation = 'relu', input_dim = game.stateCnt))
     
-ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
+ann.add(Dense(units = 18, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
 ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 

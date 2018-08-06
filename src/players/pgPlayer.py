@@ -13,6 +13,9 @@ class PGPlayer(Player):
     
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
+        
+        self.sampling = kwargs['sampling'] if "sampling" in kwargs else True
+        
         if 'brain' in kwargs:
             self.brain = kwargs['brain']
         else:
@@ -31,7 +34,10 @@ class PGPlayer(Player):
         else:
             actions = self.brain.predict_p(np.array([state]))[0]
             fActions = self.filterIllMoves(np.copy(actions), illActions)
-            action = np.random.choice(self.actionCnt, p=fActions)
+            if self.sampling:
+                action = np.random.choice(self.actionCnt, p=fActions)
+            else:
+                action = np.argmax(fActions)
             
             if self.debug:
                 self.logs['preds' + str(self.name)] = np.vstack([self.logs['preds' + str(self.name)], actions])

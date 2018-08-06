@@ -19,12 +19,12 @@ from keras.layers import Convolution2D, MaxPooling2D, Flatten
 from keras.models import Model
 import games.c4Solver as C4Solver
 
-GAMMA = 0.99
-N_STEP_RETURN = 3
+GAMMA = 0.90
+N_STEP_RETURN = 10
 MIN_BATCH = 256
-ROWS = 6
-COLUMNS = 7
-isConv = True
+ROWS = 5
+COLUMNS = 6
+isConv = False
 loadWeights = True
 filename = "pgbrain67"
 
@@ -37,9 +37,11 @@ if isConv:
     l_dense = Flatten()(l_dense)
 else:
     l_input = Input( batch_shape=(None, game.stateCnt) )
-    l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+    l_dense = Dense(48, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                     activation='relu')(l_input)
 
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                activation='relu')(l_dense)
 l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                 activation='relu')(l_dense)
 
@@ -58,7 +60,7 @@ config[2] = {"min":0.05, "max":0.25, "lambda":0}
 config[3] = {"min":0.05, "max":0.35, "lambda":0}
 config[4] = {"min":0.05, "max":0.45, "lambda":0}
 
-eq2 = MathEq({"min":0.05, "max":0.25, "lambda":0})
+eq2 = MathEq({"min":0.05, "max":0, "lambda":0})
 
 i = 1
 threads = []

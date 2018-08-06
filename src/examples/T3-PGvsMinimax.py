@@ -18,12 +18,11 @@ from keras.layers import Input, Dense
 from keras.layers import Convolution2D, Flatten
 from keras.models import Model
 
-GAMMA = 0.99
-N_STEP_RETURN = 2
-GAMMA_N = GAMMA ** N_STEP_RETURN
-MIN_BATCH = 256
+GAMMA = 0.8
+N_STEP_RETURN = 1
+MIN_BATCH = 125
 isConv = False
-loadWeights = False
+loadWeights = True
 filename = "pgbraint3"
 
 #Example 1
@@ -45,15 +44,15 @@ out_value   = Dense(1, activation='linear')(l_dense)
 model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain(filename, game, model=model, loadWeights=loadWeights, gamma=GAMMA, n_step=N_STEP_RETURN, gamma_n=GAMMA_N)
+brain = Brain(filename, game, model=model, loadWeights=loadWeights, gamma=GAMMA, n_step=N_STEP_RETURN)
 
 config = {}
-config[1] = {"min":0.05, "max":0.05, "lambda":0}
-config[2] = {"min":0.05, "max":0.25, "lambda":0}
-config[3] = {"min":0.05, "max":0.35, "lambda":0}
-config[4] = {"min":0.05, "max":0.45, "lambda":0}
+config[1] = {"min":0.05, "max":0.0, "lambda":0}
+config[2] = {"min":0.05, "max":0.15, "lambda":0}
+config[3] = {"min":0.05, "max":0.25, "lambda":0}
+config[4] = {"min":0.05, "max":0.35, "lambda":0}
 
-eq2 = MathEq({"min":0, "max":0.05, "lambda":0.0001})
+eq2 = MathEq({"min":0, "max":0.05, "lambda":0})
 
 i = 1
 threads = []
