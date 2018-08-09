@@ -8,44 +8,33 @@ Created on Thu Aug  2 19:02:25 2018
 
 from games.t3Game import T3Game
 from environment import Environment
-from players.qPlayer import QPlayer
-from keras.models import Sequential
-from keras.layers import Dense, Convolution2D, MaxPooling2D, Flatten
-from mathEq import MathEq
-from keras import optimizers
+from players.zeroPlayer import ZeroPlayer
+from keras.models import Model
+from keras.layers import Input, Dense
+from keras.optimizers import Adam
+from memory.dictTree import DictTree
 
 game = T3Game()
-BATCH_SIZE = 64
-N_STEP_RETURN = 3
+#BATCH_SIZE = 256
+simCnt = 20
+iterCnt = 100
+tree = DictTree()
+LR = 1e-3
 
-#opt: set custom ANN model
-ann = Sequential()
-ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu',
-              input_dim = game.stateCnt))
-ann.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu'))
-ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'linear'))
-#rmsprop = optimizers.RMSprop(lr=0.005, decay=0.99)
-ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+l_input = Input( batch_shape=(None, game.stateCnt) )
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                activation='relu')(l_input)
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                activation='relu')(l_dense)
 
-ann2 = Sequential()
-ann2.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu',
-              input_dim = game.stateCnt))
-ann2.add(Dense(units = 12, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu'))
-ann2.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'linear'))
-#rmsprop = optimizers.RMSprop(lr=0.005, decay=0.99)
-ann2.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+out_actions = Dense(game.actionCnt, activation='softmax', name="P")(l_dense)
+out_value   = Dense(1, activation='linear', name="V")(l_dense)
 
+model = Model(inputs=[l_input], outputs=[out_actions, out_value])
+model.compile(loss=['categorical_crossentropy','mean_squared_error'], 
+              optimizer=Adam(LR))
 
-eq1 = MathEq({"min":0.10, "max":0.10, "lambda":0})
-eq2 = MathEq({"min":0.10, "max":0.10, "lambda":0})
-
-p1 = QPlayer(1, game, model=ann, tModel=ann2, eEq=eq1, batch_size=BATCH_SIZE, n_step=N_STEP_RETURN)
-p2 = QPlayer(2, game, model=ann, tModel=ann2, eEq=eq1, batch_size=BATCH_SIZE, n_step=N_STEP_RETURN)
-env = Environment(game, p1, p2)
+p1 = ZeroPlayer(1, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt)
+p2 = ZeroPlayer(2, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt)
+env = Environment(game, p1, p2, ePlot=False)
 env.run()

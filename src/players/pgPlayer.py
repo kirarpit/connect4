@@ -70,7 +70,7 @@ class PGPlayer(Player):
             self.R = self.R - self.sarsaMem[0][2]
             self.sarsaMem.pop(0)
         
-    def train(self):
+    def train(self, game):
         pass
     
     def filterIllMoves(self, moves, illMoves):

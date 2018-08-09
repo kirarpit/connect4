@@ -118,7 +118,7 @@ class QPlayer(Player):
                 
         self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and not game.isOver() else 0
         
-    def train(self):
+    def train(self, game):
         batch = self.goodMemory.sample(int(self.batch_size/2))
         goodMemLen = len(batch)
         

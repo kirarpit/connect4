@@ -6,41 +6,36 @@ Created on Thu Jun 28 17:53:30 2018
 @author: Arpit
 """
 
-import os.path, threading, time
+from brains.brain import Brain
+import threading, time
 import numpy as np
 import tensorflow as tf
-from keras.models import Model, load_model
-from keras.layers import Input, Dense
 from keras import backend as K
+from keras.models import Model
+from keras.layers import Input, Dense
 
 MIN_BATCH = 256
 LEARNING_RATE = 5e-3
 LOSS_V = .5			# v loss coefficient
 LOSS_ENTROPY = .01 	# entropy coefficient
 
-class Brain:
+class PGBrain(Brain):
     train_queue = [ [], [], [], [], [] ]	# s, a, r, s', s' terminal mask
     lock_queue = threading.Lock()
     
     def __init__(self, name, game, **kwargs):
-        self.filename = str(name) + '.h5'
-        self.stateCnt, self.actionCnt = game.getStateActionCnt()
-        
-        self.gamma = kwargs['gamma'] if "gamma" in kwargs else 0.99
-        self.n_step = kwargs['n_step'] if "n_step" in kwargs else 1
-        self.gamma_n = self.gamma ** self.n_step
-        self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else MIN_BATCH
-        
+        super().__init__(name, game, **kwargs)
+        self.lr = kwargs['lr'] if "lr" in kwargs else LEARNING_RATE
+
         self.session = tf.Session()
         K.set_session(self.session)
         K.manual_variable_initialization(True)
 
-        self.model = self._build_model() if "model" not in kwargs else kwargs['model']
         self.graph = self._build_graph()
         
         self.session.run(tf.global_variables_initializer())
         if "loadWeights" in kwargs and kwargs['loadWeights']:
-            self.loadWeights()
+            self.load_weights()
         
         self.default_graph = tf.get_default_graph()
         self.default_graph.finalize()
@@ -81,7 +76,7 @@ class Brain:
         
         loss_total = tf.reduce_mean(loss_policy + loss_value + entropy)
         
-        optimizer = tf.train.RMSPropOptimizer(LEARNING_RATE, decay=.99)
+        optimizer = tf.train.RMSPropOptimizer(self.lr, decay=.99)
         minimize = optimizer.minimize(loss_total)
         
         return s_t, a_t, q_t, minimize
@@ -144,16 +139,3 @@ class Brain:
         with self.default_graph.as_default():
             p, v = self.model.predict(s)		
             return v
-        
-    def save(self):
-        self.model.save(self.filename)
-        
-    def loadWeights(self):
-        if os.path.exists(self.filename):
-            print (self.filename + " weights loaded")
-            self.model.load_weights(self.filename)
-            
-    def load(self):
-        if os.path.exists(self.filename):
-            print (self.filename + " model loaded")
-            self.model = load_model(self.filename)

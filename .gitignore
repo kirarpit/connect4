@@ -11,6 +11,7 @@
 *.pyc
 ann/*
 models/*
-*h5
+*.h5*
 *.pickle
-
+*.pkl
+*.bkp

@@ -9,6 +9,7 @@ Created on Wed Jul 11 13:42:11 2018
 from abc import ABC, abstractmethod
 from graphPlot import GraphPlot
 import numpy as np
+import pickle
 
 class Game(ABC):
     WINNER_R = 1
@@ -31,6 +32,7 @@ class Game(ABC):
         }
         self.directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
         self.gPlot = GraphPlot("game-stats-" + str(self.name), 1, 3, list(self.stats[1].keys()))
+        self.savedGameFilename = "games/savedGame.pkl"
     
     @abstractmethod
     def newGame(self):
@@ -164,6 +166,15 @@ class Game(ABC):
     def toString(self):
         return self.movesHistory
     
+    def save(self):
+        with open(self.savedGameFilename, 'wb') as handle:
+            pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+    def load(self):
+        with open(self.savedGameFilename, 'rb') as handle:
+            savedGame = pickle.load(handle)
+            self.__dict__.update(savedGame.__dict__)
+        
     def printGame(self):
         print ("Total Games Played: " + str(self.gameCnt))
         print ("Winner Stats: " + str(self.stats))

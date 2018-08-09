@@ -19,12 +19,12 @@ from keras.layers import Convolution2D, MaxPooling2D, Flatten
 from keras.models import Model
 import games.c4Solver as C4Solver
 
-GAMMA = 0.90
+GAMMA = 0.93
 N_STEP_RETURN = 10
-MIN_BATCH = 256
+MIN_BATCH = 64
 ROWS = 5
 COLUMNS = 6
-isConv = False
+isConv = True
 loadWeights = True
 filename = "pgbrain67"
 
@@ -32,17 +32,19 @@ game = C4Game(ROWS, COLUMNS, name="dummy", isConv=isConv)
 
 if isConv:
     l_input = Input( shape=game.stateCnt )
-    l_dense = Convolution2D(8, (4, 4), strides=(1,1), padding='valid', activation='relu', 
+    l_dense = Convolution2D(32, (3, 3), strides=(1,1), padding='valid', activation='relu', 
                             data_format="channels_first")(l_input)
+    l_dense = Convolution2D(32, (2, 2), strides=(1,1), padding='valid', activation='relu', 
+                            data_format="channels_first")(l_dense)
     l_dense = Flatten()(l_dense)
-else:
+else: 
     l_input = Input( batch_shape=(None, game.stateCnt) )
     l_dense = Dense(48, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                     activation='relu')(l_input)
 
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+l_dense = Dense(46, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                 activation='relu')(l_dense)
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+l_dense = Dense(46, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                 activation='relu')(l_dense)
 
 out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)

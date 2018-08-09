@@ -71,7 +71,7 @@ class Environment():
         if self.observing:
             p.observe(sample, self.game)
         if self.training:
-            p.train()
+            p.train(self.game)
         
     def printEnv(self):
         self.game.printGame()

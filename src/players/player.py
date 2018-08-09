@@ -21,6 +21,7 @@ class Player(ABC):
         self.epsilon = self.eEq.getValue(0) if self.eEq is not None else 0
         self.alpha = None
         
+        self.batch_size = kwargs['batch_size'] if "batch_size" in kwargs else None
         self.gamma = kwargs['gamma'] if "gamma" in kwargs else 0.99
         self.n_step = kwargs['n_step'] if "n_step" in kwargs else 1
         self.gamma_n = self.gamma ** self.n_step

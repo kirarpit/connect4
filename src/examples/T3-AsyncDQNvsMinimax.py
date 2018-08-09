@@ -25,14 +25,14 @@ loadWeights = False
 
 memory = PMemory(500)
 goodMemory = PMemory(500)
-isConv = False
+isConv = True
 BATCH_SIZE = 128
 
 game = T3Game(3, name="dummy", isConv=isConv)
 ann = Sequential()
 if isConv:
     ann.add(Convolution2D(16, (2, 2), padding='valid', strides=(1, 1), 
-                          activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
+            activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
     ann.add(Flatten())
 else:
     ann.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform',
