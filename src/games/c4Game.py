@@ -16,7 +16,7 @@ class C4Game(Game):
         
         self.rows = rows
         self.columns = columns
-        self.stateCnt = rows * columns * 2 if not self.isConv else (1, rows, columns)
+        self.stateCnt = rows * columns if not self.isConv else (1, rows, columns)
         self.actionCnt = columns
 
     def newGame(self):

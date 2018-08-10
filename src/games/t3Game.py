@@ -17,7 +17,7 @@ class T3Game(Game):
         
         self.rows = size
         self.columns = size
-        self.stateCnt = self.rows * self.columns * 2 if not self.isConv else (1, self.rows, self.columns)
+        self.stateCnt = self.rows * self.columns if not self.isConv else (1, self.rows, self.columns)
         self.actionCnt = self.rows * self.columns
         
     def newGame(self):

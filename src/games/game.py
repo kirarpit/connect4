@@ -13,13 +13,7 @@ import copy
 class Game(ABC):
     WINNER_R = 1
     LOSER_R = -1
-    
-    def __init__(self, **kwargs):
-        self.name = kwargs['name'] if "name" in kwargs else "game"
-        self.isConv = kwargs['isConv'] if "isConv" in kwargs else False
-        self.gameCnt = 0
-        self.initStats()
-        self.deltas = {
+    DELTAS = {
             "N":(0, -1),
             "NE":(1, -1),
             "NW":(-1, -1),
@@ -29,8 +23,13 @@ class Game(ABC):
             "SW":(-1, 1),
             "S":(0, 1)
         }
-        self.directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
-        self.savedGameFilename = "games/savedGame.pkl"
+    DIRECTIONS = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
+
+    def __init__(self, **kwargs):
+        self.name = kwargs['name'] if "name" in kwargs else "game"
+        self.isConv = kwargs['isConv'] if "isConv" in kwargs else False
+        self.gameCnt = 0
+        self.initStats()
     
     @abstractmethod
     def newGame(self):
@@ -74,10 +73,10 @@ class Game(ABC):
         pass
 
     def xInARow(self, row, column, length):
-        for dpair in self.directions:
+        for dpair in self.DIRECTIONS:
             cnt = 1
             for direction in dpair:
-                (dy, dx) = self.deltas[direction]
+                (dy, dx) = self.DELTAS[direction]
                 x = row + dx
                 y = column + dy
                 
@@ -115,8 +114,9 @@ class Game(ABC):
         else:
             pos = row * self.columns + column
             if self.toPlay == 2:
-                pos += self.rows * self.columns
-            self.stateForm[pos] = 1
+                self.stateForm[pos] = -1
+            else:
+                self.stateForm[pos] = 1
         
     def checkDrawState(self):
         if self.turnCnt == self.rows * self.columns - 1:
