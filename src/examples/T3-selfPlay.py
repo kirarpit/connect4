@@ -15,11 +15,11 @@ from keras.optimizers import Adam
 from memory.dictTree import DictTree
 
 game = T3Game()
-#BATCH_SIZE = 256
-simCnt = 20
+simCnt = 100
 iterCnt = 100
 tree = DictTree()
 LR = 1e-3
+load_weights = False
 
 l_input = Input( batch_shape=(None, game.stateCnt) )
 l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
@@ -34,7 +34,7 @@ model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model.compile(loss=['categorical_crossentropy','mean_squared_error'], 
               optimizer=Adam(LR))
 
-p1 = ZeroPlayer(1, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt)
-p2 = ZeroPlayer(2, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt)
-env = Environment(game, p1, p2, ePlot=False)
+p1 = ZeroPlayer(1, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
+p2 = ZeroPlayer(2, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
+env = Environment(game, p1, p2, ePlotFlag=False)
 env.run()

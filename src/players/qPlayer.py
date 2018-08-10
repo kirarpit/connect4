@@ -5,7 +5,7 @@ Created on Thu Jun 28 17:52:18 2018
 
 @author: Arpit
 """
-from brain import Brain
+from brains.qBrain import QBrain
 import numpy as np
 from memory.pMemory import PMemory
 from mathEq import MathEq
@@ -45,18 +45,15 @@ class QPlayer(Player):
         self.brain = kwargs['brain'] if 'brain' in kwargs else None
         self.tBrain = kwargs['tBrain'] if 'tBrain' in kwargs else None
         
-        loadWeights = kwargs['loadWeights'] if 'loadWeights' in kwargs else False
-
         if self.brain is None:
             model = kwargs['model'] if "model" in kwargs else None
-            self.brain = Brain(name, game, model=model)
+            self.brain = QBrain(name, game, model=model)
             
             if self.targetNet:
                 tModel = kwargs['tModel'] if model is not None else None
-                self.tBrain = Brain(str(name) + "_target", game, model=tModel)
+                self.tBrain = QBrain(str(name) + "_target", game, model=tModel)
         
-        if loadWeights:
-            self.brain.load_weights()
+        if self.load_weights: self.brain.load_weights()
         
         if self.eEq is None:
             self.eEq = MathEq({"min":MIN_EPSILON, "max":MAX_EPSILON, "lambda":E_LAMBDA})

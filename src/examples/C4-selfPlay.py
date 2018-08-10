@@ -8,44 +8,33 @@ Created on Sat Aug  4 23:11:45 2018
 
 from games.c4Game import C4Game
 from environment import Environment
-from players.qPlayer import QPlayer
-from keras.models import Sequential
-from keras.layers import Dense
-from mathEq import MathEq
-from memory.pMemory import PMemory
+from players.zeroPlayer import ZeroPlayer
+from keras.models import Model
+from keras.layers import Input, Dense
+from keras.optimizers import Adam
+from memory.dictTree import DictTree
 
-loadWeights = False
-randBestMoves = False
+game = C4Game(6, 7)
+simCnt = 100
+iterCnt = 100
+tree = DictTree()
+LR = 5e-3
+load_weights = False
 
-N_STEP_RETURN = 6
+l_input = Input( batch_shape=(None, game.stateCnt) )
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                activation='relu')(l_input)
+l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
+                activation='relu')(l_dense)
 
-memory = PMemory(100000)
-goodMemory = PMemory(100000)
-threads = []
-ROWS = 6
-COLUMNS = 7
-BATCH_SIZE = 64
+out_actions = Dense(game.actionCnt, activation='softmax', name="P")(l_dense)
+out_value   = Dense(1, activation='linear', name="V")(l_dense)
 
-game = C4Game(ROWS, COLUMNS, name="dummy")
+model = Model(inputs=[l_input], outputs=[out_actions, out_value])
+model.compile(loss=['categorical_crossentropy','mean_squared_error'], 
+              optimizer=Adam(LR))
 
-ann = Sequential()
-ann.add(Dense(units = 45, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu', input_dim = game.stateCnt))
-ann.add(Dense(units = 25, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
-ann.add(Dense(units = 16, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
-ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
-ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
-
-ann2 = Sequential()
-ann2.add(Dense(units = 45, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu', input_dim = game.stateCnt))
-ann2.add(Dense(units = 25, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
-ann2.add(Dense(units = 16, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
-ann2.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
-ann2.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
-
-eq1 = MathEq({"min":0.10, "max":1, "lambda":0.0001})
-eq2 = MathEq({"min":0.10, "max":1, "lambda":0.0001})
-
-p1 = QPlayer(1, game, model=ann, tModel=ann2, memory=memory, goodMemory=goodMemory, eEq=eq1, batch_size=BATCH_SIZE, n_step=N_STEP_RETURN)
-p2 = QPlayer(2, game, model=ann, tModel=ann2, memory=memory, goodMemory=goodMemory, eEq=eq2, batch_size=BATCH_SIZE, n_step=N_STEP_RETURN)
+p1 = ZeroPlayer(1, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
+p2 = ZeroPlayer(2, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
 env = Environment(game, p1, p2)
 env.run()

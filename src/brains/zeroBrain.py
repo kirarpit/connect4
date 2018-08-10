@@ -23,9 +23,6 @@ class ZeroBrain(Brain):
         self.batch_size = kwargs['batch_size'] if "batch_size" in kwargs else BATCH_SIZE
         self.epochs = kwargs['epochs'] if "epochs" in kwargs else EPOCHS
 
-        if "loadWeights" in kwargs and kwargs['loadWeights']:
-            self.load_weights()
-
     def _buildModel(self):
         l_input = Input( batch_shape=(None, self.stateCnt) )
         l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 

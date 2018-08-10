@@ -27,6 +27,8 @@ class Player(ABC):
         self.gamma_n = self.gamma ** self.n_step
         self.R = 0
         self.sarsaMem = []
+        
+        self.load_weights = kwargs['load_weights'] if 'load_weights' in kwargs else False
 
     @abstractmethod
     def act(self):

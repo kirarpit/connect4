@@ -10,18 +10,18 @@ from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player as M2T3
 from players.qPlayer import QPlayer
 from players.pgPlayer import PGPlayer
+from players.zeroPlayer import ZeroPlayer
 from players.hoomanPlayer import HoomanPlayer
 from keras.models import Sequential
 from keras.layers import Dense, Convolution2D, MaxPooling2D, Flatten
 from mathEq import MathEq
 from keras.layers import Input, Dense
 from keras.models import Model
-from pgBrain import Brain
-
+from brains.pgBrain import PGBrain
 
 scoreAgent = False
-loadWeights = True
-filename = "pgbraint3"
+load_weights = True
+filename = "1"
 
 game = T3Game()
 
@@ -33,7 +33,7 @@ out_value   = Dense(1, activation='linear')(l_dense)
 model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain(filename, game, model=model, loadWeights=loadWeights)
+brain = PGBrain(filename, game, model=model, load_weights=load_weights)
 
 eq1 = MathEq({"min":0.05, "max":0, "lambda":0})
 eq2 = MathEq({"min":0.05, "max":0.05, "lambda":0})

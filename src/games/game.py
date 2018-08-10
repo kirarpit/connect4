@@ -7,9 +7,8 @@ Created on Wed Jul 11 13:42:11 2018
 """
 
 from abc import ABC, abstractmethod
-from graphPlot import GraphPlot
 import numpy as np
-import pickle
+import copy
 
 class Game(ABC):
     WINNER_R = 1
@@ -31,7 +30,6 @@ class Game(ABC):
             "S":(0, 1)
         }
         self.directions = [('N', 'S'), ('E', 'W'), ('NE', 'SW'), ('SE', 'NW')]
-        self.gPlot = GraphPlot("game-stats-" + str(self.name), 1, 3, list(self.stats[1].keys()))
         self.savedGameFilename = "games/savedGame.pkl"
     
     @abstractmethod
@@ -51,8 +49,6 @@ class Game(ABC):
         else:
             self.stateForm = np.zeros(self.stateCnt, dtype=float)
             self.stateForm[True] = 0.01
-
-        if self.gameCnt % 1000 == 0: self.gPlot.save()
     
     @abstractmethod
     def step(self, action):
@@ -157,7 +153,6 @@ class Game(ABC):
             return 0
         
     def clearStats(self):
-        self.gPlot.add(self.gameCnt, np.add(list(self.stats[1].values()), list(self.stats[2].values())))
         self.initStats()
 
     def initStats(self):
@@ -167,13 +162,12 @@ class Game(ABC):
         return self.movesHistory
     
     def save(self):
-        with open(self.savedGameFilename, 'wb') as handle:
-            pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if 'savedGame' in self.__dict__:
+            del self.__dict__['savedGame']
+        self.savedGame = copy.deepcopy(self.__dict__)
         
     def load(self):
-        with open(self.savedGameFilename, 'rb') as handle:
-            savedGame = pickle.load(handle)
-            self.__dict__.update(savedGame.__dict__)
+        self.__dict__.update(copy.deepcopy(self.savedGame))
         
     def printGame(self):
         print ("Total Games Played: " + str(self.gameCnt))

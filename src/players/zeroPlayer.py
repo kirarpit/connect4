@@ -24,6 +24,7 @@ class ZeroPlayer(Player):
 
         model = kwargs['model'] if "model" in kwargs else None
         self.brain = ZeroBrain(name, game, model=model)
+        if self.load_weights: self.brain.load_weights()
 
     def act(self, game):
         s = game.getCurrentState()

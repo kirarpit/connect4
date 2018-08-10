@@ -34,8 +34,7 @@ class PGBrain(Brain):
         self.graph = self._build_graph()
         
         self.session.run(tf.global_variables_initializer())
-        if "loadWeights" in kwargs and kwargs['loadWeights']:
-            self.load_weights()
+        if "load_weights" in kwargs and kwargs['load_weights']: self.load_weights()
         
         self.default_graph = tf.get_default_graph()
         self.default_graph.finalize()

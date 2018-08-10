@@ -7,9 +7,13 @@ Created on Fri Jul 27 14:29:37 2018
 """
 from graphPlot import GraphPlot
 import time
+from timer_cm import Timer
+import numpy as np
 
 class Environment():
     def __init__(self, game, p1, p2, **kwargs):
+        self.startTime = time.time()
+
         self.game = game
         self.p1 = p1
         self.p2 = p2
@@ -17,22 +21,26 @@ class Environment():
         self.training = kwargs['training'] if "training" in kwargs else True
         self.observing = kwargs['observing'] if "observing" in kwargs else True
         self.thread = kwargs['thread'] if "thread" in kwargs else False
-        self.ePlot = kwargs['ePlot'] if "ePlot" in kwargs else True
+        self.ePlotFlag = kwargs['ePlotFlag'] if "ePlotFlag" in kwargs else False
+        self.gPlotFlag = kwargs['gPlotFlag'] if "gPlotFlag" in kwargs else True
         
-        self.startTime = time.time()
-        if self.ePlot:
-            self.gPlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
+        if self.ePlotFlag:
+            self.ePlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
+        if self.gPlotFlag:
+            self.gPlot = GraphPlot("game-stats-" + str(self.game.name), 1, 3, list(self.game.stats[1].keys()))
 
     def run(self):
         while not self.debug or self.game.gameCnt < 10:
             self.runGame()
             
+            if self.game.gameCnt % 1000 == 0:
+                if self.ePlotFlag: self.ePlot.save()
+                if self.gPlotFlag: self.gPlot.save()
+
+                self.p1.brain.save()
+
             if self.game.gameCnt % 100 == 0 or self.debug:
                 self.printEnv()
-                
-            if self.game.gameCnt % 1000 == 0:
-                if self.ePlot: self.gPlot.save()
-                self.p1.brain.save()
 
             if self.thread: break
         
@@ -79,9 +87,11 @@ class Environment():
         print ("p2-e: " + str(self.p2.epsilon))
         if self.p1.alpha is not None:
             print ("Learning Rate: " + str(self.p1.alpha))
-        self.game.clearStats()
         print("Time since beginning: " + str(time.time() - self.startTime))
         print("#"*50)
               
         if not self.debug:
-            if self.ePlot: self.gPlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
+            if self.ePlotFlag: self.ePlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
+            if self.gPlotFlag: self.gPlot.add(self.game.gameCnt, np.add(list(self.game.stats[1].values()), list(self.game.stats[2].values())))
+
+        self.game.clearStats()
