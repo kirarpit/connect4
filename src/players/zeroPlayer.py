@@ -9,7 +9,6 @@ from players.player import Player
 from brains.zeroBrain import ZeroBrain
 import numpy as np
 from timer_cm import Timer
-from collections import deque
 import random
 
 class ZeroPlayer(Player):
@@ -17,13 +16,14 @@ class ZeroPlayer(Player):
         super().__init__(name, game, **kwargs)
         
         self.tree = kwargs['tree']
+        self.longTermMem = kwargs['longTermMem']
         self.simCnt = kwargs["simCnt"] if "simCnt" in kwargs else 100
         self.perIter = kwargs['perIter'] if "perIter" in kwargs else 100
         self.tau = kwargs['tau'] if "tau" in kwargs else 1
+        self.turnsToTau0 = kwargs['turnsToTau0'] if "turnsToTau0" in kwargs else 4
         self.cpuct = kwargs['cpuct'] if "cpuct" in kwargs else 1
         self.epsilon = kwargs['epsilon'] if "epsilon" in kwargs else 0.25
-        self.alpha = kwargs['alpha'] if "alpha" in kwargs else 0.8
-        self.longTermMem = deque(maxlen=self.mem_size if self.mem_size is not None else 10000)
+        self.dirAlpha = kwargs['dirAlpha'] if "dirAlpha" in kwargs else 0.3
         self.gameMem = []
         
         model = kwargs['model'] if "model" in kwargs else None
@@ -44,7 +44,12 @@ class ZeroPlayer(Player):
         pi = [prob/sum(pi) for prob in pi]
         
         self.gameMem.append((game.getCurrentState(), pi, None))
-        action = np.random.choice(game.actionCnt, p=pi)
+        
+        if game.turnCnt > self.turnsToTau0:
+            action = np.argmax(pi)
+        else:
+            action = np.random.choice(game.actionCnt, p=pi)
+
         return action
     
     def observe(self, sample, game):
@@ -74,7 +79,7 @@ class ZeroPlayer(Player):
             nu = [0] * game.actionCnt
             if addNoiseFlag:
                 epsilon = self.epsilon
-                nu = np.random.dirichlet([self.alpha] * game.actionCnt)
+                nu = np.random.dirichlet([self.dirAlpha] * game.actionCnt)
                 addNoiseFlag = False
             
             bestUCB = float("-inf")

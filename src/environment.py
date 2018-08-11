@@ -23,6 +23,7 @@ class Environment():
         self.thread = kwargs['thread'] if "thread" in kwargs else False
         self.ePlotFlag = kwargs['ePlotFlag'] if "ePlotFlag" in kwargs else False
         self.gPlotFlag = kwargs['gPlotFlag'] if "gPlotFlag" in kwargs else True
+        self.switchFTP = kwargs['switchFTP'] if "switchFTP" in kwargs else True
         
         if self.ePlotFlag:
             self.ePlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
@@ -47,7 +48,7 @@ class Environment():
     def runGame(self):
         self.game.newGame()
         
-        if self.game.gameCnt % 2 == 0: # switch first to play alternatively
+        if self.switchFTP and self.game.gameCnt % 2 == 0: # switch first to play alternatively
             self.game.setFirstToPlay(2)
 
         lastS = None
