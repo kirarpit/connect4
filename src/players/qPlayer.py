@@ -203,13 +203,6 @@ class QPlayer(Player):
         if self.debug: return
         self.tBrain.set_weights(self.brain.get_weights())
         
-    def filterIllMoves(self, moves, illMoves):
-        for index, move in enumerate(moves):
-            if index in illMoves:
-                moves[index] = float("-inf")
-        
-        return moves
-    
     def initLog(self):
         self.logs = {}
         self.logs['preds' + str(self.name)] = np.empty([0, self.actionCnt])

@@ -14,12 +14,10 @@ from keras.layers import Input, Dense
 from keras.optimizers import Adam
 from memory.dictTree import DictTree
 
-game = C4Game(6, 7)
-simCnt = 100
-iterCnt = 100
-tree = DictTree()
-LR = 5e-3
-load_weights = False
+game = C4Game(6, 7, isConv=True)
+
+config = {"tree":DictTree(), "load_weights":True, 
+          "learning_rate":1e-3, "perIter":50, "simCnt":100}
 
 l_input = Input( batch_shape=(None, game.stateCnt) )
 l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
@@ -34,7 +32,7 @@ model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model.compile(loss=['categorical_crossentropy','mean_squared_error'], 
               optimizer=Adam(LR))
 
-p1 = ZeroPlayer(1, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
-p2 = ZeroPlayer(2, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
+p1 = ZeroPlayer(1, game, model=model, **config)
+p2 = ZeroPlayer(2, game, model=model, **config)
 env = Environment(game, p1, p2)
 env.run()

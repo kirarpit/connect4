@@ -9,32 +9,26 @@ Created on Thu Aug  2 19:02:25 2018
 from games.t3Game import T3Game
 from environment import Environment
 from players.zeroPlayer import ZeroPlayer
-from keras.models import Model
-from keras.layers import Input, Dense
-from keras.optimizers import Adam
 from memory.dictTree import DictTree
+from brains.zeroBrain import ZeroBrain
+from keras.utils import plot_model
 
-game = T3Game()
-simCnt = 100
-iterCnt = 100
-tree = DictTree()
-LR = 1e-3
-load_weights = False
+game = T3Game(3, isConv=True)
 
-l_input = Input( batch_shape=(None, game.stateCnt) )
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-                activation='relu')(l_input)
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-                activation='relu')(l_dense)
+player_config = {"tree":DictTree(), "load_weights":False, 
+                 "epsilon":0.2, "alpha":0.5, "simCnt":15,
+                 "mem_size":5000, "perIter":50}
+brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":1}
 
-out_actions = Dense(game.actionCnt, activation='softmax', name="P")(l_dense)
-out_value   = Dense(1, activation='linear', name="V")(l_dense)
+hidden_layers = [
+	{'filters':32, 'kernel_size': (2,2)}
+	 , {'filters':32, 'kernel_size': (2,2)}
+	]
 
-model = Model(inputs=[l_input], outputs=[out_actions, out_value])
-model.compile(loss=['categorical_crossentropy','mean_squared_error'], 
-              optimizer=Adam(LR))
+brain = ZeroBrain("1", game, hidden_layers = hidden_layers, **brain_config)
+plot_model(brain.model, show_shapes=True, to_file='/Users/Arpit/Desktop/model.png')
 
-p1 = ZeroPlayer(1, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
-p2 = ZeroPlayer(2, game, model=model, tree=tree, simCnt=simCnt, iterCnt=iterCnt, load_weights=load_weights)
+p1 = ZeroPlayer(1, game, brain=brain, **player_config)
+p2 = ZeroPlayer(2, game, brain=brain, **player_config)
 env = Environment(game, p1, p2, ePlotFlag=False)
 env.run()

@@ -6,42 +6,31 @@ Created on Thu Aug  2 19:20:07 2018
 @author: Arpit
 """
 from games.t3Game import T3Game
+from games.c4Game import C4Game
 from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player as M2T3
-from players.qPlayer import QPlayer
-from players.pgPlayer import PGPlayer
-from players.zeroPlayer import ZeroPlayer
+#from players.minimaxC4Player import MinimaxC4Player as M2C4
+from players.testPlayer import TestPlayer
 from players.hoomanPlayer import HoomanPlayer
-from keras.models import Sequential
-from keras.layers import Dense, Convolution2D, MaxPooling2D, Flatten
-from mathEq import MathEq
-from keras.layers import Input, Dense
-from keras.models import Model
-from brains.pgBrain import PGBrain
 
-scoreAgent = False
-load_weights = True
-filename = "1"
+scoreAgent = True
+modelName = "1"
+gameName = "T3"
+isConv = True
 
-game = T3Game()
+if gameName == "C4":
+    game = C4Game(6, 7, name="asdf", isConv=isConv)
+else:
+    game = T3Game(3, isConv=isConv)
 
-l_input = Input( batch_shape=(None, game.stateCnt) )
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_input)
-l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_dense)
-out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)
-out_value   = Dense(1, activation='linear')(l_dense)
-model = Model(inputs=[l_input], outputs=[out_actions, out_value])
-model._make_predict_function()	# have to initialize before threading
-
-brain = PGBrain(filename, game, model=model, load_weights=load_weights)
-
-eq1 = MathEq({"min":0.05, "max":0, "lambda":0})
-eq2 = MathEq({"min":0.05, "max":0.05, "lambda":0})
-
-p1 = PGPlayer(1, game, brain=brain, eEq=eq1, sampling=False)
+p1 = TestPlayer(modelName, game)
 
 if scoreAgent:
-    p2 = M2T3(1, game, eEq=eq2)
+    if gameName == "C4":
+        p2 = M2T3(1, game, epsilon=0.05)
+    else:
+        p2 = M2T3(1, game, epsilon=0.05)
+
 else:
     p2 = HoomanPlayer(2, game)
     

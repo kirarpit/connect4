@@ -41,13 +41,8 @@ class Game(ABC):
         self.firstToPlay = 1
         self.turnCnt = 0
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
-        
-        if self.isConv:
-            self.stateForm = np.zeros(self.stateCnt, dtype=np.uint8)
-            self.stateForm[True] = 1
-        else:
-            self.stateForm = np.zeros(self.stateCnt, dtype=float)
-            self.stateForm[True] = 0.01
+        self.stateForm = np.zeros(self.stateCnt, dtype=float)
+        self.stateForm[True] = 0.01
     
     @abstractmethod
     def step(self, action):
@@ -106,11 +101,7 @@ class Game(ABC):
         
     def updateStateForm(self, row, column):
         if self.isConv:
-            if self.toPlay == 2:
-                val = 64
-            else:
-                val = 192
-            self.stateForm[0][row][column] = val
+            self.stateForm[self.toPlay-1][row][column] = 1
         else:
             pos = row * self.columns + column
             if self.toPlay == 2:
@@ -130,6 +121,9 @@ class Game(ABC):
     def getCurrentState(self):
         return np.copy(self.stateForm)
     
+    def getStateID(self):
+        return tuple(self.getCurrentState().flatten())
+        
     def getStateActionCnt(self):
         return (self.stateCnt, self.actionCnt)
     

@@ -20,8 +20,10 @@ class Player(ABC):
         
         self.epsilon = self.eEq.getValue(0) if self.eEq is not None else 0
         self.alpha = None
+        self.epsilon = kwargs['epsilon'] if "epsilon" in kwargs else 0
         
         self.batch_size = kwargs['batch_size'] if "batch_size" in kwargs else None
+        self.mem_size = kwargs['mem_size'] if "mem_size" in kwargs else None
         self.gamma = kwargs['gamma'] if "gamma" in kwargs else 0.99
         self.n_step = kwargs['n_step'] if "n_step" in kwargs else 1
         self.gamma_n = self.gamma ** self.n_step
@@ -68,3 +70,10 @@ class Player(ABC):
         _, _, _, s_ = self.sarsaMem[n-1]
 
         return (s, a, self.R, s_)
+    
+    def filterIllMoves(self, moves, illMoves):
+        for index, move in enumerate(moves):
+            if index in illMoves:
+                moves[index] = float("-inf")
+        
+        return moves
