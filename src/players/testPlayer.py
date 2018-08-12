@@ -17,9 +17,16 @@ class TestPlayer(Player):
         self.brain = kwargs['brain'] if "brain" in kwargs else Brain(name, game, model=self.model)
 
     def act(self, game):
-        moves = self.brain.predict(np.array([game.getCurrentState()]))[0][0]
-        moves = self.filterIllMoves(np.copy(moves), game.getIllMoves())
-        return np.argmax(moves)
+        illActions = game.getIllMoves()
+        
+        if np.random.uniform() < self.epsilon:
+            action = self.getRandomMove(illActions)
+        else:
+            moves = self.brain.predict(np.array([game.getCurrentState()]))[0][0]
+            moves = self.filterIllMoves(np.copy(moves), illActions)
+            action = np.argmax(moves)
+        
+        return action
 
     def observe(self, sample, game):
         pass

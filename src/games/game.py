@@ -146,11 +146,19 @@ class Game(ABC):
         else:
             return 0
         
-    def clearStats(self):
+    def clearStats(self, clearGameCnt=False):
         self.initStats()
+        if clearGameCnt: self.gameCnt = 0
 
     def initStats(self):
         self.stats = {1:{1:0, 2:0, 'Draw':0}, 2:{1:0, 2:0, 'Draw':0}}
+    
+    def getTotalWins(self, player=None):
+        wins = np.add(list(self.stats[1].values()), list(self.stats[2].values()))
+        if player is None:
+            return wins
+        else:
+            return wins[player - 1]
         
     def toString(self):
         return self.movesHistory

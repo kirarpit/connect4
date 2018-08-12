@@ -6,9 +6,9 @@ Created on Fri Jul 27 14:29:37 2018
 @author: Arpit
 """
 from graphPlot import GraphPlot
-import time
+import time, os
 from timer_cm import Timer
-import numpy as np
+from evaluator import Evaluator
 
 class Environment():
     def __init__(self, game, p1, p2, **kwargs):
@@ -24,6 +24,9 @@ class Environment():
         self.ePlotFlag = kwargs['ePlotFlag'] if "ePlotFlag" in kwargs else False
         self.gPlotFlag = kwargs['gPlotFlag'] if "gPlotFlag" in kwargs else True
         self.switchFTP = kwargs['switchFTP'] if "switchFTP" in kwargs else True
+        self.evaluate = kwargs['evaluate'] if "evaluate" in kwargs else False
+        if self.evaluate:
+            self.evaluator = Evaluator(self.game)
         
         if self.ePlotFlag:
             self.ePlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
@@ -33,15 +36,26 @@ class Environment():
     def run(self):
         while not self.debug or self.game.gameCnt < 10:
             self.runGame()
-            
-            if self.game.gameCnt % 1000 == 0:
-                if self.ePlotFlag: self.ePlot.save()
-                if self.gPlotFlag: self.gPlot.save()
-
-                self.p1.brain.save()
 
             if self.game.gameCnt % 100 == 0 or self.debug:
                 self.printEnv()
+            
+            if self.game.gameCnt % 100 == 0:
+                if self.ePlotFlag: self.ePlot.save()
+                if self.gPlotFlag: self.gPlot.save()
+                self.p1.brain.save()
+                    
+                newModel = self.p1.brain.name
+                oldModel = str(newModel) + "_old"
+                if self.evaluate and os.path.exists(oldModel + ".h5"):
+                    result = self.evaluator.evaluate(newModel, oldModel)
+                    if not result:
+                        print("New model is discarded!!!!!!!!!!!!!!!")
+                        self.p1.brain.load_weights(oldModel)
+                    else:
+                        print("New model is good!!!!!!!!!!!!!!!")
+                        
+                self.p1.brain.save(oldModel)
 
             if self.thread: break
         
@@ -93,6 +107,6 @@ class Environment():
               
         if not self.debug:
             if self.ePlotFlag: self.ePlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
-            if self.gPlotFlag: self.gPlot.add(self.game.gameCnt, np.add(list(self.game.stats[1].values()), list(self.game.stats[2].values())))
+            if self.gPlotFlag: self.gPlot.add(self.game.gameCnt, self.game.getTotalWins())
 
         self.game.clearStats()

@@ -18,12 +18,13 @@ class ZeroPlayer(Player):
         self.tree = kwargs['tree']
         self.longTermMem = kwargs['longTermMem']
         self.simCnt = kwargs["simCnt"] if "simCnt" in kwargs else 100
-        self.perIter = kwargs['perIter'] if "perIter" in kwargs else 100
+        self.iterPer = kwargs['iterPer'] if "iterPer" in kwargs else 100
         self.tau = kwargs['tau'] if "tau" in kwargs else 1
         self.turnsToTau0 = kwargs['turnsToTau0'] if "turnsToTau0" in kwargs else 4
         self.cpuct = kwargs['cpuct'] if "cpuct" in kwargs else 1
         self.epsilon = kwargs['epsilon'] if "epsilon" in kwargs else 0.25
         self.dirAlpha = kwargs['dirAlpha'] if "dirAlpha" in kwargs else 0.3
+        self.miniBatchSize = kwargs['miniBatchSize'] if "miniBatchSize" in kwargs else 2048
         self.gameMem = []
         
         model = kwargs['model'] if "model" in kwargs else None
@@ -63,8 +64,8 @@ class ZeroPlayer(Player):
             self.longTermMem += self.gameMem
             self.gameMem = []
 
-            if game.gameCnt % self.perIter == 0:
-                minibatch = random.sample(self.longTermMem, min(2048, len(self.longTermMem)))
+            if game.gameCnt % self.iterPer == 0:
+                minibatch = random.sample(self.longTermMem, min(self.miniBatchSize, len(self.longTermMem)))
                 self.brain.train(minibatch)
     
     def MCTS(self, game):

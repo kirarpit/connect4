@@ -36,11 +36,8 @@ else:
     
 env = Environment(game, p1, p2, training=False, observing=False)
 
-if scoreAgent:
-    while game.gameCnt < 999:
-        env.runGame()
-else:
-    env.run()
+while game.gameCnt < 999:
+    env.runGame()
     
 env.printEnv()
 
