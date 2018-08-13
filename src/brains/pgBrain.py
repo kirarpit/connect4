@@ -104,7 +104,9 @@ class PGBrain(Brain):
         q = r + self.gamma_n * v * s_mask	# set v to 0 where s_ is terminal state
         
         s_t, a_t, q_t, minimize = self.graph
-        self.session.run(minimize, feed_dict={s_t: s, a_t: a, q_t: q})
+        
+        for _ in range(self.epochs):
+            self.session.run(minimize, feed_dict={s_t: s, a_t: a, q_t: q})
 
     def train_push(self, sample):
         s = sample[0]

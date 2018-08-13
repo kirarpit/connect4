@@ -30,7 +30,7 @@ class QBrain(Brain):
 
         self.default_graph = tf.get_default_graph()
 
-    def _buildModel(self):
+    def _build_model(self):
         model = Sequential()
         model.add(Dense(units = int((self.stateCnt + self.actionCnt)/2),
                       kernel_initializer='random_uniform',

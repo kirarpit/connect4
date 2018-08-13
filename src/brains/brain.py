@@ -25,6 +25,7 @@ def softmax_cross_entropy_with_logits(y_true, y_pred):
 
 class Brain:
     def __init__(self, name, game, **kwargs):
+        self.name = name
         self.filename = str(name) + '.h5'
         self.stateCnt, self.actionCnt = game.getStateActionCnt()
         
@@ -68,7 +69,7 @@ class Brain:
     def value_head(self, x):
         x = self.conv_layer(x, 1, (1,1))
         x = Flatten()(x)
-        x = Dense(	9, use_bias=False, activation='linear',
+        x = Dense(	self.actionCnt, use_bias=False, activation='linear',
                   kernel_regularizer=regularizers.l2(self.reg_const))(x)
         x = LeakyReLU()(x)
         x = Dense(	1, use_bias=False, activation='tanh',
@@ -78,14 +79,17 @@ class Brain:
     def policy_head(self, x):
         x = self.conv_layer(x, 2, (1,1))
         x = Flatten()(x)
-        x = Dense(	self.actionCnt, use_bias=False, activation='linear',
+        x = Dense(	self.actionCnt, use_bias=False, activation='softmax',
                   kernel_regularizer=regularizers.l2(self.reg_const), name = 'policy_head')(x)
         return x
     
     def predict(self, s):
-        result = self.model.predict(s)
+        return self.model.predict(s)
+    
+    def predict_p(self, s):
+        result = self.predict(s)
         if len(result) > 1:
-            return result[0], result[0][0]
+            return result[0][0]
         else:
             return result[0]
 
@@ -95,15 +99,25 @@ class Brain:
     def set_weights(self, weights):
         self.model.set_weights(weights)
     
-    def load_weights(self):
-        if os.path.exists(self.filename):
-            print (self.filename + " weights loaded")
-            self.model.load_weights(self.filename)
+    def load_weights(self, filename=None):
+        if filename is not None:
+            filename = str(filename) + '.h5'
+        else:
+            filename = self.filename
+
+        if os.path.exists(filename):
+            print (filename + " weights loaded")
+            self.model.load_weights(filename)
         else:
             print("No file found; Couldn't load weights")
 
-    def save(self):
-        self.model.save(self.filename)
+    def save(self, filename=None):
+        if filename is not None:
+            filename = str(filename) + '.h5'
+        else:
+            filename = self.filename
+            
+        self.model.save(filename)
         
     @staticmethod
     def load_model(filename=None):

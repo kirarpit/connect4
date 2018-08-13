@@ -45,11 +45,11 @@ class ZeroBrain(Brain):
             l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
                         activation='relu')(l_dense)
             out_actions = Dense(self.actionCnt, activation='softmax', name="policy_head")(l_dense)
-            out_value   = Dense(1, activation='linear', name="value_head")(l_dense)
+            out_value   = Dense(1, activation='tanh', name="value_head")(l_dense)
 
         model = Model(inputs=[main_input], outputs=[out_actions, out_value])
-#        model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': 'categorical_crossentropy'},
-        model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': softmax_cross_entropy_with_logits},
+        model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': 'categorical_crossentropy'},
+#        model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': softmax_cross_entropy_with_logits},
                       optimizer=Adam(self.learning_rate),
 #                      optimizer=SGD(lr=self.learning_rate, momentum = self.momentum),
                       loss_weights={'value_head': 0.5, 'policy_head': 0.5})
