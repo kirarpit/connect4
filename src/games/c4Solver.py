@@ -116,7 +116,6 @@ def miniMax6X7Shell(gameString):
         return miniMax6X7API(gameString)
     return getBestMoves(scores)
 
-@cached
 def miniMax6X7API(gameString):
     if debug: print("miniMax6X7API called")
     r = requests.get('http://connect4.gamesolver.org/solve?pos=' + str(gameString))

@@ -13,23 +13,19 @@ from memory.dictTree import DictTree
 from brains.zeroBrain import ZeroBrain
 from keras.utils import plot_model
 from collections import deque
-from logger import Logger
 
-log = Logger()
 game = T3Game(3, isConv=True)
-ltMem = deque(maxlen=5000)
-
-player_config = {"tree":DictTree(), "longTermMem":ltMem, "load_weights":False, 
-                 "epsilon":0.20, "dirAlpha":0.3, "simCnt":40, "iterPer":40,
-                 "turnsToTau0":4, "log":log}
-brain_config = {"learning_rate":0.001, "momentum":0.9, 
-                "batch_size":32, "epochs":5, "log":log}
-env_config = {"switchFTP":False, "evaluate":True, "evalPer":200, "log":log}
-
 hidden_layers = [
 	{'filters':32, 'kernel_size': (2,2)}
 	 , {'filters':32, 'kernel_size': (2,2)}
 	]
+
+player_config = {"tree":DictTree(), "longTermMem":deque(maxlen=5000), "load_weights":False, 
+                 "epsilon":0.20, "dirAlpha":0.3, "simCnt":40, "iterPer":40,
+                 "turnsToTau0":4}
+brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":5,
+                "hidden_layers":hidden_layers}
+env_config = {"switchFTP":False, "evaluate":True, "evalPer":200}
 
 brain = ZeroBrain("1", game, hidden_layers = hidden_layers, **brain_config)
 plot_model(brain.model, show_shapes=True, to_file='/Users/Arpit/Desktop/model.png')

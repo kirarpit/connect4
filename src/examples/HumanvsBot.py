@@ -9,7 +9,7 @@ from games.t3Game import T3Game
 from games.c4Game import C4Game
 from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player as M2T3
-#from players.minimaxC4Player import MinimaxC4Player as M2C4
+from players.minimaxC4Player import MinimaxC4Player as M2C4
 from players.testPlayer import TestPlayer
 from players.hoomanPlayer import HoomanPlayer
 
@@ -18,8 +18,8 @@ modelName = "1_old"
 gameName = "C4"
 isConv = True
 
-if gameName == "T3":
-    game = C4Game(4, 5, name="asdf", isConv=isConv)
+if gameName == "C4":
+    game = C4Game(6, 7, isConv=isConv)
 else:
     game = T3Game(3, isConv=isConv)
 
@@ -27,17 +27,14 @@ p1 = TestPlayer(modelName, game)
 
 if scoreAgent:
     if gameName == "C4":
-        p2 = M2T3(1, game, epsilon=0.05)
+        p2 = M2C4(1, game, epsilon=0.05)
     else:
         p2 = M2T3(1, game, epsilon=0.05)
-
 else:
     p2 = HoomanPlayer(2, game)
-    
-env = Environment(game, p1, p2, training=False, observing=False)
 
+env = Environment(game, p1, p2, training=False, observing=False)
 while game.gameCnt < 999:
     env.runGame()
-    
 env.printEnv()
 

@@ -19,9 +19,9 @@ class Environment():
         self.startTime = time.time()
 
         self.game = game
-        self.clearStats()
         self.p1 = p1
         self.p2 = p2
+        self.clearStats()
         self.training = kwargs['training'] if "training" in kwargs else True
         self.observing = kwargs['observing'] if "observing" in kwargs else True
         self.thread = kwargs['thread'] if "thread" in kwargs else False
@@ -88,7 +88,7 @@ class Environment():
             lastA = a
         
         """
-        Dummy switch so that the player who made the last action could take the reward 
+        Dummy switch so that the player who made the last action could take the reward.
         """
         self.game.switchTurn() 
         self.teachLastPlayer(lastS, lastA)
@@ -125,7 +125,7 @@ class Environment():
         
     def updateStats(self, winner):
         """
-        If winner is 1 but p2 went first then actually winner is p2
+        If winner is 1 but p2 was first to play(FTP) then the winner is p2.
         """
         if (winner == 1 or winner == 2) and self.switchFlag == 1:
             winner = 1 if winner == 2 else 2

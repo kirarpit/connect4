@@ -21,7 +21,7 @@ from brains.qBrain import QBrain
 GAMMA = 0.90
 N_STEP_RETURN = 3
 
-loadWeights = False
+load_weights = False
 memory = PMemory(1000)
 goodMemory = PMemory(1000)
 isConv = False
@@ -40,7 +40,7 @@ ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer=
 ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
 ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
 
-brain = QBrain('t3AsyncDQN', game, model=ann, loadWeights=loadWeights)
+brain = QBrain('t3AsyncDQN', game, model=ann, load_weights=load_weights)
 
 epsilons = {}
 epsilons[1] = {"min":0.05, "max":0.05, "lambda":0}
@@ -63,7 +63,7 @@ while i <= 4:
     if  False and i == 1:
         env = Environment(game, p1, p2, **env_config)
     else:
-        env = Environment(game, p1, p2, ePlotFlag=False)
+        env = Environment(game, p1, p2)
         
     threads.append(EnvThread(env))
     i += 1

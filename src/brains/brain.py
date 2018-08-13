@@ -100,8 +100,8 @@ class Brain:
         filename = self.getFileName(filename)
 
         if os.path.exists(filename):
-            print (filename + " weights loaded")
             self.model.load_weights(filename)
+            print (filename + " weights loaded")
         else:
             print("Error: file " + filename + " not found")
 
