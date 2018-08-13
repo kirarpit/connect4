@@ -29,7 +29,6 @@ class Game(ABC):
         self.name = kwargs['name'] if "name" in kwargs else "game"
         self.isConv = kwargs['isConv'] if "isConv" in kwargs else False
         self.gameCnt = 0
-        self.initStats()
     
     @abstractmethod
     def newGame(self):
@@ -38,7 +37,6 @@ class Game(ABC):
         self.rewards = {}
         self.gameCnt += 1
         self.toPlay = 1
-        self.firstToPlay = 1
         self.turnCnt = 0
         self.gameState = np.zeros((self.rows, self.columns), dtype=int)
         self.stateForm = np.zeros(self.stateCnt, dtype=float)
@@ -89,15 +87,16 @@ class Game(ABC):
 
         return False
     
-    def setFirstToPlay(self, player):
-        self.firstToPlay = player
-        self.toPlay = self.firstToPlay
-        
     def setWinner(self, player):
         self.over = player
         self.rewards[player] = self.WINNER_R
         self.rewards[self.getNextPlayer(player)] = self.LOSER_R
-        self.stats[self.firstToPlay][player] += 1
+        
+    def getWinner(self):
+        if self.over:
+            return self.over
+        else:
+            return -1
         
     def updateStateForm(self, row, column):
         if self.isConv:
@@ -112,7 +111,6 @@ class Game(ABC):
     def checkDrawState(self):
         if self.turnCnt == self.rows * self.columns - 1:
             self.over = 3
-            self.stats[self.firstToPlay]['Draw'] += 1
             self.rewards[self.toPlay] = self.DRAW_R
             self.rewards[self.getNextPlayer(self.toPlay)] = self.DRAW_R
             return True
@@ -146,20 +144,6 @@ class Game(ABC):
         else:
             return 0
         
-    def clearStats(self, clearGameCnt=False):
-        self.initStats()
-        if clearGameCnt: self.gameCnt = 0
-
-    def initStats(self):
-        self.stats = {1:{1:0, 2:0, 'Draw':0}, 2:{1:0, 2:0, 'Draw':0}}
-    
-    def getTotalWins(self, player=None):
-        wins = np.add(list(self.stats[1].values()), list(self.stats[2].values()))
-        if player is None:
-            return wins
-        else:
-            return wins[player - 1]
-        
     def toString(self):
         return self.movesHistory
     
@@ -173,7 +157,6 @@ class Game(ABC):
         
     def printGame(self):
         print ("Total Games Played: " + str(self.gameCnt))
-        print ("Winner Stats: " + str(self.stats))
         print ("Game " + str(self.gameCnt) + ":")
         for x in range(0, self.rows):
             for y in range(0, self.columns):

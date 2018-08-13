@@ -9,66 +9,73 @@ from graphPlot import GraphPlot
 import time, os
 from timer_cm import Timer
 from evaluator import Evaluator
+import numpy as np
+import threading
 
 class Environment():
+    lock = threading.Lock()
+
     def __init__(self, game, p1, p2, **kwargs):
         self.startTime = time.time()
 
         self.game = game
+        self.clearStats()
         self.p1 = p1
         self.p2 = p2
-        self.debug = kwargs['debug'] if "debug" in kwargs else False
         self.training = kwargs['training'] if "training" in kwargs else True
         self.observing = kwargs['observing'] if "observing" in kwargs else True
         self.thread = kwargs['thread'] if "thread" in kwargs else False
+
         self.ePlotFlag = kwargs['ePlotFlag'] if "ePlotFlag" in kwargs else False
         self.gPlotFlag = kwargs['gPlotFlag'] if "gPlotFlag" in kwargs else True
-        self.switchFTP = kwargs['switchFTP'] if "switchFTP" in kwargs else True
-        self.evaluate = kwargs['evaluate'] if "evaluate" in kwargs else False
-        if self.evaluate:
-            self.evaluator = Evaluator(self.game)
-        
         if self.ePlotFlag:
             self.ePlot = GraphPlot("e-rate-" + str(self.game.name), 1, 2, ["p1-e", "p2-e"])
         if self.gPlotFlag:
-            self.gPlot = GraphPlot("game-stats-" + str(self.game.name), 1, 3, list(self.game.stats[1].keys()))
+            self.gPlot = GraphPlot("game-stats-" + str(self.game.name), 1, 3, list(self.winStats[1].keys()))
+        
+        self.switchFTP = kwargs['switchFTP'] if "switchFTP" in kwargs else True
+        self.switchFlag = 0
+
+        self.evaluate = kwargs['evaluate'] if "evaluate" in kwargs else False
+        if self.evaluate:
+            self.newModel = self.p1.brain.name
+            self.oldModel = str(self.newModel) + "_old"
+            if os.path.exists(self.oldModel + ".h5"): os.remove(self.oldModel + ".h5")
+            self.evaluator = Evaluator(self.game, self.newModel, self.oldModel)
+            self.evalPer = kwargs['evalPer'] if "evalPer" in kwargs else 100
 
     def run(self):
-        while not self.debug or self.game.gameCnt < 10:
+        while True:
             self.runGame()
 
-            if self.game.gameCnt % 100 == 0 or self.debug:
-                self.printEnv()
-            
             if self.game.gameCnt % 100 == 0:
+                self.printEnv()
                 if self.ePlotFlag: self.ePlot.save()
                 if self.gPlotFlag: self.gPlot.save()
-                self.p1.brain.save()
-                    
-                newModel = self.p1.brain.name
-                oldModel = str(newModel) + "_old"
-                if self.evaluate and os.path.exists(oldModel + ".h5"):
-                    result = self.evaluator.evaluate(newModel, oldModel)
+                with self.lock:
+                    if self.game.gameCnt % 1000 == 0: self.p1.brain.save()
+
+            if self.evaluate and self.game.gameCnt % self.evalPer == 0:
+                if os.path.exists(self.oldModel + ".h5"):
+                    self.p1.brain.save()
+                    result = self.evaluator.evaluate()
                     if not result:
-                        print("New model is discarded!!!!!!!!!!!!!!!")
-                        self.p1.brain.load_weights(oldModel)
-                    else:
-                        print("New model is good!!!!!!!!!!!!!!!")
-                        
-                self.p1.brain.save(oldModel)
+                        self.p1.brain.load_weights(self.oldModel)
+                
+                self.p1.brain.save(self.oldModel)
 
             if self.thread: break
         
     def runGame(self):
         self.game.newGame()
         
-        if self.switchFTP and self.game.gameCnt % 2 == 0: # switch first to play alternatively
-            self.game.setFirstToPlay(2)
-
+        if self.switchFTP:
+            self.switchFlag = 1 if self.game.gameCnt % 2 == 0 else 0
+            
         lastS = None
         lastA = None
         while not self.game.isOver():
-            p = self.p1 if self.game.toPlay == 1 else self.p2
+            p = self.getNextPlayer()
             
             s = self.game.getCurrentState()
             a = p.act(self.game)
@@ -79,12 +86,22 @@ class Environment():
             
             lastS = s
             lastA = a
-            
-        self.game.switchTurn() # Dummy switch so that the player who made the last action could take the reward 
+        
+        """
+        Dummy switch so that the player who made the last action could take the reward 
+        """
+        self.game.switchTurn() 
         self.teachLastPlayer(lastS, lastA)
+        
+        winner = self.game.getWinner()
+        self.updateStats(winner)
 
-    def teachLastPlayer(self, lastS, lastA): # if a player has played then previous turn player can get their rewards, observe sample and train
-        p = self.p1 if self.game.toPlay == 1 else self.p2
+    """
+    If a player has played then the previous turn player can get their rewards,
+    observe sample and train.
+    """
+    def teachLastPlayer(self, lastS, lastA):
+        p = self.getNextPlayer()
         
         r = self.game.getReward(self.game.toPlay)
         s_ = self.game.getCurrentState() if not self.game.isOver() else None
@@ -96,17 +113,45 @@ class Environment():
         if self.training:
             p.train(self.game)
         
+    def getNextPlayer(self):
+        return self.p1 if (self.game.turnCnt + self.switchFlag) % 2 == 0 else self.p2
+    
+    def getTotalWins(self, player=None):
+        wins = np.add(list(self.winStats[1].values()), list(self.winStats[2].values()))
+        if player is None:
+            return wins
+        else:
+            return wins[player - 1]
+        
+    def updateStats(self, winner):
+        """
+        If winner is 1 but p2 went first then actually winner is p2
+        """
+        if (winner == 1 or winner == 2) and self.switchFlag == 1:
+            winner = 1 if winner == 2 else 2
+            
+        if winner == 1:
+            winner = 'p1'
+        elif winner == 2:
+            winner = 'p2'
+        else:
+            winner = 'Draw'
+            
+        self.winStats[1 if self.switchFlag == 0 else 2][winner] += 1
+        
+    def clearStats(self):
+        self.winStats = {1:{'p1':0, 'p2':0, 'Draw':0}, 2:{'p1':0, 'p2':0, 'Draw':0}}
+
     def printEnv(self):
         self.game.printGame()
         print ("p1-e: " + str(self.p1.epsilon))
         print ("p2-e: " + str(self.p2.epsilon))
         if self.p1.alpha is not None:
             print ("Learning Rate: " + str(self.p1.alpha))
+        print(self.winStats)
         print("Time since beginning: " + str(time.time() - self.startTime))
         print("#"*50)
-              
-        if not self.debug:
-            if self.ePlotFlag: self.ePlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
-            if self.gPlotFlag: self.gPlot.add(self.game.gameCnt, self.game.getTotalWins())
-
-        self.game.clearStats()
+        
+        if self.ePlotFlag: self.ePlot.add(self.game.gameCnt, [self.p1.epsilon, self.p2.epsilon])
+        if self.gPlotFlag: self.gPlot.add(self.game.gameCnt, self.getTotalWins())
+        self.clearStats()

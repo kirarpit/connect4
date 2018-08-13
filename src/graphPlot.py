@@ -7,8 +7,11 @@ Created on Sun Jul 15 15:16:06 2018
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import threading
 
 class GraphPlot:
+    lock = threading.Lock()
+    
     def __init__(self, name, xCnt=1, yCnt=1, labels=None):
         self.name = name
         self.xCnt = xCnt
@@ -27,12 +30,15 @@ class GraphPlot:
     
     def save(self):
         try:
-            fig = plt.figure()
-            for i in range(self.yCnt):
-                plt.plot(self.X, self.Ys[i], label=self.labels[i] if self.labels is not None else i)
-            
-            plt.legend(loc = "best")
-            plt.savefig('/Users/Arpit/Desktop/' + str(self.name) + '.png')
-            plt.close(fig)
+            with self.lock:
+                fig = plt.figure()
+                for i in range(self.yCnt):
+                    plt.plot(self.X, self.Ys[i], label=self.labels[i] if self.labels is not None else i)
+                
+                plt.legend(loc = "best")
+                plt.savefig('/Users/Arpit/Desktop/' + str(self.name) + '.png')
+                plt.close(fig)
+                
         except Exception as e:
             print("error: " + str(e))
+            plt.close()

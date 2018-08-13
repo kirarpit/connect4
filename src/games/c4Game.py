@@ -52,11 +52,5 @@ class C4Game(Game):
             
         self.checkDrawState()
         
-    def checkDrawState(self):
-        if super().checkDrawState():
-            if self.rows == 6 and self.columns == 7:
-                self.rewards[self.firstToPlay] = 0
-                self.rewards[self.getNextPlayer(self.firstToPlay)] = self.DRAW_R
-        
     def getIllMoves(self):
         return list(self.filledColumns)
