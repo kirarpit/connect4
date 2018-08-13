@@ -11,21 +11,21 @@ from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player
 from players.pgPlayer import PGPlayer
 from mathEq import MathEq
-from pgBrain import Brain
+from brains.pgBrain import PGBrain
 from optimizer import Optimizer
 from myThread import MyThread
 from keras.layers import Input, Dense
 from keras.layers import Convolution2D, Flatten
 from keras.models import Model
 
-GAMMA = 0.8
-N_STEP_RETURN = 1
-MIN_BATCH = 125
+GAMMA = 0.9
+N_STEP_RETURN = 3
+MIN_BATCH = 256
 isConv = False
-loadWeights = True
+loadWeights = False
 filename = "pgbraint3"
+EPOCHS = 10
 
-#Example 1
 game = T3Game(3, isConv=isConv)
 
 if isConv:
@@ -35,7 +35,6 @@ if isConv:
 else:
     l_input = Input( batch_shape=(None, game.stateCnt) )
     l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_input)
-
 l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation='relu')(l_dense)
 
 out_actions = Dense(game.actionCnt, activation='softmax')(l_dense)
@@ -44,10 +43,12 @@ out_value   = Dense(1, activation='linear')(l_dense)
 model = Model(inputs=[l_input], outputs=[out_actions, out_value])
 model._make_predict_function()	# have to initialize before threading
 
-brain = Brain(filename, game, model=model, loadWeights=loadWeights, gamma=GAMMA, n_step=N_STEP_RETURN)
+brain = PGBrain(filename, game, model=model, 
+                loadWeights=loadWeights, gamma=GAMMA, n_step=N_STEP_RETURN,
+                epochs=EPOCHS)
 
 config = {}
-config[1] = {"min":0.05, "max":0.0, "lambda":0}
+config[1] = {"min":0.05, "max":0.05, "lambda":0}
 config[2] = {"min":0.05, "max":0.15, "lambda":0}
 config[3] = {"min":0.05, "max":0.25, "lambda":0}
 config[4] = {"min":0.05, "max":0.35, "lambda":0}

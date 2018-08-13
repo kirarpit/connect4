@@ -12,13 +12,19 @@ from players.zeroPlayer import ZeroPlayer
 from memory.dictTree import DictTree
 from brains.zeroBrain import ZeroBrain
 from keras.utils import plot_model
+from collections import deque
+from logger import Logger
 
+log = Logger()
 game = T3Game(3, isConv=True)
+ltMem = deque(maxlen=5000)
 
-player_config = {"tree":DictTree(), "load_weights":False, 
-                 "epsilon":0.2, "alpha":0.5, "simCnt":15,
-                 "mem_size":5000, "perIter":50}
-brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":1}
+player_config = {"tree":DictTree(), "longTermMem":ltMem, "load_weights":False, 
+                 "epsilon":0.20, "dirAlpha":0.3, "simCnt":40, "iterPer":40,
+                 "turnsToTau0":4, "log":log}
+brain_config = {"learning_rate":0.001, "momentum":0.9, 
+                "batch_size":32, "epochs":5, "log":log}
+env_config = {"switchFTP":False, "evaluate":True, "evalPer":200, "log":log}
 
 hidden_layers = [
 	{'filters':32, 'kernel_size': (2,2)}
@@ -30,5 +36,5 @@ plot_model(brain.model, show_shapes=True, to_file='/Users/Arpit/Desktop/model.pn
 
 p1 = ZeroPlayer(1, game, brain=brain, **player_config)
 p2 = ZeroPlayer(2, game, brain=brain, **player_config)
-env = Environment(game, p1, p2, ePlotFlag=False)
+env = Environment(game, p1, p2, **env_config)
 env.run()

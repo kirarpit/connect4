@@ -14,37 +14,32 @@ from keras.models import Sequential
 from keras.layers import Dense, Convolution2D, MaxPooling2D, Flatten
 from mathEq import MathEq
 
+def getModel():
+    ann = Sequential()
+    ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
+                  activation = 'relu',
+                  input_dim = game.stateCnt))
+    ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
+                  activation = 'relu'))
+    ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
+                  activation = 'linear'))
+    ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+    return ann
+
 game = T3Game()
-BATCH_SIZE = 256
+BATCH_SIZE = 64
 N_STEP_RETURN = 3
-GAMMA = 0.8
+GAMMA = 0.9
 MEM_CAP = 1000
 
-#opt: set custom ANN model
-ann = Sequential()
-ann.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu',
-              input_dim = game.stateCnt))
-ann.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu'))
-ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'linear'))
-ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
-
-ann2 = Sequential()
-ann2.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu',
-              input_dim = game.stateCnt))
-ann2.add(Dense(units = 36, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'relu'))
-ann2.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-              activation = 'linear'))
-ann2.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+ann = getModel()
+ann2 = getModel()
 
 eq1 = MathEq({"min":0.10, "max":1, "lambda":0.001})
 eq2 = MathEq({"min":0, "max":0.05, "lambda":0})
 
-p1 = QPlayer(1, game, model=ann, tModel=ann2, eEq=eq1, mem_cap=MEM_CAP, batch_size=BATCH_SIZE, gamma=GAMMA, n_step=N_STEP_RETURN)
+p1 = QPlayer(1, game, model=ann, tModel=ann2, eEq=eq1, mem_cap=MEM_CAP, 
+             batch_size=BATCH_SIZE, gamma=GAMMA, n_step=N_STEP_RETURN)
 p2 = MinimaxT3Player(2, game, eEq=eq2)
-env = Environment(game, p1, p2)
+env = Environment(game, p1, p2, evaluate:True, evalPer:200)
 env.run()
