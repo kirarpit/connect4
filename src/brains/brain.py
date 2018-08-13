@@ -26,8 +26,8 @@ def softmax_cross_entropy_with_logits(y_true, y_pred):
 class Brain:
     def __init__(self, name, game, **kwargs):
         self.name = name
-        self.filename = str(name) + '.h5'
         self.stateCnt, self.actionCnt = game.getStateActionCnt()
+        self.filename = str(name) + '.h5'
         
         self.conv = True if type(self.stateCnt) is tuple else False
         
@@ -43,10 +43,7 @@ class Brain:
         self.gamma_n = self.gamma ** self.n_step
         self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else 256
         
-        if "model" in kwargs and kwargs['model'] is not None:
-            self.model = kwargs['model']
-        else:
-            self.model = self._build_model()
+        self.model = kwargs['model'] if "model" in kwargs else self._build_model()
 
     def conv_layer(self, x, filters, kernel_size):
         x = Conv2D(filters = filters, kernel_size = kernel_size, data_format="channels_first",
@@ -69,17 +66,17 @@ class Brain:
     def value_head(self, x):
         x = self.conv_layer(x, 1, (1,1))
         x = Flatten()(x)
-        x = Dense(	self.actionCnt, use_bias=False, activation='linear',
+        x = Dense(self.actionCnt, use_bias=False, activation='linear',
                   kernel_regularizer=regularizers.l2(self.reg_const))(x)
         x = LeakyReLU()(x)
-        x = Dense(	1, use_bias=False, activation='tanh',
+        x = Dense(1, use_bias=False, activation='tanh',
                   kernel_regularizer=regularizers.l2(self.reg_const), name = 'value_head')(x)
         return x
     
     def policy_head(self, x):
         x = self.conv_layer(x, 2, (1,1))
         x = Flatten()(x)
-        x = Dense(	self.actionCnt, use_bias=False, activation='softmax',
+        x = Dense(self.actionCnt, use_bias=False, activation='softmax',
                   kernel_regularizer=regularizers.l2(self.reg_const), name = 'policy_head')(x)
         return x
     
@@ -89,9 +86,9 @@ class Brain:
     def predict_p(self, s):
         result = self.predict(s)
         if len(result) > 1:
-            return result[0][0]
-        else:
             return result[0]
+        else:
+            return result
 
     def get_weights(self):
         return self.model.get_weights()
@@ -100,36 +97,34 @@ class Brain:
         self.model.set_weights(weights)
     
     def load_weights(self, filename=None):
-        if filename is not None:
-            filename = str(filename) + '.h5'
-        else:
-            filename = self.filename
+        filename = self.getFileName(filename)
 
         if os.path.exists(filename):
             print (filename + " weights loaded")
             self.model.load_weights(filename)
         else:
-            print("No file found; Couldn't load weights")
+            print("Error: file " + filename + " not found")
 
     def save(self, filename=None):
+        filename = self.getFileName(filename)
+        self.model.save(filename)
+        
+    def getFileName(self, filename):
         if filename is not None:
             filename = str(filename) + '.h5'
         else:
             filename = self.filename
-            
-        self.model.save(filename)
-        
-    @staticmethod
-    def load_model(filename=None):
-        if filename is not None:
-            filename = str(filename) + '.h5'
 
-            if os.path.exists(filename):
-                print (filename + " model loaded")
-                model = load_model(filename, custom_objects={'softmax_cross_entropy_with_logits': softmax_cross_entropy_with_logits})
-            else:
-                print("Error: file " + filename + " not found")
-                
-            return model
+        return filename
+
+    @staticmethod
+    def load_model(filename):
+        filename = str(filename) + '.h5'
+
+        if os.path.exists(filename):
+            model = load_model(filename, custom_objects={'softmax_cross_entropy_with_logits': softmax_cross_entropy_with_logits})
+            print(filename + " model loaded")
         else:
-            print("provide filename")
+            print("Error: file " + filename + " not found")
+            
+        return model

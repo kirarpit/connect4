@@ -22,8 +22,7 @@ class ZeroBrain(Brain):
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
         
-        if self.hidden_layers is None:
-            self.hidden_layers = HIDDEN_CNN_LAYERS
+        if self.hidden_layers is None: self.hidden_layers = HIDDEN_CNN_LAYERS
             
     def _build_model(self):
         if self.conv:

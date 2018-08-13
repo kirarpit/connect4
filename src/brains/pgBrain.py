@@ -14,18 +14,15 @@ from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense
 
-MIN_BATCH = 256
-LEARNING_RATE = 5e-3
-LOSS_V = .5			# v loss coefficient
-LOSS_ENTROPY = .01 	# entropy coefficient
+LOSS_V = .5 # v loss coefficient
+LOSS_ENTROPY = .01 # entropy coefficient
 
 class PGBrain(Brain):
-    train_queue = [ [], [], [], [], [] ]	# s, a, r, s', s' terminal mask
+    train_queue = [ [], [], [], [], [] ] # s, a, r, s', s' terminal mask
     lock_queue = threading.Lock()
     
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
-        self.lr = kwargs['lr'] if "lr" in kwargs else LEARNING_RATE
 
         self.session = tf.Session()
         K.set_session(self.session)
@@ -69,25 +66,25 @@ class PGBrain(Brain):
         log_prob = tf.log( tf.reduce_sum(p * a_t, axis=1, keepdims=True) + 1e-10)
         advantage = q_t - v
         
-        loss_policy = - log_prob * tf.stop_gradient(advantage)									# maximize policy
-        loss_value  = LOSS_V * tf.square(advantage)												# minimize value error
-        entropy = LOSS_ENTROPY * tf.reduce_sum(p * tf.log(p + 1e-10), axis=1, keepdims=True)	# maximize entropy (regularization)
+        loss_policy = - log_prob * tf.stop_gradient(advantage) # maximize policy
+        loss_value  = LOSS_V * tf.square(advantage) # minimize value error
+        entropy = LOSS_ENTROPY * tf.reduce_sum(p * tf.log(p + 1e-10), axis=1, keepdims=True) # maximize entropy (regularization)
         
         loss_total = tf.reduce_mean(loss_policy + loss_value + entropy)
         
-        optimizer = tf.train.RMSPropOptimizer(self.lr, decay=.99)
+        optimizer = tf.train.RMSPropOptimizer(self.learning_rate, decay=.99)
         minimize = optimizer.minimize(loss_total)
         
         return s_t, a_t, q_t, minimize
 
     def optimize(self):
         if len(self.train_queue[0]) < self.min_batch:
-            time.sleep(0)	# yield
+            time.sleep(0) # yield
             return
 
         with self.lock_queue:
-            if len(self.train_queue[0]) < self.min_batch:	# more thread could have passed without lock
-                return 									# we can't yield inside lock
+            if len(self.train_queue[0]) < self.min_batch:
+                return
 
             s, a, r, s_, s_mask = self.train_queue
             self.train_queue = [ [], [], [], [], [] ]
@@ -101,7 +98,7 @@ class PGBrain(Brain):
         if len(s) > 5*self.min_batch: print("Optimizer alert! Minimizing batch of %d" % len(s))
         
         v = self.predict_v(s_)
-        q = r + self.gamma_n * v * s_mask	# set v to 0 where s_ is terminal state
+        q = r + self.gamma_n * v * s_mask # set v to 0 where s_ is terminal state
         
         s_t, a_t, q_t, minimize = self.graph
         
