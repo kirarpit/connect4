@@ -5,68 +5,32 @@ Created on Thu Jun 28 17:52:18 2018
 
 @author: Arpit
 """
-from brains.qBrain import QBrain
 import numpy as np
+from brains.qBrain import QBrain
 from memory.pMemory import PMemory
-from mathEq import MathEq
 from players.player import Player
 
-#Exploration Rate
-MIN_EPSILON = 0.05
-MAX_EPSILON = 1
-E_LAMBDA = 0.001
-
-#Learning Rate
-MIN_ALPHA = 0.1
-MAX_ALPHA = 0.5
-A_LAMBDA = 0.001
-
-MEMORY_CAPACITY = 20000
 UPDATE_TARGET_FREQUENCY = 4000
-PLOT_INTERVAL = UPDATE_TARGET_FREQUENCY/5
-BATCH_SIZE = 64
 
 class QPlayer(Player):
     
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
                 
-        self.nullState = np.zeros(self.stateCnt)
         self.verbosity = 0
-        
+        self.nullState = np.zeros(self.stateCnt)
         self.targetNet = kwargs['targetNet'] if 'targetNet' in kwargs else True
-        self.batch_size = kwargs['batch_size'] if 'batch_size' in kwargs else BATCH_SIZE
         
-        self.mem_cap = kwargs['mem_cap'] if 'mem_cap' in kwargs else MEMORY_CAPACITY
-
-        self.memory = PMemory(self.mem_cap) if 'memory' not in kwargs else kwargs['memory']
-        self.goodMemory = PMemory(self.mem_cap) if 'goodMemory' not in kwargs else kwargs['goodMemory']
-        
-        self.brain = kwargs['brain'] if 'brain' in kwargs else None
-        self.tBrain = kwargs['tBrain'] if 'tBrain' in kwargs else None
+        self.memory = PMemory(self.mem_size) if 'memory' not in kwargs else kwargs['memory']
+        self.goodMemory = PMemory(self.mem_size) if 'goodMemory' not in kwargs else kwargs['goodMemory']
         
         if self.brain is None:
-            model = kwargs['model'] if "model" in kwargs else None
-            self.brain = QBrain(name, game, model=model)
-            
+            self.brain = QBrain(name, game)
             if self.targetNet:
-                tModel = kwargs['tModel'] if model is not None else None
-                self.tBrain = QBrain(str(name) + "_target", game, model=tModel)
+                self.tBrain = QBrain(str(name) + "_target", game)
         
         if self.load_weights: self.brain.load_weights()
-        
-        if self.eEq is None:
-            self.eEq = MathEq({"min":MIN_EPSILON, "max":MAX_EPSILON, "lambda":E_LAMBDA})
-
-        if self.aEq is None:
-            self.aEq = MathEq({"min":MIN_ALPHA, "max":MAX_ALPHA, "lambda":A_LAMBDA})
-
-        self.epsilon = self.eEq.getValue(0)
-        self.alpha = self.aEq.getValue(0)
-
-        self.initLog()
-        if self.targetNet:
-            self.updateTargetBrain()
+        if self.targetNet: self.updateTargetBrain()
             
     def act(self, game):
         state = game.getCurrentState()
@@ -78,10 +42,6 @@ class QPlayer(Player):
             actions = self.brain.predict(np.array([state]))[0]
             fActions = self.filterIllMoves(np.copy(actions), illActions)
             action = np.argmax(fActions)
-            
-            if self.debug:
-                self.logs['preds' + str(self.name)] = np.vstack([self.logs['preds' + str(self.name)], actions])
-                self.logs['moves' + str(self.name)].append(action)
                 
         return action
 
@@ -112,8 +72,6 @@ class QPlayer(Player):
             self.addToReplayMemory(sample)
             self.R = self.R - self.sarsaMem[0][2]
             self.sarsaMem.pop(0)
-                
-        self.verbosity = 2 if gameCnt % PLOT_INTERVAL == 0 and not game.isOver() else 0
         
     def train(self, game):
         batch = self.goodMemory.sample(int(self.batch_size/2))
@@ -134,11 +92,8 @@ class QPlayer(Player):
         self.goodMemory.releaseLock()
         
         if len(batch):
-            self.brain.train(x, y, self.batch_size, self.verbosity)
-
-            if self.debug:
-                self.logs['x' + str(self.name)] = x
-                self.logs['y' + str(self.name)] = y
+            verbosity = 2 if gameCnt % 100 == 0 and not game.isOver() else 0
+            self.brain.train(x, y, self.batch_size, verbosity)
         
     def addToReplayMemory(self, sample):
         _, _, errors = self.getTargets([(0, sample)])
@@ -156,17 +111,6 @@ class QPlayer(Player):
         if self.targetNet:
             tp_ = self.tBrain.predict(states_)
         
-        if self.debug:
-            self.logs['cnt'] += 1
-            if self.logs['cnt'] == 10:
-                self.logs['batch'] = batch
-                self.logs['states'] = states
-                self.logs['states_'] = states_
-                self.logs['p'] = np.copy(p)
-                self.logs['p_'] = np.copy(p_)
-                if self.targetNet:
-                    self.logs['tp_'] = np.copy(tp_)
-            
         x = None
         if type(self.stateCnt) is tuple:
             x = np.zeros((batchLen, *self.stateCnt[0:len(self.stateCnt)]))
@@ -194,17 +138,7 @@ class QPlayer(Player):
             y[i] = t
             errors[i] = abs(oldVal - t[a])
         
-        if self.debug and self.logs['cnt'] == 10:
-            self.logs['p_corrected'] = y
-
         return (x, y, errors)
             
     def updateTargetBrain(self):
-        if self.debug: return
         self.tBrain.set_weights(self.brain.get_weights())
-        
-    def initLog(self):
-        self.logs = {}
-        self.logs['preds' + str(self.name)] = np.empty([0, self.actionCnt])
-        self.logs['moves' + str(self.name)] = []
-        self.logs['cnt'] = 0

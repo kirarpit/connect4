@@ -26,8 +26,7 @@ class ZeroPlayer(Player):
         self.miniBatchSize = kwargs['miniBatchSize'] if "miniBatchSize" in kwargs else 2048
         self.gameMem = []
         
-        model = kwargs['model'] if "model" in kwargs else None
-        self.brain = kwargs['brain'] if "brain" in kwargs else ZeroBrain(name, game, model=model)
+        self.brain = kwargs['brain'] if "brain" in kwargs else ZeroBrain(name, game)
         if self.load_weights: self.brain.load_weights()
 
     def act(self, game):

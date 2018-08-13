@@ -15,16 +15,8 @@ class PGPlayer(Player):
         super().__init__(name, game, **kwargs)
         
         self.sampling = kwargs['sampling'] if "sampling" in kwargs else True
-        
-        if 'brain' in kwargs:
-            self.brain = kwargs['brain']
-        else:
-            print("Error: All policy gradient workers requrie a master brain")
+        if self.brain is None: print("Error: All policy gradient workers requrie a master brain")
             
-        self.initLog()
-        if self.eEq is None:
-            self.eEq = MathEq({"min":0.05, "max":1, "lambda":0.001})
-        
     def act(self, game):
         state = game.getCurrentState()
         illActions = game.getIllMoves()
@@ -39,16 +31,12 @@ class PGPlayer(Player):
             else:
                 action = np.argmax(fActions)
             
-            if self.debug:
-                self.logs['preds' + str(self.name)] = np.vstack([self.logs['preds' + str(self.name)], actions])
-                self.logs['moves' + str(self.name)].append(action)
-                
         return action
 
     def observe(self, sample, game): # where sample is (s, a, r, s_)
         super().observe(game)
         
-        a_cats = np.zeros(self.actionCnt)	# turn action into one-hot representation
+        a_cats = np.zeros(self.actionCnt) # turn action into one-hot representation
         a_cats[sample[1]] = 1
         
         self.sarsaMem.append((sample[0], a_cats, sample[2], sample[3]))
@@ -76,15 +64,9 @@ class PGPlayer(Player):
     def filterIllMoves(self, moves, illMoves):
         for index, move in enumerate(moves):
             if index in illMoves:
-                moves[index] = 0 #since this time it's probabilities
+                moves[index] = 0 # since this time it's probabilities
             else:
                 moves[index] += 1e-5 # in case all legal moves are zero
         
-        moves /= moves.sum() #normalize
+        moves /= moves.sum() # normalize
         return moves
-    
-    def initLog(self):
-        self.logs = {}
-        self.logs['preds' + str(self.name)] = np.empty([0, self.actionCnt])
-        self.logs['moves' + str(self.name)] = []
-        self.logs['cnt'] = 0
