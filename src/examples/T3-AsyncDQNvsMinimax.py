@@ -10,61 +10,32 @@ from games.t3Game import T3Game
 from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player
 from players.qPlayer import QPlayer
-from keras.models import Sequential
-from keras.layers import Convolution2D, Flatten
-from keras.layers import Dense
-from mathEq import MathEq
+from brains.qBrain import QBrain
 from envThread import EnvThread
 from memory.pMemory import PMemory
-from brains.qBrain import QBrain
 
-GAMMA = 0.90
-N_STEP_RETURN = 3
+isConv = True
+layers = [
+	{'filters':64, 'kernel_size': (4,4)}
+	 , {'filters':64, 'kernel_size': (4,4)}
+	 , {'filters':64, 'kernel_size': (4,4)}
+	 , {'filters':64, 'kernel_size': (4,4)}
+	]
 
-load_weights = False
-memory = PMemory(1000)
-goodMemory = PMemory(1000)
-isConv = False
+game = T3Game(3, isConv=isConv)
+brain = QBrain('t3AsyncDQN', game, layers=layers, load_weights=False)
 
-game = T3Game(3, name="dummy", isConv=isConv)
-ann = Sequential()
-if isConv:
-    ann.add(Convolution2D(16, (2, 2), padding='valid', strides=(1, 1), 
-            activation='relu', input_shape=game.stateCnt, data_format="channels_first"))
-    ann.add(Flatten())
-else:
-    ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-                  activation = 'relu', input_dim = game.stateCnt))
-    
-ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'relu'))
-ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform', activation = 'linear'))
-ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
-
-brain = QBrain('t3AsyncDQN', game, model=ann, load_weights=load_weights)
-
-epsilons = {}
-epsilons[1] = {"min":0.05, "max":0.05, "lambda":0}
-epsilons[2] = {"min":0.05, "max":0.25, "lambda":0}
-epsilons[3] = {"min":0.05, "max":0.35, "lambda":0}
-epsilons[4] = {"min":0.05, "max":0.45, "lambda":0}
-
-eq2 = MathEq({"min":0, "max":0.05, "lambda":0})
-env_config = {"ePlotFlag":False, "evaluate":True, "evalPer":200}
+player_config = {"memory":PMemory(20000), "goodMemory":PMemory(20000), "targetNet":False,
+                "batch_size":64, "gamma":0.99, "n_step":13}
+epsilons = {0.05, 0.15, 0.25, 0.40}
 
 i = 1
 threads = []
 while i <= 4:
-    name = "asyncDQNT3-1" + str(i)
-    game = T3Game(3, name=name, isConv=isConv)
-    p1 = QPlayer(name, game, brain=brain, eEq=MathEq(epsilons[i]), memory=memory, 
-                 goodMemory=goodMemory, targetNet=False, gamma=GAMMA, n_step=N_STEP_RETURN)
-    p2 = MinimaxT3Player(2, game, eEq=eq2)
-
-    if  False and i == 1:
-        env = Environment(game, p1, p2, **env_config)
-    else:
-        env = Environment(game, p1, p2)
-        
+    game = T3Game(3, name=i, isConv=isConv)
+    p1 = QPlayer(name, game, brain=brain, epsilon=epsilons[i], **player_config)
+    p2 = MinimaxT3Player(2, game, epsilon=0.05)
+    env = Environment(game, p1, p2)
     threads.append(EnvThread(env))
     i += 1
 

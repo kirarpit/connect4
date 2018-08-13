@@ -17,6 +17,7 @@ from brains.qBrain import QBrain
 
 ROWS = 6
 COLUMNS = 7
+isConv = True
 layers = [
 	{'filters':64, 'kernel_size': (4,4)}
 	 , {'filters':64, 'kernel_size': (4,4)}
@@ -24,8 +25,8 @@ layers = [
 	 , {'filters':64, 'kernel_size': (4,4)}
 	]
 
-game = C4Game(ROWS, COLUMNS)
-brain = QBrain('c4AsyncDQN', game, layers = layers, load_weights=False)
+game = C4Game(ROWS, COLUMNS, isConv=isConv)
+brain = QBrain('c4AsyncDQN', game, layers=layers, load_weights=False)
 
 player_config = {"memory":PMemory(20000), "goodMemory":PMemory(20000), "targetNet":False,
                 "batch_size":64, "gamma":0.99, "n_step":13}
@@ -34,7 +35,7 @@ epsilons = {0.05, 0.15, 0.25, 0.40}
 i = 1
 threads = []
 while i <= 4:
-    game = C4Game(ROWS, COLUMNS, name=i)
+    game = C4Game(ROWS, COLUMNS, name=i, isConv=isConv)
     p1 = QPlayer(name, game, brain=brain, epsilon=epsilons[i], **player_config)
     p2 = MinimaxC4Player(2, game, epsilon=0.05, solver=C4Solver)
     env = Environment(game, p1, p2)

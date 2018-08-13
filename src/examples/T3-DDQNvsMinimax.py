@@ -10,36 +10,22 @@ from games.t3Game import T3Game
 from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player
 from players.qPlayer import QPlayer
-from keras.models import Sequential
-from keras.layers import Dense, Convolution2D, MaxPooling2D, Flatten
-from mathEq import MathEq
+from brains.qBrain import QBrain
 
-def getModel():
-    ann = Sequential()
-    ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-                  activation = 'relu',
-                  input_dim = game.stateCnt))
-    ann.add(Dense(units = 24, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-                  activation = 'relu'))
-    ann.add(Dense(units = game.actionCnt, kernel_initializer='random_uniform', bias_initializer='random_uniform',
-                  activation = 'linear'))
-    ann.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
-    return ann
+isConv = True
+layers = [
+        {'filters':16, 'kernel_size': (2,2), 'size':24}
+        , {'filters':16, 'kernel_size': (2,2), 'size':24}
+	]
 
-game = T3Game()
-BATCH_SIZE = 64
-N_STEP_RETURN = 3
-GAMMA = 0.9
-MEM_CAP = 1000
+game = T3Game(3, isConv=isConv)
+brain = QBrain('t3AsyncDQN', game, layers=layers, load_weights=False)
+tBrain = QBrain('t3AsyncDQN', game, layers=layers)
 
-ann = getModel()
-ann2 = getModel()
+player_config = {"mem_size":1000, "targetNet":False, "brain":brain, "epsilon":0.05,
+                "tBrain":tBrain, "batch_size":64, "gamma":0.99, "n_step":13}
 
-eq1 = MathEq({"min":0.10, "max":1, "lambda":0.001})
-eq2 = MathEq({"min":0, "max":0.05, "lambda":0})
-
-p1 = QPlayer(1, game, model=ann, tModel=ann2, eEq=eq1, mem_cap=MEM_CAP, 
-             batch_size=BATCH_SIZE, gamma=GAMMA, n_step=N_STEP_RETURN)
-p2 = MinimaxT3Player(2, game, eEq=eq2)
+p1 = QPlayer(1, game, **player_config)
+p2 = MinimaxT3Player(2, game, epsilon=0.05)
 env = Environment(game, p1, p2, evaluate:True, evalPer:200)
 env.run()
