@@ -31,7 +31,7 @@ class Brain:
         
         self.conv = True if type(self.stateCnt) is tuple else False
         
-        self.hidden_layers = kwargs['hidden_layers'] if "hidden_layers" in kwargs else None
+        self.layers = kwargs['layers'] if "layers" in kwargs else None
         self.batch_size = kwargs['batch_size'] if "batch_size" in kwargs else 64
         self.epochs = kwargs['epochs'] if "epochs" in kwargs else 1
         self.reg_const = kwargs['reg_const'] if "reg_const" in kwargs else 1e-4

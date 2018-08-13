@@ -22,16 +22,16 @@ class ZeroBrain(Brain):
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
         
-        if self.hidden_layers is None: self.hidden_layers = HIDDEN_CNN_LAYERS
+        if self.layers is None: self.layers = HIDDEN_CNN_LAYERS
             
     def _build_model(self):
         if self.conv:
             main_input = Input(shape = self.stateCnt, name = 'main_input')
-            x = self.conv_layer(main_input, self.hidden_layers[0]['filters'], 
-                                self.hidden_layers[0]['kernel_size'])
+            x = self.conv_layer(main_input, self.layers[0]['filters'], 
+                                self.layers[0]['kernel_size'])
             
-            if len(self.hidden_layers) > 1:
-                for h in self.hidden_layers[1:]:
+            if len(self.layers) > 1:
+                for h in self.layers[1:]:
                     x = self.residual_layer(x, h['filters'], h['kernel_size'])
                     
             out_value = self.value_head(x)

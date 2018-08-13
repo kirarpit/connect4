@@ -15,7 +15,7 @@ from keras.utils import plot_model
 from collections import deque
 
 game = C4Game(6, 7, isConv=True)
-hidden_layers = [
+layers = [
 	{'filters':64, 'kernel_size': (4,4)}
 	 , {'filters':64, 'kernel_size': (4,4)}
 	 , {'filters':64, 'kernel_size': (4,4)}
@@ -25,7 +25,7 @@ hidden_layers = [
 player_config = {"tree":DictTree(), "longTermMem":deque(maxlen=20000), "load_weights":False, 
                  "epsilon":0.25, "dirAlpha":0.3, "simCnt":50, "iterPer":20, "turnsToTau0":8}
 brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":10,
-                "hidden_layers":hidden_layers}
+                "layers":layers}
 env_config = {"switchFTP":False, "evaluate":True, "evalPer":100}
 
 brain = ZeroBrain("1", game, **brain_config)

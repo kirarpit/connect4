@@ -17,7 +17,7 @@ from brains.qBrain import QBrain
 
 ROWS = 6
 COLUMNS = 7
-hidden_layers = [
+layers = [
 	{'filters':64, 'kernel_size': (4,4)}
 	 , {'filters':64, 'kernel_size': (4,4)}
 	 , {'filters':64, 'kernel_size': (4,4)}
@@ -25,7 +25,7 @@ hidden_layers = [
 	]
 
 game = C4Game(ROWS, COLUMNS)
-brain = QBrain('c4AsyncDQN', game, hidden_layers = hidden_layers, load_weights=False)
+brain = QBrain('c4AsyncDQN', game, layers = layers, load_weights=False)
 
 player_config = {"memory":PMemory(20000), "goodMemory":PMemory(20000), "targetNet":False,
                 "batch_size":64, "gamma":0.99, "n_step":13}
