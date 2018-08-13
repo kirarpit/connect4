@@ -21,11 +21,11 @@ layers = [
 	]
 
 player_config = {"tree":DictTree(), "longTermMem":deque(maxlen=5000), "load_weights":False, 
-                 "epsilon":0.20, "dirAlpha":0.3, "simCnt":40, "iterPer":40,
+                 "epsilon":0.20, "dirAlpha":0.3, "simCnt":40, "iterEvery":40,
                  "turnsToTau0":4}
 brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":5,
                 "layers":layers}
-env_config = {"switchFTP":False, "evaluate":True, "evalPer":200}
+env_config = {"switchFTP":False, "evaluate":True, "evalEvery":200}
 
 brain = ZeroBrain("1", game, layers = layers, **brain_config)
 plot_model(brain.model, show_shapes=True, to_file='/Users/Arpit/Desktop/model.png')

@@ -15,7 +15,8 @@ import numpy as np
 class ZeroBrain(Brain):
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
-    
+        if "load_weights" in kwargs and kwargs['load_weights']: self.load_weights()
+
     def _build_model(self):
         if self.conv:
             main_input, x = self.get_conv_layers()

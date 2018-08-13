@@ -42,7 +42,7 @@ class Environment():
             self.oldModel = str(self.newModel) + "_old"
             if os.path.exists(self.oldModel + ".h5"): os.remove(self.oldModel + ".h5")
             self.evaluator = Evaluator(self.game, self.newModel, self.oldModel)
-            self.evalPer = kwargs['evalPer'] if "evalPer" in kwargs else 100
+            self.evalEvery = kwargs['evalEvery'] if "evalEvery" in kwargs else 100
 
     def run(self):
         while True:
@@ -55,7 +55,7 @@ class Environment():
                 with self.lock:
                     if self.game.gameCnt % 1000 == 0: self.p1.brain.save()
 
-            if self.evaluate and self.game.gameCnt % self.evalPer == 0:
+            if self.evaluate and self.game.gameCnt % self.evalEvery == 0:
                 if os.path.exists(self.oldModel + ".h5"):
                     self.p1.brain.save()
                     result = self.evaluator.evaluate()

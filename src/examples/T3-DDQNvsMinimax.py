@@ -27,5 +27,5 @@ player_config = {"mem_size":1000, "targetNet":False, "brain":brain, "epsilon":0.
 
 p1 = QPlayer(1, game, **player_config)
 p2 = MinimaxT3Player(2, game, epsilon=0.05)
-env = Environment(game, p1, p2, evaluate:True, evalPer:200)
+env = Environment(game, p1, p2, evaluate:True, evalEvery:200)
 env.run()

@@ -17,7 +17,7 @@ class ZeroPlayer(Player):
         self.tree = kwargs['tree']
         self.longTermMem = kwargs['longTermMem']
         self.simCnt = kwargs["simCnt"] if "simCnt" in kwargs else 100
-        self.iterPer = kwargs['iterPer'] if "iterPer" in kwargs else 100
+        self.iterEvery = kwargs['iterEvery'] if "iterEvery" in kwargs else 100
         self.tau = kwargs['tau'] if "tau" in kwargs else 1
         self.turnsToTau0 = kwargs['turnsToTau0'] if "turnsToTau0" in kwargs else 4
         self.cpuct = kwargs['cpuct'] if "cpuct" in kwargs else 1
@@ -62,7 +62,7 @@ class ZeroPlayer(Player):
             self.longTermMem += self.gameMem
             self.gameMem = []
 
-            if game.gameCnt % self.iterPer == 0:
+            if game.gameCnt % self.iterEvery == 0:
                 minibatch = random.sample(self.longTermMem, min(self.miniBatchSize, len(self.longTermMem)))
                 self.brain.train(minibatch)
     
