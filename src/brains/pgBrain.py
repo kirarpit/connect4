@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.models import Model
-from keras.layers import Input, Dense
+from keras.layers import Input, Flatten, LeakyReLU
 
 LOSS_V = .5 # v loss coefficient
 LOSS_ENTROPY = .01 # entropy coefficient
@@ -37,22 +37,30 @@ class PGBrain(Brain):
         self.default_graph.finalize()
 
     def _build_model(self):
-        l_input = Input( batch_shape=(None, self.stateCnt) )
-        l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-                        activation='relu')(l_input)
-        l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-                        activation='relu')(l_dense)
-        
-        out_actions = Dense(self.actionCnt, activation='softmax')(l_dense)
-        out_value   = Dense(1, activation='linear')(l_dense)
-        
-        model = Model(inputs=[l_input], outputs=[out_actions, out_value])
-        model._make_predict_function()	# have to initialize before threading
+        if self.conv:
+            main_input, x = self.get_conv_layers()
+            out_value = self.conv_layer(x, 1, (1,1))
+            out_value = Flatten()(out_value)
+            out_value = self.dense_layer(out_value, 1)
+            out_actions = self.policy_head(x)
+        else:
+            main_input = Input(batch_shape=(None, self.stateCnt))
+            
+            x = main_input
+            if len(self.layers) > 0:
+                for h in self.layers:
+                    x = self.dense_layer(x, h['size'])
+                    x = LeakyReLU()(x)
+            
+            out_value = self.dense_layer(x, 1)
+            out_actions = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head')
+
+        model = Model(inputs=[main_input], outputs=[out_actions, out_value])
+        model._make_predict_function() # have to initialize before threading
         
         return model
     
     def _build_graph(self):
-        
         if type(self.stateCnt) is tuple:
             s_t = tf.placeholder(tf.float32, shape=(None, *self.stateCnt[0:len(self.stateCnt)]))
         else:

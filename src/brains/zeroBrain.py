@@ -6,54 +6,48 @@ Created on Thu Aug  9 12:23:29 2018
 @author: Arpit
 """
 
-from brains.brain import Brain, softmax_cross_entropy_with_logits
+from brains.brain import Brain
 from keras.models import Model
-from keras.layers import Input, Dense
-from keras.optimizers import SGD, Adam
+from keras.layers import Input, Flatten, LeakyReLU
+from keras.optimizers import Adam
 import numpy as np
-
-HIDDEN_CNN_LAYERS = [
-	{'filters':25, 'kernel_size': (4,4)}
-	 , {'filters':25, 'kernel_size': (4,4)}
-	 , {'filters':25, 'kernel_size': (4,4)}
-	]
 
 class ZeroBrain(Brain):
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
-        
-        if self.layers is None: self.layers = HIDDEN_CNN_LAYERS
-            
+    
     def _build_model(self):
         if self.conv:
-            main_input = Input(shape = self.stateCnt, name = 'main_input')
-            x = self.conv_layer(main_input, self.layers[0]['filters'], 
-                                self.layers[0]['kernel_size'])
-            
-            if len(self.layers) > 1:
-                for h in self.layers[1:]:
-                    x = self.residual_layer(x, h['filters'], h['kernel_size'])
-                    
+            main_input, x = self.get_conv_layers()
             out_value = self.value_head(x)
             out_actions = self.policy_head(x)
-
+            
         else:
             main_input = Input( batch_shape=(None, self.stateCnt) )
-            l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-                        activation='relu')(main_input)
-            l_dense = Dense(24, kernel_initializer='random_uniform', bias_initializer='random_uniform', 
-                        activation='relu')(l_dense)
-            out_actions = Dense(self.actionCnt, activation='softmax', name="policy_head")(l_dense)
-            out_value   = Dense(1, activation='tanh', name="value_head")(l_dense)
+            
+            x = main_input
+            if len(self.layers) > 0:
+                for h in self.layers:
+                    x = self.dense_layer(x, h['size'])
+                    x = LeakyReLU()(x)
+
+            out_value = self.dense_layer(x, 1, 'tanh', 'value_head')
+            out_actions = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head')
 
         model = Model(inputs=[main_input], outputs=[out_actions, out_value])
         model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': 'categorical_crossentropy'},
-#        model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': softmax_cross_entropy_with_logits},
-                      optimizer=Adam(self.learning_rate),
-#                      optimizer=SGD(lr=self.learning_rate, momentum = self.momentum),
-                      loss_weights={'value_head': 0.5, 'policy_head': 0.5})
+                      loss_weights={'value_head': 0.5, 'policy_head': 0.5},
+                      optimizer=Adam(self.learning_rate))
 
         return model
+    
+    def value_head(self, x):
+        x = self.conv_layer(x, 1, (1,1))
+        x = Flatten()(x)
+        x = self.dense_layer(x, self.actionCnt)
+        x = LeakyReLU()(x)
+        x = self.dense_layer(x, 1, 'tanh', 'value_head')
+        return x
     
     def predict(self, s):
         P, V = self.model.predict(s)

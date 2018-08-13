@@ -7,9 +7,15 @@ Created on Thu Aug  9 12:30:56 2018
 """
 import os.path
 from keras.models import load_model
-from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add
+from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, Input
 from keras import regularizers
 import tensorflow as tf
+
+LAYERS = [
+	{'filters':25, 'kernel_size': (4,4), 'size':24}
+	 , {'filters':25, 'kernel_size': (4,4), 'size':24}
+	 , {'filters':25, 'kernel_size': (4,4), 'size':24}
+	]
 
 def softmax_cross_entropy_with_logits(y_true, y_pred):
     p = y_pred
@@ -32,6 +38,8 @@ class Brain:
         self.conv = True if type(self.stateCnt) is tuple else False
         
         self.layers = kwargs['layers'] if "layers" in kwargs else None
+        if self.layers is None: self.layers = LAYERS
+
         self.batch_size = kwargs['batch_size'] if "batch_size" in kwargs else 64
         self.epochs = kwargs['epochs'] if "epochs" in kwargs else 1
         self.reg_const = kwargs['reg_const'] if "reg_const" in kwargs else 1e-4
@@ -45,6 +53,17 @@ class Brain:
         
         self.model = kwargs['model'] if "model" in kwargs else self._build_model()
 
+    def get_conv_layers(self):
+        main_input = Input(shape = self.stateCnt, name = 'main_input')
+        x = self.conv_layer(main_input, self.layers[0]['filters'], 
+                            self.layers[0]['kernel_size'])
+        
+        if len(self.layers) > 1:
+            for h in self.layers[1:]:
+                x = self.residual_layer(x, h['filters'], h['kernel_size'])
+                
+        return main_input, x
+        
     def conv_layer(self, x, filters, kernel_size):
         x = Conv2D(filters = filters, kernel_size = kernel_size, data_format="channels_first",
                    padding = 'same', use_bias=False, activation='linear', 
@@ -63,23 +82,17 @@ class Brain:
         x = LeakyReLU()(x)
         return x
     
-    def value_head(self, x):
-        x = self.conv_layer(x, 1, (1,1))
-        x = Flatten()(x)
-        x = Dense(self.actionCnt, use_bias=False, activation='linear',
+    def dense_layer(self, x, size, activation='linear', name='dense'):
+        x = Dense(size, use_bias=False, activation=activation, name=name,
                   kernel_regularizer=regularizers.l2(self.reg_const))(x)
-        x = LeakyReLU()(x)
-        x = Dense(1, use_bias=False, activation='tanh',
-                  kernel_regularizer=regularizers.l2(self.reg_const), name = 'value_head')(x)
         return x
     
     def policy_head(self, x):
         x = self.conv_layer(x, 2, (1,1))
         x = Flatten()(x)
-        x = Dense(self.actionCnt, use_bias=False, activation='softmax',
-                  kernel_regularizer=regularizers.l2(self.reg_const), name = 'policy_head')(x)
+        x = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head')
         return x
-    
+
     def predict(self, s):
         return self.model.predict(s)
     

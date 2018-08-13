@@ -7,9 +7,8 @@ Created on Thu Jun 28 17:53:30 2018
 """
 
 from brains.brain import Brain
-from keras.models import Sequential
-from keras.layers import Dense
-import os.path
+from keras.layers import Input, LeakyReLU
+from keras.models import Model
 import tensorflow as tf
 from keras import backend as K
 
@@ -30,18 +29,23 @@ class QBrain(Brain):
         self.default_graph = tf.get_default_graph()
 
     def _build_model(self):
-        model = Sequential()
-        model.add(Dense(units = int((self.stateCnt + self.actionCnt)/2),
-                      kernel_initializer='random_uniform',
-                      bias_initializer='random_uniform',
-                      activation = 'relu',
-                      input_dim = self.stateCnt))
-        model.add(Dense(units = self.actionCnt,
-                      kernel_initializer='random_uniform',
-                      bias_initializer='random_uniform',
-                      activation = 'linear'))
-        
-        model.compile(optimizer = 'rmsprop', loss = 'logcosh', metrics = ['accuracy'])
+        if self.conv:
+            main_input, x = self.get_conv_layers()
+            out_actions = self.policy_head(x)
+        else:
+            main_input = Input(batch_shape=(None, self.stateCnt))
+            
+            x = main_input
+            if len(self.layers) > 0:
+                for h in self.layers:
+                    x = self.dense_layer(x, h['size'])
+                    x = LeakyReLU()(x)
+            
+            out_actions = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head')
+
+        model = Model(inputs=[main_input], outputs=[out_actions])
+        model.compile(loss='logcosh', optimizer='rmsprop')
+
         return model
     
     def predict(self, s):
