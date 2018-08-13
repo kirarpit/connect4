@@ -13,7 +13,7 @@ from players.pgPlayer import PGPlayer
 from mathEq import MathEq
 from brains.pgBrain import PGBrain
 from optimizer import Optimizer
-from myThread import MyThread
+from envThread import EnvThread
 from keras.layers import Input, Dense
 from keras.layers import Convolution2D, Flatten
 from keras.models import Model
@@ -64,7 +64,7 @@ while i <= 4:
     p2 = MinimaxT3Player(2, game, eEq=eq2)
 
     env = Environment(game, p1, p2, ePlot=False)
-    threads.append(MyThread(env))
+    threads.append(EnvThread(env))
     i += 1
 
 opts = [Optimizer(brain) for i in range(1)]

@@ -7,7 +7,7 @@ Created on Sat Jul 28 20:09:40 2018
 """
 import threading
 
-class MyThread(threading.Thread):
+class EnvThread(threading.Thread):
     cnt = 0
 
     def __init__(self, env):
@@ -16,7 +16,7 @@ class MyThread(threading.Thread):
         self.env.thread = True
         self.stop_signal = False
         self.number = self.cnt
-        MyThread.cnt += 1    
+        EnvThread.cnt += 1    
         
 
     def run(self):

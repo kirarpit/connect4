@@ -14,7 +14,7 @@ from keras.models import Sequential
 from keras.layers import Convolution2D, Flatten
 from keras.layers import Dense
 from mathEq import MathEq
-from myThread import MyThread
+from envThread import EnvThread
 from memory.pMemory import PMemory
 from brains.qBrain import QBrain
 
@@ -65,7 +65,7 @@ while i <= 4:
     else:
         env = Environment(game, p1, p2, ePlotFlag=False)
         
-    threads.append(MyThread(env))
+    threads.append(EnvThread(env))
     i += 1
 
 for t in threads:

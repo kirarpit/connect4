@@ -14,7 +14,7 @@ import games.c4Solver as C4Solver
 from keras.models import Sequential
 from keras.layers import Dense
 from mathEq import MathEq
-from myThread import MyThread
+from envThread import EnvThread
 from memory.pMemory import PMemory
 from brain import Brain
 #from keras import optimizers
@@ -67,7 +67,7 @@ while i <= 4:
     p2 = MinimaxC4Player(2, game, eEq=eq2, solver=C4Solver, rand=randBestMoves)
 
     env = Environment(game, p1, p2, ePlot=False)
-    threads.append(MyThread(env))
+    threads.append(EnvThread(env))
     i += 1
 
 for t in threads:
