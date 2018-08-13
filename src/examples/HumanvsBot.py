@@ -14,12 +14,12 @@ from players.testPlayer import TestPlayer
 from players.hoomanPlayer import HoomanPlayer
 
 scoreAgent = True
-modelName = "1"
-gameName = "T3"
+modelName = "1_old"
+gameName = "C4"
 isConv = True
 
-if gameName == "C4":
-    game = C4Game(6, 7, name="asdf", isConv=isConv)
+if gameName == "T3":
+    game = C4Game(4, 5, name="asdf", isConv=isConv)
 else:
     game = T3Game(3, isConv=isConv)
 
