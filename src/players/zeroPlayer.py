@@ -8,7 +8,6 @@ Created on Wed Aug  8 14:36:06 2018
 from players.player import Player
 from brains.zeroBrain import ZeroBrain
 import numpy as np
-from timer_cm import Timer
 import random
 
 class ZeroPlayer(Player):

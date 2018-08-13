@@ -22,7 +22,7 @@ class TestPlayer(Player):
         if np.random.uniform() < self.epsilon:
             action = self.getRandomMove(illActions)
         else:
-            moves = self.brain.predict(np.array([game.getCurrentState()]))[0][0]
+            moves = self.brain.predict_p(np.array([game.getCurrentState()]))
             moves = self.filterIllMoves(np.copy(moves), illActions)
             action = np.argmax(moves)
         

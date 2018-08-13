@@ -33,5 +33,5 @@ class MinimaxC4Player(Player):
     def observe(self, sample, game):
         super().observe(game)
         
-    def train(self):
+    def train(self, game):
         pass
