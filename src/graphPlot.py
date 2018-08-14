@@ -8,6 +8,7 @@ Created on Sun Jul 15 15:16:06 2018
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
+from settings import charts_folder
 
 class GraphPlot:
     lock = threading.Lock()
@@ -36,7 +37,7 @@ class GraphPlot:
                     plt.plot(self.X, self.Ys[i], label=self.labels[i] if self.labels is not None else i)
                 
                 plt.legend(loc = "best")
-                plt.savefig('/Users/Arpit/Desktop/' + str(self.name) + '.png')
+                plt.savefig(charts_folder + str(self.name) + '.png')
                 plt.close(fig)
                 
         except Exception as e:

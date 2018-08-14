@@ -13,6 +13,7 @@ from memory.dictTree import DictTree
 from brains.zeroBrain import ZeroBrain
 from keras.utils import plot_model
 from collections import deque
+from settings import charts_folder
 
 game = T3Game(3, isConv=True)
 layers = [
@@ -28,7 +29,7 @@ brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs"
 env_config = {"switchFTP":False, "evaluate":True, "evalEvery":200}
 
 brain = ZeroBrain("1", game, layers = layers, **brain_config)
-plot_model(brain.model, show_shapes=True, to_file='/Users/Arpit/Desktop/model.png')
+plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
 
 p1 = ZeroPlayer(1, game, brain=brain, **player_config)
 p2 = ZeroPlayer(2, game, brain=brain, **player_config)

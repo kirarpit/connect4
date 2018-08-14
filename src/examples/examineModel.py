@@ -11,7 +11,7 @@ from environment import Environment
 from players.minimaxT3Player import MinimaxT3Player as M2T3
 from players.minimaxC4Player import MinimaxC4Player as M2C4
 from players.testPlayer import TestPlayer
-from players.hoomanPlayer import HoomanPlayer
+from players.humanPlayer import HumanPlayer
 
 scoreAgent = True
 modelName = "1_old"
@@ -31,7 +31,7 @@ if scoreAgent:
     else:
         p2 = M2T3(1, game, epsilon=0.05)
 else:
-    p2 = HoomanPlayer(2, game)
+    p2 = HumanPlayer(2, game)
 
 env = Environment(game, p1, p2, training=False, observing=False)
 while game.gameCnt < 999:

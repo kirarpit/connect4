@@ -8,7 +8,7 @@ Created on Thu Aug  2 16:15:02 2018
 from players.player import Player
 import time
 
-class HoomanPlayer(Player):
+class HumanPlayer(Player):
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
 
