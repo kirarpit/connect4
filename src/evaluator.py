@@ -26,7 +26,7 @@ class Evaluator:
         else:
             self.t1.brain.load_weights(self.model1)
             self.t2.brain.load_weights(self.model2)
-            
+        
         self.game.save()
         self.game.gameCnt = 0
         for _ in range(500):

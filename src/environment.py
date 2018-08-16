@@ -7,7 +7,6 @@ Created on Fri Jul 27 14:29:37 2018
 """
 from graphPlot import GraphPlot
 import time, os
-from timer_cm import Timer
 from evaluator import Evaluator
 import numpy as np
 import threading
@@ -41,7 +40,6 @@ class Environment():
         if self.evaluate:
             self.newModel = self.p1.brain.name
             self.oldModel = str(self.newModel) + "_old"
-            if os.path.exists(self.oldModel + ".h5"): os.remove(self.oldModel + ".h5")
             self.evaluator = Evaluator(self.game, self.newModel, self.oldModel)
             self.evalEvery = kwargs['evalEvery'] if "evalEvery" in kwargs else 100
 

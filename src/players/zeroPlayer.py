@@ -86,7 +86,7 @@ class ZeroPlayer(Player):
             if game.gameCnt % self.iterEvery == 0:
                 for _ in range(self.sampleCnt):
                     minibatch = random.sample(self.longTermMem, min(self.miniBatchSize, len(self.longTermMem)))
-                    self.brain.addToMem(minibatch)
+                    self.brain.train(minibatch)
     
     def MCTS(self, game):
         s = game.getStateID()
