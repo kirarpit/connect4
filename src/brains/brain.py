@@ -10,6 +10,8 @@ from keras.models import load_model
 from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, LeakyReLU, add, Input
 from keras import regularizers
 import tensorflow as tf
+from settings import charts_folder
+from keras.utils import plot_model
 
 LAYERS = [
 	{'filters':25, 'kernel_size': (4,4), 'size':24}
@@ -33,10 +35,11 @@ class Brain:
     def __init__(self, name, game, **kwargs):
         self.name = name
         self.stateCnt, self.actionCnt = game.getStateActionCnt()
-        self.filename = str(name) + '.h5'
+        self.filename = str(self.name) + '.h5'
         
         self.conv = True if type(self.stateCnt) is tuple else False
         
+        self.plotModel = kwargs['plotModel'] if "plotModel" in kwargs else False
         self.layers = kwargs['layers'] if "layers" in kwargs else None
         if self.layers is None: self.layers = LAYERS
 
@@ -52,6 +55,8 @@ class Brain:
         self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else 256
         
         self.model = kwargs['model'] if "model" in kwargs else self._build_model()
+        plot_model(self.model, show_shapes=True, to_file=charts_folder + 
+                   str(self.name) + '_model.png')
 
     def get_conv_layers(self):
         main_input = Input(shape = self.stateCnt, name = 'main_input')

@@ -9,6 +9,7 @@ import numpy as np
 from brains.qBrain import QBrain
 from memory.pMemory import PMemory
 from players.player import Player
+from mathEq import MathEq
 import logger as lg
 
 UPDATE_TARGET_FREQUENCY = 4000
@@ -32,7 +33,17 @@ class QPlayer(Player):
         
         if self.load_weights: self.brain.load_weights()
         if self.targetNet: self.updateTargetBrain()
-            
+        
+        if self.aEq is None and "alpha" not in kwargs:
+            self.aEq = MathEq({"min":0.1, "max":0.5, "lambda":0.001})
+        if self.aEq is not None:
+            self.alpha = self.aEq.getValue(0)
+
+        if self.eEq is None and "epsilon" not in kwargs:
+            self.eEq = MathEq({"min":0.05, "max":1, "lambda":0.001})
+        if self.eEq is not None:
+            self.epsilon = self.eEq.getValue(0)
+
     def act(self, game):
         state = game.getCurrentState()
         illActions = game.getIllMoves()
