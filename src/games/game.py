@@ -9,6 +9,7 @@ Created on Wed Jul 11 13:42:11 2018
 from abc import ABC, abstractmethod
 import numpy as np
 import copy
+import logger as lg
 
 class Game(ABC):
     WINNER_R = 1
@@ -42,6 +43,7 @@ class Game(ABC):
         self.stateForm = np.zeros(self.stateCnt, dtype=float)
         self.stateForm[True] = 0.01
     
+        lg.main.debug("New Game: %s", self.__dict__)
     @abstractmethod
     def step(self, action):
         if self.isOver():
@@ -120,7 +122,7 @@ class Game(ABC):
         return np.copy(self.stateForm)
     
     def getStateID(self):
-        return tuple(self.getCurrentState().flatten())
+        return hash(tuple(self.gameState.flatten()))
         
     def getStateActionCnt(self):
         return (self.stateCnt, self.actionCnt)
@@ -148,13 +150,16 @@ class Game(ABC):
         return self.movesHistory
     
     def save(self):
-        if 'savedGame' in self.__dict__:
-            del self.__dict__['savedGame']
+        self.deleteSavedGame()
         self.savedGame = copy.deepcopy(self.__dict__)
         
     def load(self):
         self.__dict__.update(copy.deepcopy(self.savedGame))
         
+    def deleteSavedGame(self):
+        if 'savedGame' in self.__dict__:
+            del self.__dict__['savedGame']
+
     def printGame(self):
         print ("Total Games Played: " + str(self.gameCnt))
         print ("Game " + str(self.gameCnt) + ":")

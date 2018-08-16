@@ -11,6 +11,7 @@ from timer_cm import Timer
 from evaluator import Evaluator
 import numpy as np
 import threading
+import logger as lg
 
 class Environment():
     lock = threading.Lock()
@@ -47,6 +48,8 @@ class Environment():
     def run(self):
         while True:
             self.runGame()
+            lg.main.info("Game Finished\n%s", self.game.gameState)
+            lg.main.info("Win Stats: %s", self.winStats)
 
             if self.game.gameCnt % 100 == 0:
                 self.printEnv()
@@ -131,13 +134,13 @@ class Environment():
             winner = 1 if winner == 2 else 2
             
         if winner == 1:
-            winner = 'p1'
+            self.winner = 'p1'
         elif winner == 2:
-            winner = 'p2'
+            self.winner = 'p2'
         else:
-            winner = 'Draw'
+            self.winner = 'Draw'
             
-        self.winStats[1 if self.switchFlag == 0 else 2][winner] += 1
+        self.winStats[1 if self.switchFlag == 0 else 2][self.winner] += 1
         
     def clearStats(self):
         self.winStats = {1:{'p1':0, 'p2':0, 'Draw':0}, 2:{'p1':0, 'p2':0, 'Draw':0}}

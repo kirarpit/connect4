@@ -6,10 +6,11 @@ Created on Sat Jun 23 19:47:06 2018
 @author: Arpit
 """
 from games.game import Game
+import logger as lg
 
 class C4Game(Game):
     
-    DRAW_R = 0.5
+    DRAW_R = 0
 
     def __init__(self, rows=6, columns=7, **kwargs):
         super().__init__(**kwargs)
@@ -18,6 +19,8 @@ class C4Game(Game):
         self.columns = columns
         self.stateCnt = rows * columns if not self.isConv else (2, rows, columns)
         self.actionCnt = columns
+        
+        lg.main.info("Initialized C4game! \n %s", self.__dict__)
 
     def newGame(self):
         super().newGame()

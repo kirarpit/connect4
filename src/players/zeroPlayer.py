@@ -9,6 +9,7 @@ from players.player import Player
 from brains.zeroBrain import ZeroBrain
 import numpy as np
 import random
+import logger as lg
 
 class ZeroPlayer(Player):
     def __init__(self, name, game, **kwargs):
@@ -30,6 +31,8 @@ class ZeroPlayer(Player):
         self.brain = kwargs['brain'] if "brain" in kwargs else ZeroBrain(name, game)
         if self.load_weights: self.brain.load_weights()
 
+        lg.main.info("New Zero player initialised!\n%s", self.__dict__)
+
     def act(self, game):
         s = game.getStateID()
         
@@ -37,36 +40,53 @@ class ZeroPlayer(Player):
         for i in range(self.simCnt):
             self.MCTS(game)
             game.load()
-            
+        
+        lg.main.debug("Game State:\n%s", game.gameState)
+        lg.main.debug("Explored cnt for each action: %s", [self.tree['N'][(s, move)] if move not in game.getIllMoves() and (s, move) in self.tree['N']
+               else 0 for move in range(game.actionCnt)])
+
         pi = [pow(self.tree['N'][(s, move)], 1.0/self.tau)
                if move not in game.getIllMoves() and (s, move) in self.tree['N']
                else 0 for move in range(game.actionCnt)]
         pi = [prob/sum(pi) for prob in pi]
         
-        self.gameMem.append((game.getCurrentState(), pi, None))
+        lg.main.debug("Pie: %s", pi)
         
+        sample = (game.getCurrentState(), pi, None)
+        self.gameMem.append(sample)
+        
+        lg.main.debug("To play %d", game.toPlay)
         if game.turnCnt > self.turnsToTau0:
             action = np.argmax(pi)
+            lg.main.debug("Best action: %d", action)
         else:
             action = np.random.choice(game.actionCnt, p=pi)
+            lg.main.debug("Action sample: %d", action)
 
         return action
     
     def observe(self, sample, game):
         if game.isOver():
             r = sample[2]
+            
+            idx = np.random.randint(len(self.gameMem))
+            lg.main.debug("Game memory len %s", len(self.gameMem))
+            lg.main.debug("Game memory sample before: %s", self.gameMem[idx])
             self.gameMem = [(mem[0], mem[1], r) for mem in self.gameMem]
-    
+            lg.main.debug("Game memory sample after: %s", self.gameMem[idx])
+
     def train(self, game):
         if game.isOver():
+            lg.main.debug("long term memory len before %s", len(self.longTermMem))
             self.tree.flushDicts()
             self.longTermMem += self.gameMem
             self.gameMem = []
+            lg.main.debug("long term memory len after %s", len(self.longTermMem))
 
             if game.gameCnt % self.iterEvery == 0:
                 for _ in range(self.sampleCnt):
                     minibatch = random.sample(self.longTermMem, min(self.miniBatchSize, len(self.longTermMem)))
-                    self.brain.train(minibatch)
+                    self.brain.addToMem(minibatch)
     
     def MCTS(self, game):
         s = game.getStateID()
@@ -85,8 +105,9 @@ class ZeroPlayer(Player):
             
             bestUCB = float("-inf")
             actions = [a for a in range(game.actionCnt) if a not in game.getIllMoves()]
-            for idx, a in enumerate(actions):
-                noisyP = (1-epsilon)*self.tree['P'][s][a] + epsilon*nu[idx]
+            
+            for a in actions:
+                noisyP = (1-epsilon)*self.tree['P'][s][a] + epsilon*nu[a]
                 U = self.cpuct * (noisyP) * np.sqrt(self.tree['N'][s])
                 Q = 0
                 
@@ -113,6 +134,7 @@ class ZeroPlayer(Player):
             self.tree['V'][s] = V
             self.tree['N'][s] = 1
        
+        lg.main.debug("chosen edges: %s", edges)
         for edge in reversed(edges):
             V *= -1
     

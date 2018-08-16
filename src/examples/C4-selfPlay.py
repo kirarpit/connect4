@@ -14,6 +14,7 @@ from brains.zeroBrain import ZeroBrain
 from keras.utils import plot_model
 from collections import deque
 from settings import charts_folder
+from optimizer import Optimizer
 
 game = C4Game(6, 7, isConv=True)
 layers = [
@@ -25,9 +26,9 @@ layers = [
 
 player_config = {"tree":DictTree(), "longTermMem":deque(maxlen=20000), 
                  "epsilon":0.25, "dirAlpha":0.3, "simCnt":50, "iterEvery":20,
-                 "turnsToTau0":8, "miniBatchSize":2048, "sampleCnt":5}
-brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":2,
-                "layers":layers, "load_weights":True}
+                 "turnsToTau0":8, "miniBatchSize":2048, "sampleCnt":10}
+brain_config = {"learning_rate":0.001, "momentum":0.9, "batch_size":32, "epochs":1,
+                "layers":layers, "load_weights":True, "threading":True}
 env_config = {"switchFTP":False, "evaluate":True, "evalEvery":100}
 
 brain = ZeroBrain("1", game, **brain_config)
@@ -36,4 +37,9 @@ plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
 p1 = ZeroPlayer(1, game, brain=brain, **player_config)
 p2 = ZeroPlayer(2, game, brain=brain, **player_config)
 env = Environment(game, p1, p2, **env_config)
+
+opts = [Optimizer(brain) for i in range(2)]
+for o in opts:
+    o.start()
+    
 env.run()

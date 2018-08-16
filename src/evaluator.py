@@ -6,6 +6,7 @@ Created on Sat Aug 11 20:19:38 2018
 @author: Arpit
 """
 from players.testPlayer import TestPlayer
+import logger as lg
 
 class Evaluator:
     def __init__(self, game, model1, model2):
@@ -33,12 +34,13 @@ class Evaluator:
            
         wins = self.env.getTotalWins()
         if wins[0]/(wins[0] + wins[1]) > 0.50:
-            print("The new model is clearly better!")
+            print("The new model is better!")
             result = True
         else:
-            print("The new model is not any better!")
+            print("The new model is not better!")
             result = False
             
         self.env.printEnv()
+        lg.main.info("Evaluator Result: %s", self.env.winStats)
         self.game.load()
         return result

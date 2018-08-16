@@ -18,7 +18,6 @@ class EnvThread(threading.Thread):
         self.number = self.cnt
         EnvThread.cnt += 1    
         
-
     def run(self):
         print("thread " + str(self.number) + " started")
         while not self.stop_signal:

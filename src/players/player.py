@@ -31,7 +31,7 @@ class Player(ABC):
 
         self.brain = kwargs['brain'] if 'brain' in kwargs else None
         self.tBrain = kwargs['tBrain'] if 'tBrain' in kwargs else None
-
+        
     @abstractmethod
     def act(self):
         pass
