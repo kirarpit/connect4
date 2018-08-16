@@ -82,9 +82,12 @@ class Brain:
         x = LeakyReLU()(x)
         return x
     
-    def dense_layer(self, x, size, activation='linear', name='dense'):
+    def dense_layer(self, x, size, activation='linear', name=None, reg=-1):
+        if reg == -1:
+            reg = regularizers.l2(self.reg_const)
+            
         x = Dense(size, use_bias=False, activation=activation, name=name,
-                  kernel_regularizer=regularizers.l2(self.reg_const))(x)
+                  kernel_regularizer=reg)(x)
         return x
     
     def policy_head(self, x):

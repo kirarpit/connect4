@@ -14,6 +14,8 @@ from brains.pgBrain import PGBrain
 from optimizer import Optimizer
 from envThread import EnvThread
 import games.c4Solver as C4Solver
+from settings import charts_folder
+from keras.utils import plot_model
 
 ROWS = 4
 COLUMNS = 5
@@ -28,17 +30,18 @@ layers = [
 game = C4Game(ROWS, COLUMNS, isConv=isConv)
 
 brain_config = {"gamma":gamma, "n_step":n_step, "min_batch":64,
-                "layers":layers, "load_weights":False}
+                "layers":layers, "load_weights":False, "epochs":5}
 brain = PGBrain('c4PG', game, **brain_config)
+plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
 
 player_config = {"batch_size":64, "gamma":gamma, "n_step":n_step}
-epsilons = {0.05, 0.15, 0.25, 0.40}
+epsilons = [0.05, 0.15, 0.25, 0.35]
 
-i = 1
+i = 0
 threads = []
-while i <= 4:
+while i < 4:
     game = C4Game(ROWS, COLUMNS, name=i, isConv=isConv)
-    p1 = PGPlayer(name, game, brain=brain, epsilon=epsilons[i], **player_config)
+    p1 = PGPlayer(i, game, brain=brain, epsilon=epsilons[i], **player_config)
     p2 = MinimaxC4Player(2, game, epsilon=0.05, solver=C4Solver)
     env = Environment(game, p1, p2)
     threads.append(EnvThread(env))

@@ -9,6 +9,7 @@ import numpy as np
 from brains.qBrain import QBrain
 from memory.pMemory import PMemory
 from players.player import Player
+import logger as lg
 
 UPDATE_TARGET_FREQUENCY = 4000
 
@@ -40,9 +41,11 @@ class QPlayer(Player):
             action = self.getRandomMove(illActions)
         else:
             actions = self.brain.predict(np.array([state]))[0]
+            lg.main.debug("predicted actions %s", actions)
             fActions = self.filterIllMoves(np.copy(actions), illActions)
             action = np.argmax(fActions)
                 
+        lg.main.debug("chosen action %d", action)
         return action
 
     def observe(self, sample, game):
@@ -92,7 +95,7 @@ class QPlayer(Player):
         self.goodMemory.releaseLock()
         
         if len(batch):
-            verbosity = 2 if gameCnt % 100 == 0 and not game.isOver() else 0
+            verbosity = 2 if game.gameCnt % 100 == 0 and not game.isOver() else 0
             self.brain.train(x, y, self.batch_size, verbosity)
         
     def addToReplayMemory(self, sample):

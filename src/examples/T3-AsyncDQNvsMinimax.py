@@ -13,27 +13,29 @@ from players.qPlayer import QPlayer
 from brains.qBrain import QBrain
 from envThread import EnvThread
 from memory.pMemory import PMemory
+from settings import charts_folder
+from keras.utils import plot_model
 
 isConv = True
 layers = [
-	{'filters':64, 'kernel_size': (4,4)}
-	 , {'filters':64, 'kernel_size': (4,4)}
-	 , {'filters':64, 'kernel_size': (4,4)}
-	 , {'filters':64, 'kernel_size': (4,4)}
+	{'filters':16, 'kernel_size': (2,2), 'size':24}
+	 , {'filters':16, 'kernel_size': (2,2), 'size':24}
 	]
 
 game = T3Game(3, isConv=isConv)
-brain = QBrain('t3AsyncDQN', game, layers=layers, load_weights=False)
 
-player_config = {"memory":PMemory(20000), "goodMemory":PMemory(20000), "targetNet":False,
-                "batch_size":64, "gamma":0.99, "n_step":13}
-epsilons = {0.05, 0.15, 0.25, 0.40}
+brain = QBrain('1', game, layers=layers, load_weights=False)
+plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
 
-i = 1
+player_config = {"memory":PMemory(1000), "goodMemory":PMemory(1000), "targetNet":False,
+                "batch_size":32, "gamma":0.90, "n_step":3}
+epsilons = [0.05, 0.15, 0.25, 0.35]
+
+i = 0
 threads = []
-while i <= 4:
+while i < 4:
     game = T3Game(3, name=i, isConv=isConv)
-    p1 = QPlayer(name, game, brain=brain, epsilon=epsilons[i], **player_config)
+    p1 = QPlayer(i, game, brain=brain, epsilon=epsilons[i], **player_config)
     p2 = MinimaxT3Player(2, game, epsilon=0.05)
     env = Environment(game, p1, p2)
     threads.append(EnvThread(env))

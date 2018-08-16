@@ -7,7 +7,7 @@ Created on Thu Jun 28 17:53:30 2018
 """
 
 from brains.brain import Brain
-from keras.layers import Input, LeakyReLU
+from keras.layers import Input, LeakyReLU, Flatten
 from keras.models import Model
 import tensorflow as tf
 from keras import backend as K
@@ -31,7 +31,8 @@ class QBrain(Brain):
     def _build_model(self):
         if self.conv:
             main_input, x = self.get_conv_layers()
-            out_actions = self.policy_head(x)
+            x = self.conv_layer(x, 2, (1,1))
+            x = Flatten()(x)
         else:
             main_input = Input(batch_shape=(None, self.stateCnt))
             
@@ -41,8 +42,7 @@ class QBrain(Brain):
                     x = self.dense_layer(x, h['size'])
                     x = LeakyReLU()(x)
             
-            out_actions = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head')
-
+        out_actions = self.dense_layer(x, self.actionCnt)
         model = Model(inputs=[main_input], outputs=[out_actions])
         model.compile(loss='logcosh', optimizer='rmsprop')
 

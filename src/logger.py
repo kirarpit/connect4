@@ -21,7 +21,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     return logger
 
 LOGGER_DISABLED = {
-    'main':False,
+    'main':True
 }
 
 main = setup_logger('main', 'logs/main.log', logging.INFO)

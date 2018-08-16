@@ -51,9 +51,8 @@ class ZeroBrain(Brain):
         return x
     
     def predict(self, s):
-        with self.default_graph.as_default():
-            P, V = self.model.predict(s)
-            return P[0], V[0][0]
+        P, V = self.model.predict(s)
+        return P[0], V[0][0]
 
     def train(self, memory):
         states, Ps, Vs = list(zip(*memory))

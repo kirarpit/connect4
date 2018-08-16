@@ -13,13 +13,15 @@ from players.pgPlayer import PGPlayer
 from brains.pgBrain import PGBrain
 from optimizer import Optimizer
 from envThread import EnvThread
+from settings import charts_folder
+from keras.utils import plot_model
 
 gamma = 0.90
-n_step = 6
-isConv = True
+n_step = 2
+isConv = False
 layers = [
-	{'filters':32, 'kernel_size': (3,3)}
-	 , {'filters':32, 'kernel_size': (3,3)}
+	{'filters':32, 'kernel_size': (3,3), 'size':24}
+	 , {'filters':32, 'kernel_size': (3,3), 'size':24}
 	]
 
 game = T3Game(3, isConv=isConv)
@@ -27,15 +29,16 @@ game = T3Game(3, isConv=isConv)
 brain_config = {"gamma":gamma, "n_step":n_step, "min_batch":64,
                 "layers":layers, "load_weights":False, "epochs":10}
 brain = PGBrain('c4PG', game, **brain_config)
+plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
 
-player_config = {"batch_size":64, "gamma":gamma, "n_step":n_step}
-epsilons = {0.05, 0.15, 0.25, 0.40}
+player_config = {"gamma":gamma, "n_step":n_step}
+epsilons = [0.05, 0.15, 0.25, 0.35]
 
-i = 1
+i = 0
 threads = []
-while i <= 4:
+while i < 4:
     game = T3Game(3, name=i, isConv=isConv)
-    p1 = PGPlayer(name, game, brain=brain, epsilon=epsilons[i], **player_config)
+    p1 = PGPlayer(i, game, brain=brain, epsilon=epsilons[i], **player_config)
     p2 = MinimaxT3Player(2, game, epsilon=0.05)
     env = Environment(game, p1, p2)
     threads.append(EnvThread(env))
