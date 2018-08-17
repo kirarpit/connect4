@@ -12,8 +12,6 @@ from players.player import Player
 from mathEq import MathEq
 import logger as lg
 
-UPDATE_TARGET_FREQUENCY = 4000
-
 class QPlayer(Player):
     
     def __init__(self, name, game, **kwargs):
@@ -22,6 +20,7 @@ class QPlayer(Player):
         self.verbosity = 0
         self.nullState = np.zeros(self.stateCnt)
         self.targetNet = kwargs['targetNet'] if 'targetNet' in kwargs else True
+        self.updateTNEvery = kwargs['updateTNEvery'] if 'updateTNEvery' in kwargs else 4000
         
         self.memory = PMemory(self.mem_size) if 'memory' not in kwargs else kwargs['memory']
         self.goodMemory = PMemory(self.mem_size) if 'goodMemory' not in kwargs else kwargs['goodMemory']
@@ -78,7 +77,7 @@ class QPlayer(Player):
 
             self.R = 0
             
-            if self.targetNet and gameCnt % UPDATE_TARGET_FREQUENCY == 0:
+            if self.targetNet and gameCnt % self.updateTNEvery == 0:
                 self.updateTargetBrain()
 
         if len(self.sarsaMem) >= self.n_step:

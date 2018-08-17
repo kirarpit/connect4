@@ -11,10 +11,10 @@ from environment import Environment
 from players.testPlayer import TestPlayer
 from players.humanPlayer import HumanPlayer
 
-scoreAgent = False
-modelName = "1_old"
-gameName = "C4"
-isConv = True
+scoreAgent = True
+modelName = "1"
+gameName = "T3"
+isConv = False
 
 if gameName == "C4":
     game = C4Game(6, 7, isConv=isConv)
