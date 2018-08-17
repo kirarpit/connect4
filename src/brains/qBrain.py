@@ -30,8 +30,8 @@ class QBrain(Brain):
 
     def _build_model(self):
         if self.conv:
-            main_input, x = self.get_conv_layers()
-            x = self.conv_layer(x, 2, (1,1))
+            main_input, x = self.get_conv_layers(bn=False, reg=None)
+            x = self.conv_layer(x, 2, (1,1), bn=False, reg=None)
             x = Flatten()(x)
         else:
             main_input = Input(batch_shape=(None, self.stateCnt))
@@ -39,12 +39,12 @@ class QBrain(Brain):
             x = main_input
             if len(self.layers) > 0:
                 for h in self.layers:
-                    x = self.dense_layer(x, h['size'])
+                    x = self.dense_layer(x, h['size'], reg=None)
                     x = LeakyReLU()(x)
-            
-        out_actions = self.dense_layer(x, self.actionCnt)
+        
+        out_actions = self.dense_layer(x, self.actionCnt, reg=None)
         model = Model(inputs=[main_input], outputs=[out_actions])
-        model.compile(loss='logcosh', optimizer='rmsprop')
+        model.compile(loss='logcosh', optimizer='rmsprop', metrics=['accuracy'])
 
         return model
     

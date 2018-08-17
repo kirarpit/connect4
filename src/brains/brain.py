@@ -39,7 +39,6 @@ class Brain:
         
         self.conv = True if type(self.stateCnt) is tuple else False
         
-        self.plotModel = kwargs['plotModel'] if "plotModel" in kwargs else False
         self.layers = kwargs['layers'] if "layers" in kwargs else None
         if self.layers is None: self.layers = LAYERS
 
@@ -55,34 +54,43 @@ class Brain:
         self.min_batch = kwargs['min_batch'] if "min_batch" in kwargs else 256
         
         self.model = kwargs['model'] if "model" in kwargs else self._build_model()
-        plot_model(self.model, show_shapes=True, to_file=charts_folder + 
-                   str(self.name) + '_model.png')
+        self.plotModel = kwargs['plotModel'] if "plotModel" in kwargs else False
+        
+        if self.plotModel:
+            plot_model(self.model, show_shapes=True, to_file=charts_folder + 
+                       str(self.name) + '_model.png')
 
-    def get_conv_layers(self):
+    def get_conv_layers(self, bn=True, reg=-1):
         main_input = Input(shape = self.stateCnt, name = 'main_input')
         x = self.conv_layer(main_input, self.layers[0]['filters'], 
-                            self.layers[0]['kernel_size'])
+                            self.layers[0]['kernel_size'], bn, reg)
         
         if len(self.layers) > 1:
             for h in self.layers[1:]:
-                x = self.residual_layer(x, h['filters'], h['kernel_size'])
+                x = self.residual_layer(x, h['filters'], h['kernel_size'], bn, reg)
                 
         return main_input, x
         
-    def conv_layer(self, x, filters, kernel_size):
+    def conv_layer(self, x, filters, kernel_size, bn=True, reg=-1):
+        if reg == -1:
+            reg = regularizers.l2(self.reg_const)
+
         x = Conv2D(filters = filters, kernel_size = kernel_size, data_format="channels_first",
                    padding = 'same', use_bias=False, activation='linear', 
-                   kernel_regularizer = regularizers.l2(self.reg_const))(x)
-        x = BatchNormalization(axis=1)(x)
+                   kernel_regularizer = reg)(x)
+        if bn: x = BatchNormalization(axis=1)(x)
         x = LeakyReLU()(x)
         return x
     
-    def residual_layer(self, input_block, filters, kernel_size):
-        x = self.conv_layer(input_block, filters, kernel_size)
+    def residual_layer(self, input_block, filters, kernel_size, bn=True, reg=-1):
+        if reg == -1:
+            reg = regularizers.l2(self.reg_const)
+
+        x = self.conv_layer(input_block, filters, kernel_size, bn, reg)
         x = Conv2D(filters = filters, kernel_size = kernel_size, data_format="channels_first",
                    padding = 'same', use_bias=False, activation='linear',
-                   kernel_regularizer = regularizers.l2(self.reg_const))(x)
-        x = BatchNormalization(axis=1)(x)
+                   kernel_regularizer = reg)(x)
+        if bn: x = BatchNormalization(axis=1)(x)
         x = add([input_block, x])
         x = LeakyReLU()(x)
         return x
@@ -90,7 +98,7 @@ class Brain:
     def dense_layer(self, x, size, activation='linear', name=None, reg=-1):
         if reg == -1:
             reg = regularizers.l2(self.reg_const)
-            
+        
         x = Dense(size, use_bias=False, activation=activation, name=name,
                   kernel_regularizer=reg)(x)
         return x

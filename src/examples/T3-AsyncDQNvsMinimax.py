@@ -13,8 +13,6 @@ from players.qPlayer import QPlayer
 from brains.qBrain import QBrain
 from envThread import EnvThread
 from memory.pMemory import PMemory
-from settings import charts_folder
-from keras.utils import plot_model
 
 isConv = True
 layers = [
@@ -24,12 +22,11 @@ layers = [
 
 game = T3Game(3, isConv=isConv)
 
-brain = QBrain('1', game, layers=layers, load_weights=False)
-plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
+brain = QBrain('1', game, layers=layers, load_weights=False, plotModel=True)
 
 player_config = {"memory":PMemory(1000), "goodMemory":PMemory(1000), "targetNet":False,
-                "batch_size":32, "gamma":0.90, "n_step":3}
-epsilons = [0.05, 0.15, 0.25, 0.35]
+                "batch_size":64, "gamma":0.90, "n_step":3}
+epsilons = [0.05, 0.25, 0.35, 0.45]
 
 i = 0
 threads = []
