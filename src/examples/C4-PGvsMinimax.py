@@ -19,8 +19,8 @@ from keras.utils import plot_model
 
 ROWS = 4
 COLUMNS = 5
-gamma = 0.90
-n_step = 6
+gamma = 0.95
+n_step = 11
 isConv = True
 layers = [
 	{'filters':32, 'kernel_size': (3,3)}
@@ -34,14 +34,14 @@ brain_config = {"gamma":gamma, "n_step":n_step, "min_batch":64,
 brain = PGBrain('c4PG', game, **brain_config)
 plot_model(brain.model, show_shapes=True, to_file=charts_folder + 'model.png')
 
-player_config = {"batch_size":64, "gamma":gamma, "n_step":n_step}
+player_config = {"gamma":gamma, "n_step":n_step, "brain":brain}
 epsilons = [0.05, 0.15, 0.25, 0.35]
 
 i = 0
 threads = []
 while i < 4:
     game = C4Game(ROWS, COLUMNS, name=i, isConv=isConv)
-    p1 = PGPlayer(i, game, brain=brain, epsilon=epsilons[i], **player_config)
+    p1 = PGPlayer(i, game, epsilon=epsilons[i], **player_config)
     p2 = MinimaxC4Player(2, game, epsilon=0.05, solver=C4Solver)
     env = Environment(game, p1, p2)
     threads.append(EnvThread(env))

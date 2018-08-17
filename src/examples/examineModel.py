@@ -12,8 +12,8 @@ from players.testPlayer import TestPlayer
 from players.humanPlayer import HumanPlayer
 
 scoreAgent = True
-modelName = "c4AsyncDQN"
-gameName = "C4"
+modelName = "1"
+gameName = "T3"
 isConv = False
 
 if gameName == "C4":

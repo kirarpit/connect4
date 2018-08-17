@@ -14,8 +14,8 @@ from brains.pgBrain import PGBrain
 from optimizer import Optimizer
 from envThread import EnvThread
 
-gamma = 0.99
-n_step = 1
+gamma = 0.90
+n_step = 6
 isConv = False
 layers = [
 	{'filters':32, 'kernel_size': (3,3), 'size':24}
