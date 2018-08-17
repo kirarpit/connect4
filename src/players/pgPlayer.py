@@ -6,7 +6,6 @@ Created on Thu Jun 28 17:52:18 2018
 @author: Arpit
 """
 import numpy as np
-from mathEq import MathEq
 from players.player import Player
 
 class PGPlayer(Player):
@@ -14,8 +13,7 @@ class PGPlayer(Player):
     def __init__(self, name, game, **kwargs):
         super().__init__(name, game, **kwargs)
         
-        self.sampling = kwargs['sampling'] if "sampling" in kwargs else True
-        if self.brain is None: print("Error: All policy gradient workers requrie a master brain")
+        if self.brain is None: print("Error: All policy gradient players requrie a master brain")
             
     def act(self, game):
         state = game.getCurrentState()
@@ -26,10 +24,7 @@ class PGPlayer(Player):
         else:
             actions = self.brain.predict_p(np.array([state]))[0]
             fActions = self.filterIllMoves(np.copy(actions), illActions)
-            if self.sampling:
-                action = np.random.choice(self.actionCnt, p=fActions)
-            else:
-                action = np.argmax(fActions)
+            action = np.random.choice(self.actionCnt, p=fActions)
             
         return action
 

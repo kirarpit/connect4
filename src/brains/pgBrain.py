@@ -49,11 +49,11 @@ class PGBrain(Brain):
             x = main_input
             if len(self.layers) > 0:
                 for h in self.layers:
-                    x = self.dense_layer(x, h['size'])
+                    x = self.dense_layer(x, h['size'], reg=None)
                     x = LeakyReLU()(x)
             
-            out_value = self.dense_layer(x, 1)
-            out_actions = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head')
+            out_value = self.dense_layer(x, 1, reg=None)
+            out_actions = self.dense_layer(x, self.actionCnt, 'softmax', 'policy_head', reg=None)
 
         model = Model(inputs=[main_input], outputs=[out_actions, out_value])
         model._make_predict_function() # have to initialize before threading

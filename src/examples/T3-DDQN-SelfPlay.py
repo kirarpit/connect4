@@ -27,5 +27,5 @@ player_config = {"memory":PMemory(5000), "goodMemory":PMemory(5000), "brain":bra
 
 p1 = QPlayer(1, game, **player_config)
 p2 = QPlayer(2, game, **player_config)
-env = Environment(game, p1, p2)
+env = Environment(game, p1, p2, switchFTP=False)
 env.run()

@@ -8,7 +8,6 @@ Created on Fri Jul 13 18:50:06 2018
 import requests, yaml, os, random, threading
 from cache import cached
 from functools import lru_cache
-from timer_cm import Timer
 from threading import Thread
 
 FIFO = "games/c4solver67-pipe-in"
