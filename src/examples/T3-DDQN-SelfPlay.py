@@ -23,7 +23,7 @@ brain = QBrain('t3DQNSelf', game, layers=layers, load_weights=False, plotModel=T
 tBrain = QBrain('t3DQNSelf', game, layers=layers)
 
 player_config = {"memory":PMemory(5000), "goodMemory":PMemory(5000), "brain":brain, 
-                 "tBrain":tBrain, "batch_size":64, "gamma":0.90, "n_step":6}
+                 "tBrain":tBrain, "batch_size":64, "gamma":0.90, "n_step":6, "epsilon":0.1}
 
 p1 = QPlayer(1, game, **player_config)
 p2 = QPlayer(2, game, **player_config)

@@ -109,7 +109,7 @@ def miniMax5X6Shell(gameString):
 @cached
 def miniMax6X7Shell(gameString):
     if debug: print("miniMax6X7Shell called")
-    if len(gameString) > 11:
+    if False and len(gameString) > 11:
         scores = getScores("./games/c4solver67", gameString)
     else:
         return miniMax6X7API(gameString)

@@ -1,11 +1,11 @@
 # Training Aritificial Neural Networks to play Connect 4
 
-This repository contains implementation of multiple Deep Reinforcement learning algorithms using which an Artificial Neural Net(ANN) is trained to play board games like Connect4 and Tic-Tac-Toe. Since, these algorithms are very general, they can be applied in many areas to solve a lot more challenging problems as well.
+This repository contains implementation of multiple Deep Reinforcement Learning algorithms using which an Artificial Neural Net(ANN) is trained to play board games like Connect4 and Tic-Tac-Toe. Since, these algorithms are very general, they can be applied in many areas to solve a lot more challenging problems as well.
 
-Another purpose of this repository is to get a good intuition of how different algorithms work, what are their pros and cons, and how do they differ from each other. Hence, to support experimentation and given how machine learning is all about tweaking hyper-parameters, a general framework is implemented with every module being highly customisable.
+Another purpose of this repository is to get a good intuition of how different reinforcement learning algorithms work, what are their pros and cons, and how do they differ from each other. Hence, to support experimentation and given how machine learning is all about tweaking the hyper-parameters, a general framework is implemented with every module being highly customisable.
 
 ## How it works
-In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms, however you can make a custom brain object and give it to one of the players which will override its default brain. See and run examples for more info. Note: The working directory should be set as the src folder of this repo.
+In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player which will override its default brain. See and run examples for more info. Note: The working directory should be set as the src folder of this repo.
 
 ## Implemented Algorithms
 Two main classes of Reinforcement Learning i.e. Q-Network and Policy Gradient, plus fairly new self learning algorithm described in AlphaGo Zero paper.

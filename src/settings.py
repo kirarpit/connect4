@@ -1,1 +1,3 @@
-charts_folder="/Users/Arpit/Desktop/"
+import os
+cwd = os.getcwd()
+charts_folder = cwd + "/charts/"
