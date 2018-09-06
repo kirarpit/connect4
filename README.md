@@ -5,10 +5,12 @@ This repository contains implementation of multiple Reinforcement Learning(RL) a
 In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player which will override its default brain. See and run examples for more info.
 
 ## How to run
-- Set the src folder of this repository as the working directory.
+- Git clone this repository.
+- Change directory to 'src' folder.
+- Set the src folder of this repository in PYTHONPATH environment variable.
 
-  `export PYTHONPATH=$PYTHONPATH:src`
-- Run examples. For example, DDQN player against minimax playing TicTacToe.
+  `export PYTHONPATH=/path/to/src/folder:$PYTHONPATH`
+- Run examples. For example to train a DDQN player learn TicTacToe while playing against a Minimax player, run the below command.
 
   `python3 examples/T3-DDQNvsMinimax.py`
 
