@@ -7,6 +7,14 @@ Another purpose of this repository is to get a good intuition of how different r
 ## How it works
 In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player which will override its default brain. See and run examples for more info. Note: The working directory should be set as the src folder of this repo.
 
+## How to run
+- Set the src folder of this repository as the working directory.
+
+  `export PYTHONPATH=$PYTHONPATH:src`
+- Run one of the examples. For example, DDQN Tic Tac Toe player against minimax.
+
+  `python3 examples/T3-DDQNvsMinimax.py`
+
 ## Implemented Algorithms
 Two main classes of Reinforcement Learning i.e. Q-Network and Policy Gradient, plus fairly new self learning algorithm described in AlphaGo Zero paper.
 - Deep Q-Network(DQN), just like described in "Playing Atari" papers with Prioritised Experience Replay, reward and error clipping, and a separate target network aka Double DQN. By changing the neural net architecture, even Duelling DQN can also be made. For more information on DQNs, I suggest this amazing [series](https://jaromiru.com/) of blog posts. A few code snippets were directly taken from there.
@@ -26,6 +34,27 @@ Every player must implement 'act', 'observe' and 'train' methods of the abstract
 - AlphaZero
 - MiniMax players for Connect4 and Tic-Tac-Toe with customisable board size. For Connect4 MiniMax agent on a different board size one must compile one of these repositories [[1]](https://github.com/kirarpit/connect4-minimax), [[2]](https://github.com/MarkusThill/Connect-Four) from source, run them in the background and query them live. Feel free to raise an issue in case you need help with that. For the regular board size, the code will hit an API server which runs the first  repository code mentioned here.
 - Human player for playing against trained networks.
+
+## Results
+- Below are some of the charts showing total wins for player 1(p1), player 2(p2) and draws after x games.
+- Post training all the models shown below for TicTacToe and Connect4 on a smaller board size of 4X5 were able to defeat a corresponding perfect playing Minimax player - with 5% chance of making a random move each turn - in 95% of the games.
+
+
+| ![AlphaZero Player self learning TicTacToe](images/t3-Zero.png)  | ![Async DQN Player vs Minimax on TicTacToe](images/t3-ADQN.png) |
+|:---:|:---:|
+| AlphaZero Player self learning TicTacToe | Async DQN Player vs Minimax on TicTacToe |
+
+| ![Double DQN Player vs Minimax on TicTacToe](images/t3-DDQN.png)  | ![Policy Gradient Player vs Minimax on TicTacToe](images/t3-PG.png) |
+|:---:|:---:|
+| Double DQN Player vs Minimax on TicTacToe | Policy Gradient Player vs Minimax on TicTacToe |
+
+| ![Async DQN Player vs Minimax on Connect4(Board size 4X5)](images/C4-4X5-ADQN.png)  | ![Double DQN Player vs Minimax on Connect4(Board size 4X5)](images/C4-4X5-DDQN.png) |
+|:---:|:---:|
+| Async DQN Player vs Minimax on Connect4(Board size 4X5) | Double DQN Player vs Minimax on Connect4(Board size 4X5) |
+
+| ![Policy Gradient Player vs Minimax on Connect4(Board size 4X5)](images/C4-4X5-PG.png) | ![AlphaZero Player self learning Connect4(Board size 6X7)](images/C4-6X7-Zero.png) |
+|:---:|
+| Policy Gradient Player vs Minimax on Connect4(Board size 4X5) | AlphaZero Player self learning Connect4(Board size 6X7) |
 
 ## Observations
 - Exploration plays a very crucial role in learning. I highly recommend reading this [paper](https://arxiv.org/abs/1507.00814) on incentivising exploration. Although due to time constraint I was not able to implement it but it seems promising.
