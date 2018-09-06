@@ -53,7 +53,7 @@ Every player must implement 'act', 'observe' and 'train' methods of the abstract
 | Async DQN Player vs Minimax on Connect4(Board size 4X5) | Double DQN Player vs Minimax on Connect4(Board size 4X5) |
 
 | ![Policy Gradient Player vs Minimax on Connect4(Board size 4X5)](images/C4-4X5-PG.png) | ![AlphaZero Player self learning Connect4(Board size 6X7)](images/C4-6X7-Zero.png) |
-|:---:|
+|:---:|:---:|
 | Policy Gradient Player vs Minimax on Connect4(Board size 4X5) | AlphaZero Player self learning Connect4(Board size 6X7) |
 
 ## Observations
