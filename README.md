@@ -2,12 +2,12 @@
 This repository contains implementation of multiple Reinforcement Learning(RL) algorithms using which an Artificial Neural Net(ANN) is trained to play board games like Connect4 and TicTacToe. Another purpose of this repository is to get a good intuition of how different RL algorithms work, what are their pros and cons, and how do they differ from each other. Hence, to support experimentation and given how machine learning is all about tweaking the hyper-parameters, a general RL framework is implemented with every module being highly customisable.
 
 ## How it works
-In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player which will override its default brain. See and run examples for more info.
+In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player to override its default brain. See and run examples for more info.
 
 ## How to run
 - Git clone this repository.
 - Change directory to 'src' folder.
-- Set the src folder of this repository in PYTHONPATH environment variable.
+- Add the src folder in PYTHONPATH environment variable.
 
   `export PYTHONPATH=/path/to/src/folder:$PYTHONPATH`
 - Run examples. For example to train a DDQN player learn TicTacToe while playing against a Minimax player, run the below command.
