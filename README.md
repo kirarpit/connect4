@@ -1,17 +1,14 @@
-# Training Aritificial Neural Networks to play Connect 4
-
-This repository contains implementation of multiple Deep Reinforcement Learning algorithms using which an Artificial Neural Net(ANN) is trained to play board games like Connect4 and Tic-Tac-Toe. Since, these algorithms are very general, they can be applied in many areas to solve a lot more challenging problems as well.
-
-Another purpose of this repository is to get a good intuition of how different reinforcement learning algorithms work, what are their pros and cons, and how do they differ from each other. Hence, to support experimentation and given how machine learning is all about tweaking the hyper-parameters, a general framework is implemented with every module being highly customisable.
+# Solving board games like Connect4 using RL
+This repository contains implementation of multiple Reinforcement Learning(RL) algorithms using which an Artificial Neural Net(ANN) is trained to play board games like Connect4 and TicTacToe. Another purpose of this repository is to get a good intuition of how different RL algorithms work, what are their pros and cons, and how do they differ from each other. Hence, to support experimentation and given how machine learning is all about tweaking the hyper-parameters, a general RL framework is implemented with every module being highly customisable.
 
 ## How it works
-In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player which will override its default brain. See and run examples for more info. Note: The working directory should be set as the src folder of this repo.
+In general how the code works is you take 2 player objects, 1 environment object and run the environment. Player objects come with their default brains which are essentially the underlying algorithms. However, you can make a custom brain object and assign it to a player which will override its default brain. See and run examples for more info.
 
 ## How to run
 - Set the src folder of this repository as the working directory.
 
   `export PYTHONPATH=$PYTHONPATH:src`
-- Run one of the examples. For example, DDQN Tic Tac Toe player against minimax.
+- Run examples. For example, DDQN player against minimax playing TicTacToe.
 
   `python3 examples/T3-DDQNvsMinimax.py`
 
@@ -26,19 +23,21 @@ Two main classes of Reinforcement Learning i.e. Q-Network and Policy Gradient, p
 ## Features
 - An ANN backed up model could be matched against a perfect playing MiniMax player and learn from it using DQN, PG or their other variants.
 - An ANN backed up model could learn from self playing with the help of AlphaZero or DQN.
+- Could simply toggle the functionality to add Convolutional and Residual Layers.
+- Other similar board games like Gomoku could easily be implemented by extending the base game class.
 
 ## Players
 Every player must implement 'act', 'observe' and 'train' methods of the abstract base class "Player" as these methods would be called by the environment.
 - DQN
 - PG
 - AlphaZero
-- MiniMax players for Connect4 and Tic-Tac-Toe with customisable board size. For Connect4 MiniMax agent on a different board size one must compile one of these repositories [[1]](https://github.com/kirarpit/connect4-minimax), [[2]](https://github.com/MarkusThill/Connect-Four) from source, run them in the background and query them live. Feel free to raise an issue in case you need help with that. For the regular board size, the code will hit an API server which runs the first  repository code mentioned here.
-- Human player for playing against trained networks.
+- MiniMax players for Connect4 and TicTacToe with customisable board size. For Connect4 MiniMax agent on a different board size one must compile one of these repositories [[1]](https://github.com/kirarpit/connect4-minimax), [[2]](https://github.com/MarkusThill/Connect-Four) from source, run them in the background and query them live. Feel free to raise an issue in case you need help with that. For the regular board size, the code will hit an API server which runs the first  repository code mentioned here.
+- Human player for playing against trained models.
 
 ## Results
-- Below are some of the charts showing total wins for player 1(p1), player 2(p2) and draws after x games.
-- Post training all the models shown below for TicTacToe and Connect4 on a smaller board size of 4X5 were able to defeat a corresponding perfect playing Minimax player - with 5% chance of making a random move each turn - in 95% of the games.
-
+- Below are some of the charts showing total wins for player 1(p1), player 2(p2) and draws per x games.
+- Post training, all the models shown below for TicTacToe and Connect4 on a smaller board size of 4X5 were able to defeat a corresponding perfect playing Minimax player - with 5% chance of making a random move each turn - in 95% of the games.
+- For Connect4(regular board size) these algorithms take significant amount of time to train. Parallel processing might help but not much in python. A model trained for 5 days using AlphaZero algorithm produced strong amateur player.
 
 | ![AlphaZero Player self learning TicTacToe](images/t3-Zero.png)  | ![Async DQN Player vs Minimax on TicTacToe](images/t3-ADQN.png) |
 |:---:|:---:|
@@ -67,4 +66,4 @@ Every player must implement 'act', 'observe' and 'train' methods of the abstract
 - AlphaZero is definitely a much superior algorithm and generates much better models which outperform other models generated by other mentioned algos. But it's less general and depends on perfect information assumption.
 
 # Conclusion
-Although, the initial goal was to just solve Connect4 in an unsupervised fashion but since I was experimenting with different algorithms I ended up implementing a basic framework for Reinforcement Learning algorithms. Feel free to fork, create an issue or make a pull request.
+This turned out to be a good summer project which gave me a lot of insight into how deep RL algos work. I hope newcomers don't have to spend too much time on understanding, implementing and debugging these algorithms by taking advantage of this repository. Feel free to fork, create an issue if there is something you don't understand or make a pull request!
