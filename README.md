@@ -18,11 +18,11 @@ This repository contains implementation of multiple Reinforcement Learning(RL) a
   `python3 examples/T3-DDQNvsMinimax.py`
 
 ## Implemented Algorithms
-Two main classes of Reinforcement Learning, i.e., Q-Network and Policy Gradient, plus the new self learning algorithm described in AlphaGo Zero<sup>[1](#fn1)</sup>.
-- Deep Q-Network(DQN)<sup>[2](#fn2)</sup> with Prioritised Experience Replay, reward and error clipping, and a separate target network aka Double DQN. By changing the neural net architecture, even Duelling DQN<sup>[3](#fn3)</sup> can also be constructed. For more information on DQNs, I suggest this amazing series of [blog posts](https://jaromiru.com/). Few code snippets were directly taken from there.
-- Policy Gradient(PG), Asynchronous Advantageous Actor-Critic<sup>[4](#fn4)</sup> (A3C).
+Two main classes of Reinforcement Learning, i.e., Q-Network and Policy Gradient, plus the new self learning algorithm described in AlphaGo Zero<sup id="a1">[1](#fn1)</sup>.
+- Deep Q-Network(DQN)<sup id="a2">[2](#fn2)</sup> with Prioritised Experience Replay, reward and error clipping, and a separate target network aka Double DQN. By changing the neural net architecture, even Duelling DQN<sup id="a3">[3](#fn3)</sup> can also be constructed. For more information on DQNs, I suggest this amazing series of [blog posts](https://jaromiru.com/). Few code snippets were directly taken from there.
+- Policy Gradient(PG), Asynchronous Advantageous Actor-Critic<sup id="a4">[4](#fn4)</sup> (A3C).
 - Asynchronous DQN.
-- Possible other variations<sup>[5](#fn5)</sup> can also be implemented by tweaking the code a bit.
+- Possible other variations<sup id="a5">[5](#fn5)</sup> can also be implemented by tweaking the code a bit.
 - AlphaGo Zero self learning algorithm implemented down to every detail as described in the methods section of the paper.
 
 ## Features
@@ -74,8 +74,8 @@ Every player must implement 'act', 'observe' and 'train' methods of the abstract
 This turned out to be a good summer project which gave me a lot of insight into how deep RL algos work. I hope newcomers don't have to spend too much time on understanding, implementing and debugging these algorithms by taking advantage of this repository. Feel free to fork, create an issue if there is something you don't understand or make a pull request!
 
 # References
-<a name="fn1">1</a>: ["Mastering the game of Go without human knowledge"](https://www.nature.com/articles/nature24270).  
-<a name="fn2">2</a>: ["Playing Atari with Deep Reinforcement Learning"](https://arxiv.org/abs/1312.5602).  
-<a name="fn3">3</a>: ["Dueling Network Architectures for Deep Reinforcement Learning"](https://arxiv.org/abs/1511.06581).  
-<a name="fn4">4</a>: ["Asynchronous Methods for Deep Reinforcement Learning"](https://arxiv.org/abs/1602.01783).  
-<a name="fn5">5</a>: ["Rainbow: Combining Improvements in Deep Reinforcement Learning"](https://arxiv.org/abs/1710.02298).
+<a name="fn1">1</a>: ["Mastering the game of Go without human knowledge"](https://www.nature.com/articles/nature24270). [↩](#a1)  
+<a name="fn2">2</a>: ["Playing Atari with Deep Reinforcement Learning"](https://arxiv.org/abs/1312.5602). [↩](#a2)  
+<a name="fn3">3</a>: ["Dueling Network Architectures for Deep Reinforcement Learning"](https://arxiv.org/abs/1511.06581). [↩](#a3)  
+<a name="fn4">4</a>: ["Asynchronous Methods for Deep Reinforcement Learning"](https://arxiv.org/abs/1602.01783). [↩](#a4)  
+<a name="fn5">5</a>: ["Rainbow: Combining Improvements in Deep Reinforcement Learning"](https://arxiv.org/abs/1710.02298). [↩](#a5)
