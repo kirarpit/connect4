@@ -38,7 +38,7 @@ Every player must implement 'act', 'observe' and 'train' methods of the abstract
 - Human player for playing against trained models.
 
 ## Results
-- Below are some of the charts showing total wins for player 1(p1), player 2(p2) and draws per 100 games on the Y-axis vs number of total games on X-axis.
+- Below are some of the charts showing total wins for player 1(p1), player 2(p2) and draws per 100 games on the Y-axis vs total number of games on the X-axis.
 - Post training, all the models shown below for TicTacToe and Connect4 on a smaller board size of 4X5, were able to defeat a corresponding perfect playing Minimax player -- with 5% chance of making a random move each turn -- in 95% of the games.
 - For Connect4(regular board size, i.e., 6X7) these algorithms take significant amount of time to train. Parallel processing is not very helpful in python. A model trained for 5 days using AlphaZero algorithm produced strong amateur player.
 
