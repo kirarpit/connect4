@@ -4,7 +4,7 @@ appnope==0.1.0
 asn1crypto==0.24.0
 astor==0.6.2
 astroid==1.6.5
-Babel==2.6.0
+Babel==2.9.1
 backcall==0.1.0
 bleach==1.5.0
 certifi==2018.8.13
